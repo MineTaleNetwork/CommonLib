@@ -10,7 +10,6 @@ import lombok.experimental.Accessors;
 import org.bson.Document;
 
 import java.util.*;
-import java.util.stream.Collectors;
 
 @Getter @Setter
 public class Rank {
@@ -22,8 +21,6 @@ public class Rank {
 
     private final UUID uuid;
     private String name;
-    private final List<Rank> inherited = new ArrayList<>();
-    private final List<String> permissions = new ArrayList<>();
     private String prefix;
     private int weight;
     private String color;
@@ -70,14 +67,6 @@ public class Rank {
 
             rank.setColor(document.getString("color"));
 
-            rank.getPermissions().addAll(document.getList("permissions", String.class));
-
-            rank.getInherited().addAll(document.getList("inherits", String.class)
-                    .stream()
-                    .map(inherit -> Rank.getRank(UUID.fromString(inherit), true))
-                    .filter(Objects::nonNull)
-                    .collect(Collectors.toList()));
-
             return rank;
         }
 
@@ -104,14 +93,6 @@ public class Rank {
 
             rank.setColor(document.getString("color"));
 
-            rank.getPermissions().addAll(document.getList("permissions", String.class));
-
-            rank.getInherited().addAll(document.getList("inherits", String.class).
-                    stream()
-                    .map(inherit -> Rank.getRank(UUID.fromString(inherit), true))
-                    .filter(Objects::nonNull)
-                    .collect(Collectors.toList()));
-
             return rank;
         }
 
@@ -130,8 +111,6 @@ public class Rank {
         document.put("color", this.color);
         document.put("prefix", this.prefix);
         document.put("weight", this.weight);
-        document.put("permissions", this.permissions);
-        document.put("inherits", this.inherited.stream().map(Rank::getUuid).map(UUID::toString).collect(Collectors.toList()));
 
         collection.replaceOne(Filters.eq("_id", this.uuid.toString()), document, new ReplaceOptions().upsert(true));
     }

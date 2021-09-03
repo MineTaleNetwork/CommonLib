@@ -78,33 +78,6 @@ public class ProfileAPI {
     }
 
     /**
-     * Returns a List of all the Profile's Permissions.
-     */
-    public List<String> getAllPermissions() {
-        List<String> permissions = new ArrayList<>();
-
-        permissions.addAll(this.getRankPermissions());
-        permissions.addAll(this.profile.getPermissions());
-
-        return permissions;
-    }
-
-    /**
-     * Returns a List of all the Profile's Permissions.
-     */
-    public List<String> getRankPermissions() {
-        List<String> permissions = new ArrayList<>();
-        permissions.addAll(Grant.DEFAULT_GRANT.api().getRank().getPermissions());
-
-        for (Grant grant : this.profile.getCachedGrants()) {
-            Rank rank = grant.api().getRank();
-            if (rank != null && grant.api().isActive())
-                permissions.addAll(grant.api().getRank().api().getAllPermissions());
-        }
-        return permissions;
-    }
-
-    /**
      * Validates the Profile's Punishments.
      */
     public void validatePunishments() {

@@ -73,17 +73,17 @@ public class MC {
 
         public static TextComponent CONSOLE = Component.text("Console").color(MC.CC.DARK_RED.getTextColor());
 
-        public static TextComponent SEPARATOR = Component.text(StringUtils.repeat(" ", 80))
+        public static TextComponent SEPARATOR_32 = Component.text(StringUtils.repeat(" ", 32))
                 .color(MC.CC.DARK_GRAY.getTextColor())
                 .decoration(TextDecoration.STRIKETHROUGH, true)
                 .decoration(TextDecoration.ITALIC, false);
 
-        public static TextComponent SCOREBOARD_SEPARATOR = Component.text(StringUtils.repeat(" ", 32))
+        public static TextComponent SEPARATOR_50 = Component.text(StringUtils.repeat(" ", 50))
                 .color(MC.CC.DARK_GRAY.getTextColor())
                 .decoration(TextDecoration.STRIKETHROUGH, true)
                 .decoration(TextDecoration.ITALIC, false);
 
-        public static TextComponent MENU_SEPARATOR = Component.text(StringUtils.repeat(" ", 50))
+        public static TextComponent SEPARATOR_80 = Component.text(StringUtils.repeat(" ", 80))
                 .color(MC.CC.DARK_GRAY.getTextColor())
                 .decoration(TextDecoration.STRIKETHROUGH, true)
                 .decoration(TextDecoration.ITALIC, false);

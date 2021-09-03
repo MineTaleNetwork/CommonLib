@@ -59,7 +59,6 @@ public class ProfileConverter extends Converter<Profile> {
             var profile = new Profile();
 
             profile.setId(UUIDConverter.Utils.convertToValue(data.get("id")));
-            profile.setPermissions(ListConverter.Utils.convertToValue(data.get("permissions"), String.class));
             profile.setPunishments(ListConverter.Utils.convertToValue(data.get("punishments"), String.class));
             profile.setCachedPunishments(ListConverter.Utils.convertToValue(data.get("cachedPunishments"), Punishment.class));
             profile.setGrants(ListConverter.Utils.convertToValue(data.get("grants"), String.class));
@@ -74,6 +73,7 @@ public class ProfileConverter extends Converter<Profile> {
             options.setReceivingPublicChat(optionsObj.get("receivingPublicChat").getAsBoolean());
             options.setReceivingConversations(optionsObj.get("receivingConversations").getAsBoolean());
             options.setReceivingMessageSounds(optionsObj.get("receivingMessageSounds").getAsBoolean());
+            options.setVisibilityIndex(optionsObj.get("visibilityIndex").getAsInt());
 
             profile.setOptionsProfile(options);
 
@@ -117,7 +117,6 @@ public class ProfileConverter extends Converter<Profile> {
             var data = new JsonObject();
 
             data.add("id", UUIDConverter.Utils.convertToSimple(value.getId()));
-            data.add("permissions", ListConverter.Utils.convertToSimple(value.getPermissions(), String.class));
             data.add("punishments", ListConverter.Utils.convertToSimple(value.getPunishments(), String.class));
             data.add("cachedPunishments", ListConverter.Utils.convertToSimple(value.getCachedPunishments(), Punishment.class));
             data.add("grants", ListConverter.Utils.convertToSimple(value.getGrants(), String.class));
@@ -132,6 +131,7 @@ public class ProfileConverter extends Converter<Profile> {
             optionsObj.add("receivingPublicChat", new JsonPrimitive(options.isReceivingPublicChat()));
             optionsObj.add("receivingConversations", new JsonPrimitive(options.isReceivingConversations()));
             optionsObj.add("receivingMessageSounds", new JsonPrimitive(options.isReceivingMessageSounds()));
+            optionsObj.add("visibilityIndex", new JsonPrimitive(options.getVisibilityIndex()));
 
             data.add("optionsProfile", optionsObj);
 
@@ -164,19 +164,8 @@ public class ProfileConverter extends Converter<Profile> {
 
             data.add("gold", new JsonPrimitive(value.getGold()));
 
-            var firstSeen = value.getFirstSeen();
-            if(firstSeen != null) {
-                data.add("firstSeen", new JsonPrimitive(value.getFirstSeen()));
-            } else {
-                data.add("firstSeen", JsonNull.INSTANCE);
-            }
-
-            var lastSeen = value.getDiscord();
-            if(lastSeen != null) {
-                data.add("lastSeen", new JsonPrimitive(value.getLastSeen()));
-            } else {
-                data.add("lastSeen", JsonNull.INSTANCE);
-            }
+            data.add("firstSeen", new JsonPrimitive(value.getFirstSeen()));
+            data.add("lastSeen", new JsonPrimitive(value.getLastSeen()));
 
             data.add("experience", new JsonPrimitive(value.getExperience()));
 

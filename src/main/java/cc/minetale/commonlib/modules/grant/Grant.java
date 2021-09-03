@@ -13,6 +13,7 @@ import org.bson.Document;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.Objects;
 import java.util.UUID;
 
 @Getter @Setter
@@ -37,7 +38,7 @@ public class Grant {
     private String addedReason;
     private long duration;
     private UUID removedByUUID;
-    private Long removedAt;
+    private long removedAt;
     private String removedReason;
     private boolean removed;
     @Accessors(fluent = true)
@@ -122,7 +123,7 @@ public class Grant {
         document.put("duration", this.duration);
 
         document.put("removed", this.removed);
-        document.put("removedAt", this.removedAt != null ? this.removedAt : null);
+        document.put("removedAt", Objects.requireNonNullElse(this.removedAt, 0L));
         document.put("removedByUUID", this.removedByUUID != null ? this.removedByUUID.toString() : null);
         document.put("removedReason", this.removedReason != null ? this.removedReason : null);
 

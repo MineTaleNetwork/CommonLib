@@ -27,7 +27,6 @@ public class Profile {
     @Getter private static final MongoCollection<Document> collection = CommonLib.getCommonLib().getMongoDatabase().getCollection("profiles");
 
     private UUID id;
-    private List<String> permissions;
     private List<String> punishments;
     private List<Punishment> cachedPunishments;
     private List<String> grants;
@@ -41,8 +40,8 @@ public class Profile {
     private String currentAddress;
     private String discord;
     private int gold;
-    private Long firstSeen;
-    private Long lastSeen;
+    private long firstSeen;
+    private long lastSeen;
     private long experience;
     private Map<Gamemode, GamemodeStorage> gamemodeStorages;
     @Accessors(fluent = true)
@@ -60,7 +59,6 @@ public class Profile {
         this.id = id;
         this.name = username;
         this.searchableName = username.toUpperCase();
-        this.permissions = new ArrayList<>();
         this.punishments = new ArrayList<>();
         this.cachedPunishments = new ArrayList<>();
         this.grants = new ArrayList<>();
@@ -240,9 +238,6 @@ public class Profile {
                 this.friends.add(friendUUID);
             }
 
-            this.permissions = new ArrayList<>();
-            this.permissions.addAll(document.getList("permissions", String.class));
-
             this.punishments = new ArrayList<>();
             this.punishments.addAll(document.getList("punishments", String.class));
 
@@ -296,8 +291,6 @@ public class Profile {
 
         document.put("punishments", this.punishments);
 
-        document.put("permissions", this.permissions);
-
         document.put("ignored", this.ignored);
 
         document.put("friends", this.friends);
@@ -329,6 +322,7 @@ public class Profile {
         private boolean receivingPublicChat = true;
         private boolean receivingConversations = true;
         private boolean receivingMessageSounds = true;
+        private int visibilityIndex = 0;
 
         public Options() {}
 
@@ -338,6 +332,7 @@ public class Profile {
             this.receivingPublicChat = document.getBoolean("receivingPublicChat");
             this.receivingConversations = document.getBoolean("receivingConversations");
             this.receivingMessageSounds = document.getBoolean("receivingMessageSounds");
+            this.visibilityIndex = document.getInteger("visibilityIndex");
         }
 
         public Document toDocument() {
@@ -346,7 +341,8 @@ public class Profile {
                     .append("receivingFriendRequests", this.receivingFriendRequests)
                     .append("receivingPublicChat", this.receivingPublicChat)
                     .append("receivingConversations", this.receivingConversations)
-                    .append("receivingMessageSounds", this.receivingMessageSounds);
+                    .append("receivingMessageSounds", this.receivingMessageSounds)
+                    .append("visibilityIndex", this.visibilityIndex);
         }
 
     }
