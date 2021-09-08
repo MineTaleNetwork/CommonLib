@@ -12,6 +12,9 @@ import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
 
 import java.awt.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 
 public class MC {
 
@@ -44,6 +47,17 @@ public class MC {
     }
 
     public static class Style {
+        public static Component component(Component... components) {
+            List<Component> fixedComponents = new ArrayList<>();
+
+            for(Component component : components) {
+                fixedComponents.add(fixItalics(component));
+            }
+
+            return Component.join(Component.empty(), fixedComponents);
+        }
+
+
         public static Component component(String content) {
             return fixItalics(Component.text(content));
         }

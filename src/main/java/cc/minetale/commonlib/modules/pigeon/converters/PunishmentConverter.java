@@ -35,7 +35,7 @@ public class PunishmentConverter extends Converter<Punishment> {
 
             punishment.setId(data.get("id").getAsString());
             punishment.setPlayerUUID(UUIDConverter.Utils.convertToValue(data.get("playerUUID")));
-            punishment.setType(EnumConverter.Utils.convertToValue(Type.class, data.get("rankUUID")));
+            punishment.setType(EnumConverter.Utils.convertToValue(Type.class, data.get("type")));
 
             var addedByUUID = data.get("addedByUUID");
             if(addedByUUID != null)

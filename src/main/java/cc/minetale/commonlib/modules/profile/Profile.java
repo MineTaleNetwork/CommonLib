@@ -39,6 +39,7 @@ public class Profile {
     private String searchableName;
     private String currentAddress;
     private String discord;
+    private Grant grant;
     private int gold;
     private long firstSeen;
     private long lastSeen;
@@ -199,6 +200,10 @@ public class Profile {
         return future;
     }
 
+    public void reloadGrant() {
+        this.grant = this.api.getActiveGrant();
+    }
+
     private void load(@Nullable Document document) {
         document = (document != null) ? document : collection.find(Filters.eq(this.getId().toString())).first();
 
@@ -252,7 +257,7 @@ public class Profile {
         }
 
         this.api.validatePunishments();
-        this.api.getActiveGrant();
+        this.reloadGrant();
     }
 
     /**
