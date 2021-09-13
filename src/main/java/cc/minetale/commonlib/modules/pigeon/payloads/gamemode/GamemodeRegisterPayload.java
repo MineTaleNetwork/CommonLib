@@ -13,8 +13,7 @@ public class GamemodeRegisterPayload extends BasePayload {
         this.payloadId = "gamemodeRegisterPayload";
     }
 
-    @Transmit
-    Gamemode gamemode;
+    @Transmit Gamemode gamemode;
 
     public GamemodeRegisterPayload(Gamemode gamemode) {
         this();

@@ -1,35 +1,26 @@
 package cc.minetale.commonlib.modules.pigeon.payloads.network;
 
-import cc.minetale.commonlib.modules.network.Gamemode;
+import cc.minetale.commonlib.modules.network.server.Server;
+import cc.minetale.commonlib.modules.network.server.ServerAction;
 import cc.minetale.pigeon.annotations.Payload;
 import cc.minetale.pigeon.annotations.Transmit;
 import cc.minetale.pigeon.payloads.bases.BasePayload;
 import lombok.Getter;
 
-import java.util.List;
-
 @Getter @Payload
 public class ServerUpdatePayload extends BasePayload {
 
-    @Transmit String name;
-    @Transmit Gamemode gamemode;
-    @Transmit Long uptime;
-    @Transmit Double tps;
-    @Transmit List<String> players;
-    @Transmit Integer maxPlayers;
+    @Transmit Server server;
+    @Transmit ServerAction action;
 
     public ServerUpdatePayload() {
         payloadId = "serverUpdatePayload";
     }
 
-    public ServerUpdatePayload(String name, Gamemode gamemode, Long uptime, Double tps, List<String> players, Integer maxPlayers) {
+    public ServerUpdatePayload(Server server, ServerAction action) {
         this();
-        this.name = name;
-        this.gamemode = gamemode;
-        this.uptime = uptime;
-        this.tps = tps;
-        this.players = players;
-        this.maxPlayers = maxPlayers;
+        this.server = server;
+        this.action = action;
     }
 
     @Override

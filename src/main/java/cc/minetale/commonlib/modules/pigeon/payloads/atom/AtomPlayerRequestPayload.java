@@ -16,7 +16,7 @@ import java.util.function.Consumer;
 public class AtomPlayerRequestPayload extends FeedbackPayload {
 
     public AtomPlayerRequestPayload() {
-        this.payloadId = "atomPlayerRequestPayload";
+        this.payloadId = "atomPlayerRequest";
         this.payloadTimeout = 10000;
     }
 

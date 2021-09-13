@@ -9,8 +9,8 @@ import lombok.Getter;
 @Getter @Payload
 public class PunishmentAddPayload extends BasePayload {
 
-    @Transmit Profile profile;  // Transmit the most up-to-date profile with the payload,
-                                // so every single listener won't have to request the profile everytime it receives the payload.
+    @Transmit Profile profile;
+
     @Transmit String punishment;
 
     public PunishmentAddPayload() {

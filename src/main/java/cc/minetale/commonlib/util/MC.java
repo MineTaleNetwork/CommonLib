@@ -13,10 +13,26 @@ import org.jetbrains.annotations.NotNull;
 
 import java.awt.*;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 public class MC {
+
+    public static Component component(Component... components) {
+        return Component.text().append(components).build();
+    }
+
+
+    public static Component component(String content) {
+        return MC.Style.fixItalics(Component.text(content));
+    }
+
+    public static Component component(String content, MC.CC color) {
+        return MC.Style.fixItalics(Component.text(content, color.getTextColor()));
+    }
+
+    public static Component component(String content, MC.CC color, TextDecoration decoration) {
+        return MC.Style.fixItalics(Component.text(content, color.getTextColor(), decoration));
+    }
 
     @Getter
     @AllArgsConstructor
@@ -47,29 +63,6 @@ public class MC {
     }
 
     public static class Style {
-        public static Component component(Component... components) {
-            List<Component> fixedComponents = new ArrayList<>();
-
-            for(Component component : components) {
-                fixedComponents.add(fixItalics(component));
-            }
-
-            return Component.join(Component.empty(), fixedComponents);
-        }
-
-
-        public static Component component(String content) {
-            return fixItalics(Component.text(content));
-        }
-
-        public static Component component(String content, MC.CC color) {
-            return fixItalics(Component.text(content, color.getTextColor()));
-        }
-
-        public static Component component(String content, MC.CC color, TextDecoration decoration) {
-            return fixItalics(Component.text(content, color.getTextColor(), decoration));
-        }
-
         public static Component fixItalics(Component component) {
             if(component.decoration(TextDecoration.ITALIC) == TextDecoration.State.NOT_SET) {
                 component = component.decoration(TextDecoration.ITALIC, TextDecoration.State.FALSE);

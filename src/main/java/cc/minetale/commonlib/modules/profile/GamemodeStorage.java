@@ -83,8 +83,8 @@ public class GamemodeStorage {
 
         @Getter @Setter private String name;
 
-        @Nullable @Getter @Setter private GamemodeStorage storage; //Storage this value is apart of, can't add to new GamemodeStorage if this value isn't null
-        @Getter private final boolean isWritable; //Can you change this value? If set to true, the only way to change this is to recreate the value
+        @Nullable @Getter @Setter private GamemodeStorage storage;
+        @Getter private final boolean isWritable;
 
         public StorageValue(String name, Object initialValue, boolean isWritable) {
             this.name = name;

@@ -21,8 +21,6 @@ public class GamemodeRequestPayload extends FeedbackPayload {
         this.payloadTimeout = 10000;
     }
 
-    //Request
-
     @Transmit(direction = RequiredState.REQUEST) String name;
 
     @RequestConstructor
@@ -35,8 +33,6 @@ public class GamemodeRequestPayload extends FeedbackPayload {
 
         this.feedback = feedback;
     }
-
-    //Response
 
     @Transmit(direction = RequiredState.RESPONSE) Gamemode gamemode;
 

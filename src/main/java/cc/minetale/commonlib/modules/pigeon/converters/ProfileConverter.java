@@ -19,26 +19,6 @@ import java.lang.reflect.Type;
 
 public class ProfileConverter extends Converter<Profile> {
 
-//    private static final DefinedDocument DEFINITION = new DefinedDocument(false)
-//            .defineProperty("permissions",              DefinedType.of(String.class))
-//            .defineProperty("punishments",              DefinedType.of(String.class))
-//            .defineProperty("cachedPunishments",        DefinedType.of(Punishment.class))
-//            .defineProperty("grants",                   DefinedType.of(String.class))
-//            .defineProperty("cachedGrants",             DefinedType.of(Grant.class))
-//            .defineProperty("ignored",                  DefinedType.of(UUID.class))
-//            .defineProperty("friends",                  DefinedType.of(UUID.class))
-//            .defineProperty("grants",                   DefinedType.of(String.class))
-//            .defineProperty("gamemodeStorages",         DefinedType.of(Gamemode.class), DefinedType.of(String.class))
-//            .defineProperty("options",                  Profile.Options.NESTED_DEFINITION)
-//            .defineProperty("staff",                    Profile.Staff.NESTED_DEFINITION);
-//
-//    static {
-//        DEFINITION.testAgainst(Profile.class, true);
-//
-//        Profile.Options.NESTED_DEFINITION.testAgainst(Profile.Options.class, true);
-//        Profile.Staff.NESTED_DEFINITION.testAgainst(Profile.Staff.class, true);
-//    }
-
     public ProfileConverter() { super(Profile.class, true, false); }
 
     @Override
@@ -96,6 +76,8 @@ public class ProfileConverter extends Converter<Profile> {
             var discordId = data.get("discordId");
             if(discordId != null)
                 profile.setDiscord(StringConverter.Utils.convertToValue(discordId));
+
+            profile.setGrant(GrantConverter.Utils.convertToValue(data.get("grant")));
 
             profile.setGold(data.get("gold").getAsInt());
             var firstSeen = data.get("firstSeen");
@@ -161,6 +143,9 @@ public class ProfileConverter extends Converter<Profile> {
             } else {
                 data.add("discord", JsonNull.INSTANCE);
             }
+
+            var grant = value.getGrant();
+            data.add("grant", GrantConverter.Utils.convertToSimple(grant));
 
             data.add("gold", new JsonPrimitive(value.getGold()));
 

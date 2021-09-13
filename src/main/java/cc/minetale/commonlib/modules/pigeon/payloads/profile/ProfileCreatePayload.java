@@ -24,8 +24,6 @@ public class ProfileCreatePayload extends FeedbackPayload {
         this.payloadTimeout = 10000;
     }
 
-    //Request
-
     @Transmit(direction = RequiredState.REQUEST) Profile profile;
 
     @RequestConstructor
@@ -38,8 +36,6 @@ public class ProfileCreatePayload extends FeedbackPayload {
 
         this.feedback = feedback;
     }
-
-    //Response
 
     @Nullable @Transmit(direction = RequiredState.RESPONSE) ProfileQueryResult result;
 
