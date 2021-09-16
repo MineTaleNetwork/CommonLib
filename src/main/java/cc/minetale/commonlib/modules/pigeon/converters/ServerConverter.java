@@ -30,7 +30,7 @@ public class ServerConverter extends Converter<Server> {
 
             var server = new Server();
 
-            server.setName(data.get("name").getAsString());
+            server.setName(StringConverter.Utils.convertToValue(data.get("name")));
             server.setStartTime(data.get("startTime").getAsLong());
             server.setData(ServerDataConverter.Utils.convertToValue(data.get("data")));
 

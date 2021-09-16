@@ -17,10 +17,6 @@ public class Server {
 
     private final long lastUpdated;
 
-    public Server() {
-        this.lastUpdated = System.currentTimeMillis();
-    }
-
     public Server(String name, Long startTime, ServerData data) {
         this.name = name;
         this.startTime = startTime;
@@ -29,14 +25,34 @@ public class Server {
         this.lastUpdated = System.currentTimeMillis();
     }
 
+    public Server() {
+        this.lastUpdated = System.currentTimeMillis();
+    }
+
     public long getUptime() {
         return System.currentTimeMillis() - this.startTime;
     }
 
-
     public void updateServer() {
         serverList.removeIf(server -> server.getName().equals(this.name));
         serverList.add(this);
+    }
+
+    public static int getOnlinePlayerCount() {
+        int players = 0;
+
+        for (Server server : serverList) {
+            players += server.getData().getOnlinePlayers().size();
+        }
+
+        return players;
+    }
+
+    public static Server getServerByName(String name) {
+        return serverList.stream()
+                .filter(server -> server.getName().equalsIgnoreCase(name))
+                .findFirst()
+                .orElse(null);
     }
 
 }

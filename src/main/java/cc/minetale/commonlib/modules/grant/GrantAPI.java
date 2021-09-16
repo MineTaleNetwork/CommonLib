@@ -41,6 +41,13 @@ public class GrantAPI {
     }
 
     /**
+     * Returns if the Grant is default or not.
+     */
+    public boolean isDefault() {
+        return this.grant.getId().equals("DEFAULT");
+    }
+
+    /**
      * Returns the remaining amount of milliseconds of the Grant.
      */
     public long getMillisRemaining() {

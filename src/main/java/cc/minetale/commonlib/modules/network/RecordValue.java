@@ -7,9 +7,7 @@ import org.bson.Document;
 
 import java.util.Date;
 
-@Getter
-@Setter
-@AllArgsConstructor
+@Getter @Setter @AllArgsConstructor
 public class RecordValue {
 
     private final Date date;

@@ -160,16 +160,15 @@ public class ProfileAPI {
             }
         }
 
-        return activeGrants.stream().min(GrantAPI.COMPARATOR).orElse(Grant.DEFAULT_GRANT);
+        return activeGrants.stream().min(GrantAPI.COMPARATOR).orElse(Grant.getDefaultGrant(this.profile.getId()));
     }
 
     /**
      * Adds a new Grant to the Profile.
      */
     public void addGrant(Grant grant) {
-        if (grant == Grant.DEFAULT_GRANT) {
+        if (grant.api().isDefault())
             return;
-        }
 
         this.profile.getGrants().add(grant.getId());
         this.profile.getCachedGrants().add(grant);
@@ -186,9 +185,8 @@ public class ProfileAPI {
      * Removes a Grant from the Profile.
      */
     public void removeGrant(Grant grant, UUID removedBy, Long removedAt, String removedReason) {
-        if (grant == Grant.DEFAULT_GRANT) {
+        if (grant.api().isDefault())
             return;
-        }
 
         grant.api().remove(removedBy, removedAt, removedReason);
         this.profile.update();
@@ -202,9 +200,8 @@ public class ProfileAPI {
      * Expires a Grant on the Profile.
      */
     public void expireGrant(Grant grant, Long removedAt) {
-        if (grant == Grant.DEFAULT_GRANT) {
+        if (grant.api().isDefault())
             return;
-        }
 
         grant.api().remove(null, removedAt, "Grant Expired");
         this.profile.update();

@@ -34,7 +34,6 @@ public class ServerDataConverter extends Converter<ServerData> {
             serverData.setMaxPlayers(data.get("maxPlayers").getAsInt());
             serverData.setTps(data.get("tps").getAsDouble());
             serverData.setMetadata(MapConverter.Utils.convertToValue(data.get("metadata"), String.class, String.class));
-            serverData.setGamemode(GamemodeConverter.Utils.convertToValue(data.get("gamemode")));
             serverData.setOnlinePlayers(ListConverter.Utils.convertToValue(data.get("onlinePlayers"), UUID.class));
 
             return serverData;
@@ -46,7 +45,6 @@ public class ServerDataConverter extends Converter<ServerData> {
             data.add("maxPlayers", new JsonPrimitive(value.getMaxPlayers()));
             data.add("tps", new JsonPrimitive(value.getTps()));
             data.add("metadata", MapConverter.Utils.convertToSimple(value.getMetadata(), String.class, String.class));
-            data.add("gamemode", GamemodeConverter.Utils.convertToSimple(value.getGamemode()));
             data.add("onlinePlayers", ListConverter.Utils.convertToSimple(value.getOnlinePlayers(), UUID.class));
 
             return data;

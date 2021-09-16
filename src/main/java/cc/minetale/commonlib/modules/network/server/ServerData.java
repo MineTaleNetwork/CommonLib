@@ -14,16 +14,14 @@ public class ServerData {
     private int maxPlayers;
     private double tps;
     private Map<String, String> metadata;
-    private Gamemode gamemode;
     private List<UUID> onlinePlayers;
 
     public ServerData() {}
 
-    public ServerData(int maxPlayers, double tps, Map<String, String> metadata, Gamemode gamemode, List<UUID> onlinePlayers) {
+    public ServerData(int maxPlayers, double tps, Map<String, String> metadata, List<UUID> onlinePlayers) {
         this.maxPlayers = maxPlayers;
         this.tps = tps;
         this.metadata = metadata;
-        this.gamemode = gamemode;
         this.onlinePlayers = onlinePlayers;
     }
 

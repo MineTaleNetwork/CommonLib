@@ -21,14 +21,9 @@ public class Grant {
 
     @Getter private static final MongoCollection<Document> collection = CommonLib.getCommonLib().getMongoDatabase().getCollection("grants");
 
-    public static final Grant DEFAULT_GRANT = new Grant(
-            null,
-            RankAPI.getDefaultRank().getUuid(),
-            null,
-            0,
-            "Default",
-            Integer.MAX_VALUE
-    );
+    public static Grant getDefaultGrant(UUID playerUUID) {
+        return new Grant(playerUUID);
+    }
 
     private String id;
     private UUID playerUUID;
@@ -56,6 +51,17 @@ public class Grant {
         this.addedAt = addedAt;
         this.addedReason = addedReason;
         this.duration = duration;
+        this.api = new GrantAPI(this);
+    }
+
+    public Grant(UUID playerUUID) {
+        this.id = "DEFAULT";
+        this.playerUUID = playerUUID;
+        this.rankUUID = RankAPI.getDefaultRank().getUuid();
+        this.addedByUUID = null;
+        this.addedAt = 0;
+        this.addedReason = "Default";
+        this.duration = Integer.MAX_VALUE;
         this.api = new GrantAPI(this);
     }
 
