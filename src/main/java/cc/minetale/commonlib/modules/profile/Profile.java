@@ -96,12 +96,8 @@ public class Profile {
 
         CommonLib.getCommonLib()
                 .getPigeon()
-                .sendTo(new ProfileRequestPayload(id, payload -> {
-                    List<Profile> profiles = payload.getProfiles();
-                    if(profiles == null || profiles.isEmpty()) { future.complete(null); }
-
-                    future.complete(payload.getProfiles().get(0));
-                }), PigeonUtil.GeneralUnits.ATOM.getUnit());
+                .sendTo(new ProfileRequestPayload(id, payload -> handleProfileRetrieval(future, payload)),
+                        PigeonUtil.GeneralUnits.ATOM.getUnit());
 
         return future;
     }
@@ -111,12 +107,8 @@ public class Profile {
 
         CommonLib.getCommonLib()
                 .getPigeon()
-                .sendTo(new ProfileRequestPayload(name, payload -> {
-                    List<Profile> profiles = payload.getProfiles();
-                    if(profiles == null || profiles.isEmpty()) { future.complete(null); }
-
-                    future.complete(payload.getProfiles().get(0));
-                }), PigeonUtil.GeneralUnits.ATOM.getUnit());
+                .sendTo(new ProfileRequestPayload(name, payload -> handleProfileRetrieval(future, payload)),
+                        PigeonUtil.GeneralUnits.ATOM.getUnit());
 
         return future;
     }
@@ -126,14 +118,18 @@ public class Profile {
 
         CommonLib.getCommonLib()
                 .getPigeon()
-                .sendTo(new ProfileRequestPayload(name, id, payload -> {
-                    List<Profile> profiles = payload.getProfiles();
-                    if(profiles == null || profiles.isEmpty()) { future.complete(null); }
-
-                    future.complete(payload.getProfiles().get(0));
-                }), PigeonUtil.GeneralUnits.ATOM.getUnit());
+                .sendTo(new ProfileRequestPayload(name, id, payload -> handleProfileRetrieval(future, payload)),
+                        PigeonUtil.GeneralUnits.ATOM.getUnit());
 
         return future;
+    }
+
+    private static void handleProfileRetrieval(CompletableFuture<Profile> future, ProfileRequestPayload payload) {
+        if(payload.getResult().isSuccessful()) {
+            future.complete(payload.getProfiles().get(0));
+        } else {
+            future.complete(null);
+        }
     }
 
     //Bulk
