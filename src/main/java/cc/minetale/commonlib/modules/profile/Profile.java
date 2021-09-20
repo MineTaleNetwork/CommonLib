@@ -21,14 +21,11 @@ import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
 
-@Getter
-@Setter
+@Getter @Setter
 public class Profile {
 
-    @Getter
-    private static final MongoCollection<Document> collection = CommonLib.getCommonLib().getMongoDatabase().getCollection("profiles");
-    @Accessors(fluent = true)
-    private final ProfileAPI api;
+    @Getter private static final MongoCollection<Document> collection = CommonLib.getCommonLib().getMongoDatabase().getCollection("profiles");
+
     private UUID id;
     private List<String> punishments;
     private List<Punishment> cachedPunishments;
@@ -48,6 +45,8 @@ public class Profile {
     private long lastSeen;
     private long experience;
     private Map<Gamemode, GamemodeStorage> gamemodeStorages;
+    @Accessors(fluent = true)
+    private final ProfileAPI api;
 
     public Profile() {
         this.api = new ProfileAPI(this);
@@ -95,14 +94,9 @@ public class Profile {
         var future = new CompletableFuture<Profile>();
 
         PigeonUtil.getPigeon()
-                .sendTo(new ProfileRequestPayload(id, payload -> {
-                    List<Profile> profiles = payload.getProfiles();
-                    if (profiles == null || profiles.isEmpty()) {
-                        future.complete(null);
-                    }
-
-                    future.complete(payload.getProfiles().get(0));
-                }), PigeonUtil.GeneralUnits.ATOM.getUnit());
+                .sendTo(new ProfileRequestPayload(id, payload -> handleProfileRetrieval(
+                        future, payload)),
+                        PigeonUtil.GeneralUnits.ATOM.getUnit());
 
         return future;
     }
@@ -111,14 +105,9 @@ public class Profile {
         var future = new CompletableFuture<Profile>();
 
         PigeonUtil.getPigeon()
-                .sendTo(new ProfileRequestPayload(name, payload -> {
-                    List<Profile> profiles = payload.getProfiles();
-                    if (profiles == null || profiles.isEmpty()) {
-                        future.complete(null);
-                    }
-
-                    future.complete(payload.getProfiles().get(0));
-                }), PigeonUtil.GeneralUnits.ATOM.getUnit());
+                .sendTo(new ProfileRequestPayload(name, payload -> handleProfileRetrieval(
+                        future, payload)),
+                        PigeonUtil.GeneralUnits.ATOM.getUnit());
 
         return future;
     }
@@ -127,16 +116,19 @@ public class Profile {
         var future = new CompletableFuture<Profile>();
 
         PigeonUtil.getPigeon()
-                .sendTo(new ProfileRequestPayload(name, id, payload -> {
-                    List<Profile> profiles = payload.getProfiles();
-                    if (profiles == null || profiles.isEmpty()) {
-                        future.complete(null);
-                    }
-
-                    future.complete(payload.getProfiles().get(0));
-                }), PigeonUtil.GeneralUnits.ATOM.getUnit());
+                .sendTo(new ProfileRequestPayload(name, id, payload -> handleProfileRetrieval(
+                        future, payload)),
+                        PigeonUtil.GeneralUnits.ATOM.getUnit());
 
         return future;
+    }
+
+    private static void handleProfileRetrieval(CompletableFuture<Profile> future, ProfileRequestPayload payload) {
+        if(payload.getResult().isSuccessful()) {
+            future.complete(payload.getProfiles().get(0));
+        } else {
+            future.complete(null);
+        }
     }
 
     public static CompletableFuture<List<Profile>> getProfilesByIds(@NotNull List<UUID> ids) {
@@ -315,8 +307,7 @@ public class Profile {
         return id.hashCode();
     }
 
-    @Getter
-    @Setter
+    @Getter @Setter
     public static class Options {
 
         private boolean receivingPartyRequests = true;
@@ -350,8 +341,7 @@ public class Profile {
 
     }
 
-    @Getter
-    @Setter
+    @Getter @Setter
     public static class Staff {
 
         private String twoFactorKey = "";
