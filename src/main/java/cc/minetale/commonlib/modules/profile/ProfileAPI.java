@@ -13,6 +13,7 @@ import cc.minetale.commonlib.modules.pigeon.payloads.punishment.PunishmentRemove
 import cc.minetale.commonlib.modules.punishment.Punishment;
 import cc.minetale.commonlib.modules.rank.Rank;
 import cc.minetale.commonlib.util.MC;
+import cc.minetale.commonlib.util.PigeonUtil;
 import net.kyori.adventure.text.Component;
 import org.jetbrains.annotations.Nullable;
 
@@ -98,7 +99,7 @@ public class ProfileAPI {
         punishment.save();
         this.profile.update();
 
-        this.commonLib.getPigeon().broadcast(new PunishmentAddPayload(this.profile, punishment.getId()));
+        PigeonUtil.broadcast(new PunishmentAddPayload(this.profile, punishment.getId()));
 
         CommonLib.getCommonLib().getApiListeners().forEach(provider -> provider.punishmentAdd(punishment));
     }
@@ -111,7 +112,7 @@ public class ProfileAPI {
 
         this.profile.update();
 
-        this.commonLib.getPigeon().broadcast(new PunishmentRemovePayload(this.profile, punishment.getId()));
+        PigeonUtil.broadcast(new PunishmentRemovePayload(this.profile, punishment.getId()));
 
         CommonLib.getCommonLib().getApiListeners().forEach(provider -> provider.punishmentRemove(punishment));
     }
@@ -124,7 +125,7 @@ public class ProfileAPI {
 
         this.profile.update();
 
-        this.commonLib.getPigeon().broadcast(new PunishmentExpirePayload(punishment.getId()));
+        PigeonUtil.broadcast(new PunishmentExpirePayload(punishment.getId()));
 
         CommonLib.getCommonLib().getApiListeners().forEach(provider -> provider.punishmentExpire(punishment));
     }
@@ -176,7 +177,7 @@ public class ProfileAPI {
         grant.save();
         this.profile.update();
 
-        this.commonLib.getPigeon().broadcast(new GrantAddPayload(this.profile, grant.getId()));
+        PigeonUtil.broadcast(new GrantAddPayload(this.profile, grant.getId()));
 
         CommonLib.getCommonLib().getApiListeners().forEach(provider -> provider.grantAdd(grant));
     }
@@ -191,7 +192,7 @@ public class ProfileAPI {
         grant.api().remove(removedBy, removedAt, removedReason);
         this.profile.update();
 
-        this.commonLib.getPigeon().broadcast(new GrantRemovePayload(this.profile, grant.getId()));
+        PigeonUtil.broadcast(new GrantRemovePayload(this.profile, grant.getId()));
 
         CommonLib.getCommonLib().getApiListeners().forEach(provider -> provider.grantRemove(grant));
     }
@@ -206,7 +207,7 @@ public class ProfileAPI {
         grant.api().remove(null, removedAt, "Grant Expired");
         this.profile.update();
 
-        this.commonLib.getPigeon().broadcast(new GrantExpirePayload(this.profile, grant.getId()));
+        PigeonUtil.broadcast(new GrantExpirePayload(this.profile, grant.getId()));
 
         CommonLib.getCommonLib().getApiListeners().forEach(provider -> provider.grantExpire(grant));
     }

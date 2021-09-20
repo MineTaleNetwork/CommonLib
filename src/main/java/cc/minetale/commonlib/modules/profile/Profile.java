@@ -21,11 +21,14 @@ import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
 
-@Getter @Setter
+@Getter
+@Setter
 public class Profile {
 
-    @Getter private static final MongoCollection<Document> collection = CommonLib.getCommonLib().getMongoDatabase().getCollection("profiles");
-
+    @Getter
+    private static final MongoCollection<Document> collection = CommonLib.getCommonLib().getMongoDatabase().getCollection("profiles");
+    @Accessors(fluent = true)
+    private final ProfileAPI api;
     private UUID id;
     private List<String> punishments;
     private List<Punishment> cachedPunishments;
@@ -45,8 +48,6 @@ public class Profile {
     private long lastSeen;
     private long experience;
     private Map<Gamemode, GamemodeStorage> gamemodeStorages;
-    @Accessors(fluent = true)
-    private final ProfileAPI api;
 
     public Profile() {
         this.api = new ProfileAPI(this);
@@ -81,8 +82,7 @@ public class Profile {
 
     public static Profile createProfile(@NotNull String name, @NotNull UUID uuid) {
         var profile = new Profile(name, uuid);
-        CommonLib.getCommonLib()
-                .getPigeon()
+        PigeonUtil.getPigeon()
                 .sendTo(new ProfileCreatePayload(profile, null), PigeonUtil.GeneralUnits.ATOM.getUnit());
         return profile;
     }
@@ -94,11 +94,12 @@ public class Profile {
     public static CompletableFuture<Profile> getProfile(@NotNull UUID id) {
         var future = new CompletableFuture<Profile>();
 
-        CommonLib.getCommonLib()
-                .getPigeon()
+        PigeonUtil.getPigeon()
                 .sendTo(new ProfileRequestPayload(id, payload -> {
                     List<Profile> profiles = payload.getProfiles();
-                    if(profiles == null || profiles.isEmpty()) { future.complete(null); }
+                    if (profiles == null || profiles.isEmpty()) {
+                        future.complete(null);
+                    }
 
                     future.complete(payload.getProfiles().get(0));
                 }), PigeonUtil.GeneralUnits.ATOM.getUnit());
@@ -109,11 +110,12 @@ public class Profile {
     public static CompletableFuture<Profile> getProfile(@NotNull String name) {
         var future = new CompletableFuture<Profile>();
 
-        CommonLib.getCommonLib()
-                .getPigeon()
+        PigeonUtil.getPigeon()
                 .sendTo(new ProfileRequestPayload(name, payload -> {
                     List<Profile> profiles = payload.getProfiles();
-                    if(profiles == null || profiles.isEmpty()) { future.complete(null); }
+                    if (profiles == null || profiles.isEmpty()) {
+                        future.complete(null);
+                    }
 
                     future.complete(payload.getProfiles().get(0));
                 }), PigeonUtil.GeneralUnits.ATOM.getUnit());
@@ -124,11 +126,12 @@ public class Profile {
     public static CompletableFuture<Profile> getProfile(@Nullable String name, @NotNull UUID id) {
         var future = new CompletableFuture<Profile>();
 
-        CommonLib.getCommonLib()
-                .getPigeon()
+        PigeonUtil.getPigeon()
                 .sendTo(new ProfileRequestPayload(name, id, payload -> {
                     List<Profile> profiles = payload.getProfiles();
-                    if(profiles == null || profiles.isEmpty()) { future.complete(null); }
+                    if (profiles == null || profiles.isEmpty()) {
+                        future.complete(null);
+                    }
 
                     future.complete(payload.getProfiles().get(0));
                 }), PigeonUtil.GeneralUnits.ATOM.getUnit());
@@ -136,15 +139,12 @@ public class Profile {
         return future;
     }
 
-    //Bulk
-
     public static CompletableFuture<List<Profile>> getProfilesByIds(@NotNull List<UUID> ids) {
         var future = new CompletableFuture<List<Profile>>();
 
-        CommonLib.getCommonLib()
-                .getPigeon()
+        PigeonUtil.getPigeon()
                 .sendTo(ProfileRequestPayload.bulkRequestByIds(ids,
-                        payload -> future.complete(Objects.requireNonNullElse(payload.getProfiles(), new ArrayList<>()))),
+                                payload -> future.complete(Objects.requireNonNullElse(payload.getProfiles(), new ArrayList<>()))),
                         PigeonUtil.GeneralUnits.ATOM.getUnit());
 
         return future;
@@ -153,10 +153,9 @@ public class Profile {
     public static CompletableFuture<List<Profile>> getProfilesByNames(@NotNull List<String> names) {
         var future = new CompletableFuture<List<Profile>>();
 
-        CommonLib.getCommonLib()
-                .getPigeon()
+        PigeonUtil.getPigeon()
                 .sendTo(ProfileRequestPayload.bulkRequestByNames(names,
-                        payload -> future.complete(Objects.requireNonNullElse(payload.getProfiles(), new ArrayList<>()))),
+                                payload -> future.complete(Objects.requireNonNullElse(payload.getProfiles(), new ArrayList<>()))),
                         PigeonUtil.GeneralUnits.ATOM.getUnit());
 
         return future;
@@ -165,8 +164,7 @@ public class Profile {
     public static CompletableFuture<List<Profile>> getProfiles(List<String> names, List<UUID> ids) {
         var future = new CompletableFuture<List<Profile>>();
 
-        CommonLib.getCommonLib()
-                .getPigeon()
+        PigeonUtil.getPigeon()
                 .sendTo(new ProfileRequestPayload(names, ids,
                                 payload -> future.complete(Objects.requireNonNullElse(payload.getProfiles(), new ArrayList<>()))),
                         PigeonUtil.GeneralUnits.ATOM.getUnit());
@@ -177,8 +175,7 @@ public class Profile {
     public static CompletableFuture<List<Profile>> getProfiles(Map<UUID, String> info) {
         var future = new CompletableFuture<List<Profile>>();
 
-        CommonLib.getCommonLib()
-                .getPigeon()
+        PigeonUtil.getPigeon()
                 .sendTo(new ProfileRequestPayload(info,
                                 payload -> future.complete(Objects.requireNonNullElse(payload.getProfiles(), new ArrayList<>()))),
                         PigeonUtil.GeneralUnits.ATOM.getUnit());
@@ -193,8 +190,7 @@ public class Profile {
     public CompletableFuture<ProfileQueryResult> update() {
         var future = new CompletableFuture<ProfileQueryResult>();
 
-        CommonLib.getCommonLib()
-                .getPigeon()
+        PigeonUtil.getPigeon()
                 .sendTo(new ProfileUpdatePayload(this, payload -> future.complete(payload.getResult())), PigeonUtil.GeneralUnits.ATOM.getUnit());
 
         return future;
@@ -227,7 +223,7 @@ public class Profile {
             this.experience = document.getLong("experience");
 
             this.gamemodeStorages = new HashMap<>();
-            for(Map.Entry<String, Object> ent : document.get("gamemodeStorages", Document.class).entrySet()) {
+            for (Map.Entry<String, Object> ent : document.get("gamemodeStorages", Document.class).entrySet()) {
                 this.gamemodeStorages.put(Gamemode.getByName(ent.getKey()), new GamemodeStorage(ent.getKey(), (Document) ent.getValue()));
             }
 
@@ -281,9 +277,9 @@ public class Profile {
         document.put("experience", this.experience);
 
         var storagesDocument = new Document();
-        for(Map.Entry<Gamemode, GamemodeStorage> ent : this.gamemodeStorages.entrySet()) {
+        for (Map.Entry<Gamemode, GamemodeStorage> ent : this.gamemodeStorages.entrySet()) {
             var storageDocument = new Document();
-            for(Map.Entry<String, GamemodeStorage.StorageValue> valueEnt : ent.getValue().getValues().entrySet()) {
+            for (Map.Entry<String, GamemodeStorage.StorageValue> valueEnt : ent.getValue().getValues().entrySet()) {
                 storageDocument.append(valueEnt.getKey(),
                         new Document("value", valueEnt.getValue().getValue())
                                 .append("isWritable", valueEnt.getValue().isWritable()));
@@ -305,7 +301,7 @@ public class Profile {
 
     @Override
     public boolean equals(Object object) {
-        if(object instanceof Profile) {
+        if (object instanceof Profile) {
             Profile other = (Profile) object;
 
             return other.id.equals(this.id);
@@ -319,7 +315,8 @@ public class Profile {
         return id.hashCode();
     }
 
-    @Getter @Setter
+    @Getter
+    @Setter
     public static class Options {
 
         private boolean receivingPartyRequests = true;
@@ -329,7 +326,8 @@ public class Profile {
         private boolean receivingMessageSounds = true;
         private int visibilityIndex = 0;
 
-        public Options() {}
+        public Options() {
+        }
 
         public Options(Document document) {
             this.receivingPartyRequests = document.getBoolean("receivingPartyRequests");
@@ -352,7 +350,8 @@ public class Profile {
 
     }
 
-    @Getter @Setter
+    @Getter
+    @Setter
     public static class Staff {
 
         private String twoFactorKey = "";
@@ -361,7 +360,8 @@ public class Profile {
         private boolean locked;
         private boolean operator;
 
-        public Staff() {}
+        public Staff() {
+        }
 
         public Staff(Document document) {
             this.twoFactorKey = document.getString("twoFactorKey");
