@@ -64,8 +64,9 @@ public class Rank {
             rank.setName(document.getString("name"));
             rank.setWeight(document.getInteger("weight"));
             rank.setPrefix(document.getString("prefix"));
-
             rank.setColor(document.getString("color"));
+
+            Rank.getRanks().put(rank.getUuid(), rank);
 
             return rank;
         }
