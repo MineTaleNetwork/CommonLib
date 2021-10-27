@@ -1,8 +1,8 @@
 package cc.minetale.commonlib;
 
-import cc.minetale.commonlib.modules.api.APIListener;
-import cc.minetale.commonlib.modules.pigeon.Listeners;
-import cc.minetale.commonlib.modules.rank.RankAPI;
+import cc.minetale.commonlib.api.APIListener;
+import cc.minetale.commonlib.pigeon.Listeners;
+import cc.minetale.commonlib.rank.RankAPI;
 import cc.minetale.commonlib.util.PigeonUtil;
 import cc.minetale.commonlib.util.timer.TimerManager;
 import cc.minetale.pigeon.Pigeon;
@@ -32,10 +32,10 @@ public class CommonLib {
         this.pigeon = pigeon;
 
         this.pigeon.getConvertersRegistry()
-                .registerConvertersInPackage("cc.minetale.commonlib.modules.pigeon.converters");
+                .registerConvertersInPackage("cc.minetale.commonlib.pigeon.converters");
 
         this.pigeon.getPayloadsRegistry()
-                .registerPayloadsInPackage("cc.minetale.commonlib.modules.pigeon.payloads");
+                .registerPayloadsInPackage("cc.minetale.commonlib.pigeon.payloads");
 
         this.pigeon.getListenersRegistry()
                 .registerListener(new Listeners());
