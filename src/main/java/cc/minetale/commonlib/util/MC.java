@@ -8,19 +8,15 @@ import net.kyori.adventure.text.format.TextColor;
 import net.kyori.adventure.text.format.TextDecoration;
 import net.kyori.adventure.text.serializer.gson.GsonComponentSerializer;
 import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer;
-import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
 
 import java.awt.*;
-import java.util.ArrayList;
-import java.util.List;
 
 public class MC {
 
     public static Component component(Component... components) {
         return Component.text().append(components).build();
     }
-
 
     public static Component component(String content) {
         return MC.Style.fixItalics(Component.text(content));
@@ -80,17 +76,17 @@ public class MC {
 
         public static TextComponent CONSOLE = Component.text("Console").color(MC.CC.DARK_RED.getTextColor());
 
-        public static TextComponent SEPARATOR_32 = Component.text(StringUtils.repeat(" ", 32))
+        public static TextComponent SEPARATOR_32 = Component.text(StringUtil.repeat(" ", 32))
                 .color(MC.CC.DARK_GRAY.getTextColor())
                 .decoration(TextDecoration.STRIKETHROUGH, true)
                 .decoration(TextDecoration.ITALIC, false);
 
-        public static TextComponent SEPARATOR_50 = Component.text(StringUtils.repeat(" ", 50))
+        public static TextComponent SEPARATOR_50 = Component.text(StringUtil.repeat(" ", 50))
                 .color(MC.CC.DARK_GRAY.getTextColor())
                 .decoration(TextDecoration.STRIKETHROUGH, true)
                 .decoration(TextDecoration.ITALIC, false);
 
-        public static TextComponent SEPARATOR_80 = Component.text(StringUtils.repeat(" ", 80))
+        public static TextComponent SEPARATOR_80 = Component.text(StringUtil.repeat(" ", 80))
                 .color(MC.CC.DARK_GRAY.getTextColor())
                 .decoration(TextDecoration.STRIKETHROUGH, true)
                 .decoration(TextDecoration.ITALIC, false);
@@ -243,17 +239,17 @@ public class MC {
         }
 
         public static TextComponent healthToHearts(double health, double maxHealth, double heartScale, boolean displayAmount) {
-            char heart = '❤';
+            String heart = "❤";
             int allHearts = Math.floorDiv((int) maxHealth, (int) heartScale);
             int fullHearts = Math.floorDiv((int) health, (int) heartScale);
             boolean halfHeart = (maxHealth - health) % heartScale != 0;
             int emptyHearts = allHearts - fullHearts - (halfHeart ? 1 : 0);
 
             return Component.text()
-                    .append(Component.text(StringUtils.repeat(heart, fullHearts)).color(MC.CC.DARK_RED.getTextColor()))
+                    .append(Component.text(StringUtil.repeat(heart, fullHearts)).color(MC.CC.DARK_RED.getTextColor()))
                     .append(halfHeart ? Component.text(heart)
                             .color(MC.CC.RED.getTextColor()) : Component.empty())
-                    .append(Component.text(StringUtils.repeat(heart, emptyHearts))
+                    .append(Component.text(StringUtil.repeat(heart, emptyHearts))
                             .color(MC.CC.DARK_GRAY.getTextColor()))
                     .append(displayAmount ? Component.text(" (" + (int) health + "/" + (int) maxHealth + ")")
                             .color(MC.CC.WHITE.getTextColor()) : Component.empty())
@@ -281,10 +277,10 @@ public class MC {
             int progressSteps = Math.min((int) Math.floor(amountOfSteps * progress) + 1, amountOfSteps); //TODO 0 is one line when should be none
             int stepsLeft = amountOfSteps - progressSteps;
 
-            Component progressBar = Style.gradientComponent(StringUtils.repeat(" ", progressSteps), currentColor, endColor)
+            Component progressBar = Style.gradientComponent(StringUtil.repeat(" ", progressSteps), currentColor, endColor)
                     .decorate(TextDecoration.STRIKETHROUGH);
 
-            component = component.append(Component.text(StringUtils.repeat(" ", stepsLeft),
+            component = component.append(Component.text(StringUtil.repeat(" ", stepsLeft),
                     CC.DARK_GRAY.getTextColor(), TextDecoration.STRIKETHROUGH));
             builder.append(component);
 
@@ -315,7 +311,7 @@ public class MC {
     }
 
     public static class Alignment {
-        // TODO: Convert to proper Components
+        // TODO -> Convert to proper Components
         @Getter private static final int chatPixels = 320;
         @Getter private static final int centerPixels = chatPixels / 2;
         //
@@ -518,8 +514,8 @@ public class MC {
             int boldSpaces = compensate % spaceLength;
             int spaces = (compensate / spaceLength) - boldSpaces;
 
-            return Component.text(StringUtils.repeat(" ", spaces))
-                    .append(Component.text(StringUtils.repeat(" ", boldSpaces)));
+            return Component.text(StringUtil.repeat(" ", spaces))
+                    .append(Component.text(StringUtil.repeat(" ", boldSpaces)));
         }
     }
 

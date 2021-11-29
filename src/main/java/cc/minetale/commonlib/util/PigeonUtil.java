@@ -18,8 +18,7 @@ public class PigeonUtil {
     @Getter
     @AllArgsConstructor
     public enum GeneralUnits {
-        ATOM(new PostalUnit("atom")),
-        PROXY(new PostalUnit("proxy"));
+        BLITZ(new PostalUnit("blitz"));
 
         private final PostalUnit unit;
     }

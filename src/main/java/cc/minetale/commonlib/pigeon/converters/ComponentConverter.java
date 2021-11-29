@@ -24,6 +24,7 @@ public class ComponentConverter extends Converter<Component> {
     }
 
     public static class Utils {
+
         public static Component convertToValue(JsonElement element) {
             var data = element.getAsJsonObject();
 
@@ -37,6 +38,7 @@ public class ComponentConverter extends Converter<Component> {
 
             return data;
         }
+
     }
 
 }

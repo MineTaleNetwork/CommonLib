@@ -1,6 +1,6 @@
 package cc.minetale.commonlib.pigeon;
 
-import cc.minetale.commonlib.grant.Grant;
+import cc.minetale.commonlib.api.Grant;
 import cc.minetale.commonlib.pigeon.payloads.grant.GrantAddPayload;
 import cc.minetale.commonlib.pigeon.payloads.grant.GrantExpirePayload;
 import cc.minetale.commonlib.pigeon.payloads.grant.GrantRemovePayload;
@@ -8,7 +8,7 @@ import cc.minetale.commonlib.CommonLib;
 import cc.minetale.commonlib.pigeon.payloads.punishment.PunishmentAddPayload;
 import cc.minetale.commonlib.pigeon.payloads.punishment.PunishmentExpirePayload;
 import cc.minetale.commonlib.pigeon.payloads.punishment.PunishmentRemovePayload;
-import cc.minetale.commonlib.punishment.Punishment;
+import cc.minetale.commonlib.api.Punishment;
 import cc.minetale.pigeon.annotations.PayloadHandler;
 import cc.minetale.pigeon.annotations.PayloadListener;
 import cc.minetale.pigeon.listeners.Listener;

@@ -2,7 +2,7 @@ package cc.minetale.commonlib;
 
 import cc.minetale.commonlib.api.APIListener;
 import cc.minetale.commonlib.pigeon.Listeners;
-import cc.minetale.commonlib.rank.RankAPI;
+import cc.minetale.commonlib.util.Database;
 import cc.minetale.commonlib.util.PigeonUtil;
 import cc.minetale.commonlib.util.timer.TimerManager;
 import cc.minetale.pigeon.Pigeon;
@@ -25,7 +25,10 @@ public class CommonLib {
     private final Set<APIListener> apiListeners;
 
     public CommonLib(MongoClient mongoClient, MongoDatabase mongoDatabase, Pigeon pigeon) {
-        commonLib = this;
+        CommonLib.commonLib = this;
+
+        this.timerManager = new TimerManager();
+        this.apiListeners = new HashSet<>();
 
         this.mongoClient = mongoClient;
         this.mongoDatabase = mongoDatabase;
@@ -40,13 +43,9 @@ public class CommonLib {
         this.pigeon.getListenersRegistry()
                 .registerListener(new Listeners());
 
+        new Database(this.mongoDatabase);
+
         PigeonUtil.setPigeon(this.pigeon);
-
-        RankAPI.initialize();
-
-        this.timerManager = new TimerManager();
-
-        this.apiListeners = new HashSet<>();
     }
 
 }

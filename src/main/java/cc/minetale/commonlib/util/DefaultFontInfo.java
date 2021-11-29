@@ -3,8 +3,7 @@ package cc.minetale.commonlib.util;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 
-@AllArgsConstructor
-@Getter
+@AllArgsConstructor @Getter
 public enum DefaultFontInfo {
     A('A', 5),
     a('a', 5),

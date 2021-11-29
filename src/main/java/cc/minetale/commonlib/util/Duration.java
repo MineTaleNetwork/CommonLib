@@ -5,9 +5,10 @@ import lombok.Getter;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+@Getter
 public class Duration {
 
-    @Getter private final long value;
+    private final long value;
 
     public Duration(long value) {
         this.value = value;
@@ -28,40 +29,33 @@ public class Duration {
             String type = s.split("(?<=\\D)(?=\\d)|(?<=\\d)(?=\\D)")[1];
 
             switch (type) {
-                case "s": {
+                case "s" -> {
                     totalTime += value;
                     found = true;
-                    break;
                 }
-                case "m": {
+                case "m" -> {
                     totalTime += value * 60;
                     found = true;
-                    break;
                 }
-                case "h": {
+                case "h" -> {
                     totalTime += value * 60 * 60;
                     found = true;
-                    break;
                 }
-                case "d": {
+                case "d" -> {
                     totalTime += value * 60 * 60 * 24;
                     found = true;
-                    break;
                 }
-                case "w": {
+                case "w" -> {
                     totalTime += value * 60 * 60 * 24 * 7;
                     found = true;
-                    break;
                 }
-                case "M": {
+                case "M" -> {
                     totalTime += value * 60 * 60 * 24 * 30;
                     found = true;
-                    break;
                 }
-                case "y": {
+                case "y" -> {
                     totalTime += value * 60 * 60 * 24 * 365;
                     found = true;
-                    break;
                 }
             }
         }

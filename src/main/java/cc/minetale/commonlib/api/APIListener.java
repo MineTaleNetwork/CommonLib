@@ -1,8 +1,5 @@
 package cc.minetale.commonlib.api;
 
-import cc.minetale.commonlib.grant.Grant;
-import cc.minetale.commonlib.punishment.Punishment;
-
 public interface APIListener {
 
     default void grantAdd(Grant grant) {}
