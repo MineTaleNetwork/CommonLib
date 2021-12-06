@@ -4,7 +4,6 @@ import cc.minetale.commonlib.api.Grant;
 import cc.minetale.commonlib.api.Rank;
 import cc.minetale.pigeon.Converter;
 import cc.minetale.pigeon.converters.StringConverter;
-import cc.minetale.pigeon.converters.UUIDConverter;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonNull;
 import com.google.gson.JsonObject;
@@ -36,7 +35,7 @@ public class GrantConverter extends Converter<Grant> {
             var removed = data.get("removed").getAsBoolean();
 
             var grant = Grant.builder()
-                    .id(data.get("_id").getAsString())
+                    .id(data.get("id").getAsString())
                     .playerId(UUID.fromString(data.get("playerId").getAsString()))
                     .rank(Rank.valueOf(data.get("rank").getAsString()))
                     .addedById(data.get("addedById") != null ? UUID.fromString(data.get("addedById").getAsString()) : null)
@@ -58,9 +57,9 @@ public class GrantConverter extends Converter<Grant> {
             var data = new JsonObject();
 
             data.add("id", new JsonPrimitive(value.getId()));
-            data.add("playerId", UUIDConverter.Utils.convertToSimple(value.getPlayerId()));
+            data.add("playerId", new JsonPrimitive(value.getPlayerId().toString()));
             data.add("rank", new JsonPrimitive(value.getRank().name()));
-            data.add("addedById", value.getAddedById() != null ? UUIDConverter.Utils.convertToSimple(value.getAddedById()) : JsonNull.INSTANCE);
+            data.add("addedById", value.getAddedById() != null ? new JsonPrimitive(value.getAddedById().toString()) : JsonNull.INSTANCE);
             data.add("addedAt", new JsonPrimitive(value.getAddedAt()));
             data.add("addedReason", StringConverter.Utils.convertToSimple(value.getAddedReason()));
             data.add("duration", new JsonPrimitive(value.getDuration()));
@@ -69,7 +68,7 @@ public class GrantConverter extends Converter<Grant> {
             data.add("removed", new JsonPrimitive(removed));
 
             if(removed) {
-                data.add("removedById", UUIDConverter.Utils.convertToSimple(value.getRemovedById()));
+                data.add("removedById", new JsonPrimitive(value.getRemovedById().toString()));
                 data.add("removedAt", new JsonPrimitive(value.getRemovedAt()));
                 data.add("removedReason", StringConverter.Utils.convertToSimple(value.getRemovedReason()));
             }

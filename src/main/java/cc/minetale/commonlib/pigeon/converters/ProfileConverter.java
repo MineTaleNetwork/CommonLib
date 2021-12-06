@@ -5,14 +5,13 @@ import cc.minetale.commonlib.profile.Profile;
 import cc.minetale.commonlib.api.Punishment;
 import cc.minetale.pigeon.Converter;
 import cc.minetale.pigeon.converters.ListConverter;
-import cc.minetale.pigeon.converters.StringConverter;
-import cc.minetale.pigeon.converters.UUIDConverter;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonNull;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonPrimitive;
 
 import java.lang.reflect.Type;
+import java.util.UUID;
 
 public class ProfileConverter extends Converter<Profile> {
 
@@ -50,7 +49,7 @@ public class ProfileConverter extends Converter<Profile> {
                     .locked(staffObj.get("locked").getAsBoolean());
 
             var profile = Profile.builder()
-                    .id(UUIDConverter.Utils.convertToValue(data.get("id")))
+                    .id(UUID.fromString(data.get("id").getAsString()))
                     .name(data.get("name").getAsString())
                     .grant(GrantConverter.Utils.convertToValue(data.get("grant")))
                     .currentAddress(data.get("currentAddress").getAsString())
@@ -74,7 +73,7 @@ public class ProfileConverter extends Converter<Profile> {
         public static JsonElement convertToSimple(Profile value) {
             var data = new JsonObject();
 
-            data.add("id", UUIDConverter.Utils.convertToSimple(value.getId()));
+            data.add("id", new JsonPrimitive(value.getId().toString()));
             data.add("name", new JsonPrimitive(value.getName()));
             data.add("grant", GrantConverter.Utils.convertToSimple(value.getGrant()));
 

@@ -81,7 +81,7 @@ public class Profile {
             var grantsList = new ArrayList<>(document.getList("grants", String.class));
 
             var profile = Profile.builder()
-                    .id(UUID.fromString(document.getString("id")))
+                    .id(UUID.fromString(document.getString("_id")))
                     .name(document.getString("name"))
                     .firstSeen(document.getLong("firstSeen"))
                     .lastSeen(document.getLong("lastSeen"))
@@ -112,8 +112,7 @@ public class Profile {
         var future = new CompletableFuture<Profile>();
 
         PigeonUtil.getPigeon()
-                .sendTo(new ProfileRequestPayload(id, payload -> handleProfileRetrieval(
-                        future, payload)),
+                .sendTo(new ProfileRequestPayload(id, payload -> handleProfileRetrieval(future, payload)),
                         PigeonUtil.GeneralUnits.BLITZ.getUnit());
 
         return future;
@@ -142,7 +141,9 @@ public class Profile {
     }
 
     private static void handleProfileRetrieval(CompletableFuture<Profile> future, ProfileRequestPayload payload) {
-        if(payload.getResult().isSuccessful()) {
+        var result = payload.getResult();
+
+        if(result != null && result.isSuccessful() && payload.getProfiles() != null && payload.getProfiles().size() >= 1) {
             future.complete(payload.getProfiles().get(0));
         } else {
             future.complete(null);
@@ -241,7 +242,7 @@ public class Profile {
     /**
      * Validates the profiles Punishments and Grants.
      */
-    private void validate() {
+    public void validate() {
         this.validatePunishments();
         this.reloadGrant();
     }
@@ -309,7 +310,7 @@ public class Profile {
 
         this.update();
 
-        PigeonUtil.broadcast(new PunishmentAddPayload(this, punishment.getId()));
+        PigeonUtil.broadcast(new PunishmentAddPayload(this.getId(), punishment.getId()));
 
         CommonLib.getCommonLib().getApiListeners().forEach(provider -> provider.punishmentAdd(punishment));
     }
@@ -322,7 +323,7 @@ public class Profile {
 
         this.update();
 
-        PigeonUtil.broadcast(new PunishmentRemovePayload(this, punishment.getId()));
+        PigeonUtil.broadcast(new PunishmentRemovePayload(this.getId(), punishment.getId()));
 
         CommonLib.getCommonLib().getApiListeners().forEach(provider -> provider.punishmentRemove(punishment));
     }
@@ -335,7 +336,7 @@ public class Profile {
 
         this.update();
 
-        PigeonUtil.broadcast(new PunishmentExpirePayload(punishment.getId()));
+        PigeonUtil.broadcast(new PunishmentExpirePayload(this.getId(), punishment.getId()));
 
         CommonLib.getCommonLib().getApiListeners().forEach(provider -> provider.punishmentExpire(punishment));
     }
@@ -379,7 +380,7 @@ public class Profile {
         grant.save();
         this.update();
 
-        PigeonUtil.broadcast(new GrantAddPayload(this, grant.getId()));
+        PigeonUtil.broadcast(new GrantAddPayload(this.id, grant.getId()));
 
         CommonLib.getCommonLib().getApiListeners().forEach(provider -> provider.grantAdd(grant));
     }
@@ -394,7 +395,7 @@ public class Profile {
         grant.remove(removedBy, removedAt, removedReason);
         this.update();
 
-        PigeonUtil.broadcast(new GrantRemovePayload(this, grant.getId()));
+        PigeonUtil.broadcast(new GrantRemovePayload(this.id, grant.getId()));
 
         CommonLib.getCommonLib().getApiListeners().forEach(provider -> provider.grantRemove(grant));
     }
@@ -409,7 +410,7 @@ public class Profile {
         grant.remove(null, removedAt, "Grant Expired");
         this.update();
 
-        PigeonUtil.broadcast(new GrantExpirePayload(this, grant.getId()));
+        PigeonUtil.broadcast(new GrantExpirePayload(this.id, grant.getId()));
 
         CommonLib.getCommonLib().getApiListeners().forEach(provider -> provider.grantExpire(grant));
     }

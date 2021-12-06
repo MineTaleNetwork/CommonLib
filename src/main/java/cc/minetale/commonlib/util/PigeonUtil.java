@@ -15,8 +15,7 @@ public class PigeonUtil {
         pigeon.broadcast(payload);
     }
 
-    @Getter
-    @AllArgsConstructor
+    @Getter @AllArgsConstructor
     public enum GeneralUnits {
         BLITZ(new PostalUnit("blitz"));
 

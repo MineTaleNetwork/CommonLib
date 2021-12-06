@@ -28,13 +28,13 @@ public class ComponentConverter extends Converter<Component> {
         public static Component convertToValue(JsonElement element) {
             var data = element.getAsJsonObject();
 
-            return MC.Style.fromGson(StringConverter.Utils.convertToValue(data.get("component")));
+            return MC.fromGson(StringConverter.Utils.convertToValue(data.get("component")));
         }
 
         public static JsonElement convertToSimple(Component value) {
             JsonObject data = new JsonObject();
 
-            data.add("component", StringConverter.Utils.convertToSimple(MC.Style.toGson(value)));
+            data.add("component", StringConverter.Utils.convertToSimple(MC.toGson(value)));
 
             return data;
         }

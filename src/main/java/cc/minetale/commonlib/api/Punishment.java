@@ -184,7 +184,7 @@ public class Punishment {
         Date date = new Date(this.getAddedAt());
 
         return Arrays.asList(
-                MC.Style.SEPARATOR_80,
+                MC.SEPARATOR_80,
                 Component.text(
                         (initial ? "You have been " : "You are ") +
                         this.getContext() +
@@ -221,7 +221,7 @@ public class Punishment {
                         .append(
                                 Component.text("https://minetale.cc/discord", NamedTextColor.AQUA, TextDecoration.UNDERLINED)
                         ).build(),
-                MC.Style.SEPARATOR_80
+                MC.SEPARATOR_80
         );
     }
 

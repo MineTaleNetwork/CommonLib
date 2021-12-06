@@ -76,7 +76,7 @@ public enum DefaultFontInfo {
     AMPERSAND('&', 5),
     ASTERISK('*', 5),
     LEFT_PARENTHESIS('(', 3),
-    RIGHT_PERENTHESIS(')', 3),
+    RIGHT_PARENTHESIS(')', 3),
     MINUS('-', 5),
     UNDERSCORE('_', 5),
     PLUS_SIGN('+', 5),

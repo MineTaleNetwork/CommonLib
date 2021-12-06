@@ -4,7 +4,6 @@ import cc.minetale.commonlib.api.Punishment;
 import cc.minetale.pigeon.Converter;
 import cc.minetale.pigeon.converters.EnumConverter;
 import cc.minetale.pigeon.converters.StringConverter;
-import cc.minetale.pigeon.converters.UUIDConverter;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonNull;
 import com.google.gson.JsonObject;
@@ -37,9 +36,9 @@ public class PunishmentConverter extends Converter<Punishment> {
 
             var punishment = Punishment.builder()
                     .id(data.get("id").getAsString())
-                    .playerId(UUIDConverter.Utils.convertToValue(data.get("playedId")))
+                    .playerId(UUID.fromString(data.get("playedId").getAsString()))
                     .type(EnumConverter.Utils.convertToValue(Punishment.Type.class, data.get("type")))
-                    .addedById(data.get("addedById") != null ? UUIDConverter.Utils.convertToValue(data.get("addedById")) : null)
+                    .addedById(data.get("addedById") != null ? UUID.fromString(data.get("addedById").getAsString()) : null)
                     .addedAt(data.get("addedAt").getAsLong())
                     .addedReason(StringConverter.Utils.convertToValue(data.get("addedReason")))
                     .duration(data.get("duration").getAsLong())
@@ -58,9 +57,9 @@ public class PunishmentConverter extends Converter<Punishment> {
             var data = new JsonObject();
 
             data.add("id", new JsonPrimitive(value.getId()));
-            data.add("playerId", UUIDConverter.Utils.convertToSimple(value.getPlayerId()));
+            data.add("playerId", new JsonPrimitive(value.getPlayerId().toString()));
             data.add("type", EnumConverter.Utils.convertToSimple(value.getType()));
-            data.add("addedById", value.getAddedById() != null ? UUIDConverter.Utils.convertToSimple(value.getAddedById()) : JsonNull.INSTANCE);
+            data.add("addedById", value.getAddedById() != null ? new JsonPrimitive(value.getAddedById().toString()) : JsonNull.INSTANCE);
             data.add("addedAt", new JsonPrimitive(value.getAddedAt()));
             data.add("addedReason", StringConverter.Utils.convertToSimple(value.getAddedReason()));
             data.add("duration", new JsonPrimitive(value.getDuration()));
@@ -69,7 +68,7 @@ public class PunishmentConverter extends Converter<Punishment> {
             data.add("removed", new JsonPrimitive(removed));
 
             if(removed) {
-                data.add("removedById", UUIDConverter.Utils.convertToSimple(value.getRemovedById()));
+                data.add("removedById", new JsonPrimitive(value.getRemovedById().toString()));
                 data.add("removedAt", new JsonPrimitive(value.getRemovedAt()));
                 data.add("removedReason", StringConverter.Utils.convertToSimple(value.getRemovedReason()));
             }

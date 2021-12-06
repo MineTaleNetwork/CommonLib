@@ -1,15 +1,16 @@
 package cc.minetale.commonlib.pigeon.payloads.punishment;
 
-import cc.minetale.commonlib.profile.Profile;
 import cc.minetale.pigeon.annotations.Payload;
 import cc.minetale.pigeon.annotations.Transmit;
 import cc.minetale.pigeon.payloads.bases.BasePayload;
 import lombok.Getter;
 
+import java.util.UUID;
+
 @Getter @Payload
 public class PunishmentRemovePayload extends BasePayload {
 
-    @Transmit Profile profile;
+    @Transmit UUID playerUuid;
 
     @Transmit String punishment;
 
@@ -17,9 +18,9 @@ public class PunishmentRemovePayload extends BasePayload {
         payloadId = "punishmentRemovePayload";
     }
 
-    public PunishmentRemovePayload(Profile profile, String punishment) {
+    public PunishmentRemovePayload(UUID playerUuid, String punishment) {
         this();
-        this.profile = profile;
+        this.playerUuid = playerUuid;
         this.punishment = punishment;
     }
 

@@ -19,7 +19,6 @@ dependencies {
 
     implementation group: 'net.kyori',          name: 'adventure-text-serializer-gson',   version: '4.9.2'
     implementation group: 'net.kyori',          name: 'adventure-api',                    version: '4.9.2'
-    implementation group: 'net.kyori',          name: 'adventure-text-serializer-legacy', version: '4.9.2'
     implementation group: 'cc.minetale',        name: 'Pigeon',                           version: 'LATEST'
     implementation group: 'org.mongodb',        name: 'mongodb-driver',                   version: '3.12.10'
     
