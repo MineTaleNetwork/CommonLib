@@ -9,6 +9,8 @@ import net.kyori.adventure.text.format.TextDecoration;
 import net.kyori.adventure.text.serializer.gson.GsonComponentSerializer;
 
 import java.awt.*;
+import java.util.*;
+import java.util.List;
 
 public class MC {
 
@@ -18,10 +20,36 @@ public class MC {
     @Getter private static final int chatPixels = 320;
     @Getter private static final int centerPixels = chatPixels / 2;
 
+    public static Map<NamedTextColor, TextColor> bleachedColor = new HashMap<>();
+    private static final List<NamedTextColor> textColors = Arrays.asList(
+            NamedTextColor.BLACK,
+            NamedTextColor.DARK_BLUE,
+            NamedTextColor.DARK_GREEN,
+            NamedTextColor.DARK_AQUA,
+            NamedTextColor.DARK_RED,
+            NamedTextColor.DARK_PURPLE,
+            NamedTextColor.GOLD,
+            NamedTextColor.GRAY,
+            NamedTextColor.DARK_GRAY,
+            NamedTextColor.BLUE,
+            NamedTextColor.GREEN,
+            NamedTextColor.AQUA,
+            NamedTextColor.RED,
+            NamedTextColor.LIGHT_PURPLE,
+            NamedTextColor.YELLOW,
+            NamedTextColor.WHITE
+    );
+
     public static TextComponent CONSOLE = Component.text("Console", NamedTextColor.DARK_RED);
     public static TextComponent SEPARATOR_32 = Component.text(StringUtil.repeat(" ", 32), NamedTextColor.DARK_GRAY, TextDecoration.STRIKETHROUGH);
     public static TextComponent SEPARATOR_50 = Component.text(StringUtil.repeat(" ", 50), NamedTextColor.DARK_GRAY, TextDecoration.STRIKETHROUGH);
     public static TextComponent SEPARATOR_80 = Component.text(StringUtil.repeat(" ", 80), NamedTextColor.DARK_GRAY, TextDecoration.STRIKETHROUGH);
+
+    static {
+//        for(NamedTextColor color : textColors) {
+//            bleachedColor.put(color, bleach(fromNamedTextColor(color), 0.8));
+//        }
+    }
 
     public static Component fixItalics(Component component) {
         if (component.decoration(TextDecoration.ITALIC) == TextDecoration.State.NOT_SET) {

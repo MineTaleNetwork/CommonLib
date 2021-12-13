@@ -416,7 +416,11 @@ public class Profile {
     }
 
     public Component getChatFormat() {
-        return getColoredPrefix().append(this.getColoredName());
+        return Component.text().append(
+                getColoredPrefix(),
+                Component.space(),
+                this.getColoredName()
+        ).build();
     }
 
     public Component getColoredName() {
@@ -472,7 +476,6 @@ public class Profile {
 
         private String twoFactorKey = "";
         private boolean receivingStaffMessages = true;
-        private boolean twoFactor;
         private boolean locked;
 
         public Staff() {}
@@ -480,7 +483,6 @@ public class Profile {
         public Staff(Document document) {
             this.twoFactorKey = document.getString("twoFactorKey");
             this.receivingStaffMessages = document.getBoolean("receivingStaffMessages");
-            this.twoFactor = document.getBoolean("twoFactor");
             this.locked = document.getBoolean("locked");
         }
 
@@ -488,7 +490,6 @@ public class Profile {
             return new Document()
                     .append("twoFactorKey", this.twoFactorKey)
                     .append("receivingStaffMessages", this.receivingStaffMessages)
-                    .append("twoFactor", this.twoFactor)
                     .append("locked", this.locked);
         }
 

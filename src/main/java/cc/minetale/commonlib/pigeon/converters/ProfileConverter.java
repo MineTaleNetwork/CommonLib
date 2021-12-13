@@ -45,7 +45,6 @@ public class ProfileConverter extends Converter<Profile> {
             var staff = Profile.Staff.builder()
                     .twoFactorKey(staffObj.get("twoFactorKey") != null ? staffObj.get("twoFactorKey").getAsString() : null)
                     .receivingStaffMessages(staffObj.get("receivingStaffMessages").getAsBoolean())
-                    .twoFactor(staffObj.get("twoFactor").getAsBoolean())
                     .locked(staffObj.get("locked").getAsBoolean());
 
             var profile = Profile.builder()
@@ -105,7 +104,6 @@ public class ProfileConverter extends Converter<Profile> {
             var staff = value.getStaffProfile();
             staffObj.add("twoFactorKey", staff.getTwoFactorKey() != null ? new JsonPrimitive(staff.getTwoFactorKey()) : JsonNull.INSTANCE);
             staffObj.add("receivingStaffMessages", new JsonPrimitive(staff.isReceivingStaffMessages()));
-            staffObj.add("twoFactor", new JsonPrimitive(staff.isTwoFactor()));
             staffObj.add("locked", new JsonPrimitive(staff.isLocked()));
 
             data.add("staffProfile", staffObj);

@@ -12,27 +12,33 @@ import java.util.Comparator;
 public enum Rank {
     OWNER(
             "Owner",
-            NamedTextColor.DARK_RED
+            NamedTextColor.DARK_RED,
+             true
     ),
     ADMIN(
             "Admin",
-            NamedTextColor.RED
+            NamedTextColor.RED,
+            true
     ),
     MOD(
             "Mod",
-            NamedTextColor.DARK_PURPLE
+            NamedTextColor.DARK_PURPLE,
+            true
     ),
     HELPER(
             "Helper",
-            NamedTextColor.BLUE
+            NamedTextColor.BLUE,
+            true
     ),
     DEFAULT(
             "Member",
-            NamedTextColor.GRAY
+            NamedTextColor.GRAY,
+            false
     );
 
     private String name;
     private NamedTextColor color;
+    private boolean staff;
 
     public static Comparator<Rank> COMPARATOR = Comparator.comparingInt(Rank::getWeight);
 
@@ -52,7 +58,7 @@ public enum Rank {
      * Check if a player has the minimum rank.
      */
     public static boolean hasMinimumRank(Profile profile, Rank rank) {
-        return profile.getGrant().getRank().getWeight() >= rank.getWeight();
+        return profile.getGrant().getRank().getWeight() <= rank.getWeight();
     }
 
 }
