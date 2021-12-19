@@ -61,6 +61,8 @@ public class Profile {
         this.friends = new ArrayList<>();
         this.optionsProfile = new Options();
         this.staffProfile = new Staff();
+
+        reloadGrant();
     }
 
     public static @Nullable Profile fromDocument(Document document) {
