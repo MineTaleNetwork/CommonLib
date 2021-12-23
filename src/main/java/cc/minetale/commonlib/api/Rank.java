@@ -30,7 +30,7 @@ public enum Rank {
             NamedTextColor.BLUE,
             true
     ),
-    DEFAULT(
+    MEMBER(
             "Member",
             NamedTextColor.GRAY,
             false

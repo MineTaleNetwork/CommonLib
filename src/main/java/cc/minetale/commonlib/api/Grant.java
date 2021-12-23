@@ -46,7 +46,7 @@ public class Grant {
     public Grant(UUID playerId) {
         this.id = "DEFAULT";
         this.playerId = playerId;
-        this.rank = Rank.DEFAULT;
+        this.rank = Rank.MEMBER;
         this.addedById = null;
         this.addedAt = 0;
         this.addedReason = "Default";
@@ -129,7 +129,7 @@ public class Grant {
      * Returns if the Grant is active or not.
      */
     public boolean isActive() {
-        return !this.removed && (this.isPermanent() || this.getMillisRemaining() < 0L);
+        return !this.removed && (this.isPermanent() || this.getMillisRemaining() > 0L);
     }
 
     /**

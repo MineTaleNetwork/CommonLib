@@ -2,16 +2,15 @@ package cc.minetale.commonlib.profile;
 
 import cc.minetale.commonlib.CommonLib;
 import cc.minetale.commonlib.api.Grant;
+import cc.minetale.commonlib.api.Punishment;
 import cc.minetale.commonlib.pigeon.payloads.grant.GrantAddPayload;
 import cc.minetale.commonlib.pigeon.payloads.grant.GrantExpirePayload;
 import cc.minetale.commonlib.pigeon.payloads.grant.GrantRemovePayload;
 import cc.minetale.commonlib.pigeon.payloads.profile.ProfileRequestPayload;
 import cc.minetale.commonlib.pigeon.payloads.profile.ProfileUpdatePayload;
-import cc.minetale.commonlib.api.Punishment;
 import cc.minetale.commonlib.pigeon.payloads.punishment.PunishmentAddPayload;
 import cc.minetale.commonlib.pigeon.payloads.punishment.PunishmentExpirePayload;
 import cc.minetale.commonlib.pigeon.payloads.punishment.PunishmentRemovePayload;
-import cc.minetale.commonlib.util.MC;
 import cc.minetale.commonlib.util.PigeonUtil;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -309,7 +308,6 @@ public class Profile {
         this.cachedPunishments.add(punishment);
 
         punishment.save();
-
         this.update();
 
         PigeonUtil.broadcast(new PunishmentAddPayload(this.getId(), punishment.getId()));

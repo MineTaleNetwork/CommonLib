@@ -68,7 +68,7 @@ public class GrantConverter extends Converter<Grant> {
             data.add("removed", new JsonPrimitive(removed));
 
             if(removed) {
-                data.add("removedById", new JsonPrimitive(value.getRemovedById().toString()));
+                data.add("removedById", value.getRemovedById() != null ? new JsonPrimitive(value.getRemovedById().toString()) : JsonNull.INSTANCE);
                 data.add("removedAt", new JsonPrimitive(value.getRemovedAt()));
                 data.add("removedReason", StringConverter.Utils.convertToSimple(value.getRemovedReason()));
             }

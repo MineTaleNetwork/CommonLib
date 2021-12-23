@@ -45,20 +45,6 @@ public class MC {
     public static TextComponent SEPARATOR_50 = Component.text(StringUtil.repeat(" ", 50), NamedTextColor.DARK_GRAY, TextDecoration.STRIKETHROUGH);
     public static TextComponent SEPARATOR_80 = Component.text(StringUtil.repeat(" ", 80), NamedTextColor.DARK_GRAY, TextDecoration.STRIKETHROUGH);
 
-    static {
-//        for(NamedTextColor color : textColors) {
-//            bleachedColor.put(color, bleach(fromNamedTextColor(color), 0.8));
-//        }
-    }
-
-    public static Component fixItalics(Component component) {
-        if (component.decoration(TextDecoration.ITALIC) == TextDecoration.State.NOT_SET) {
-            component = component.decoration(TextDecoration.ITALIC, TextDecoration.State.FALSE);
-        }
-
-        return component;
-    }
-
     public static Component fromGson(String string) {
         return gsonSerializer.deserialize(string);
     }
