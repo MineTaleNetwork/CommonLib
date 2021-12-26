@@ -1,4 +1,4 @@
-package cc.minetale.commonlib.profile;
+package cc.minetale.commonlib.api;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;

@@ -32,32 +32,32 @@ public class GrantConverter extends Converter<Grant> {
             if(!element.isJsonObject()) { return null; }
             var data = element.getAsJsonObject();
 
-            var removed = data.get("removed").getAsBoolean();
+            var grant = Grant.createGrant(
+                    data.get("id").getAsString(),
+                    data.get("playerId") != null ? UUID.fromString(data.get("playerId").getAsString()) : null,
+                    Rank.valueOf(data.get("rank").getAsString()),
+                    data.get("addedById") != null ? UUID.fromString(data.get("addedById").getAsString()) : null,
+                    data.get("addedAt").getAsLong(),
+                    StringConverter.Utils.convertToValue(data.get("addedReason")),
+                    data.get("duration").getAsLong()
+            );
 
-            var grant = Grant.builder()
-                    .id(data.get("id").getAsString())
-                    .playerId(UUID.fromString(data.get("playerId").getAsString()))
-                    .rank(Rank.valueOf(data.get("rank").getAsString()))
-                    .addedById(data.get("addedById") != null ? UUID.fromString(data.get("addedById").getAsString()) : null)
-                    .addedAt(data.get("addedAt").getAsLong())
-                    .addedReason(StringConverter.Utils.convertToValue(data.get("addedReason")))
-                    .duration(data.get("duration").getAsLong())
-                    .removed(removed);
+            grant.setRemoved(data.get("removed").getAsBoolean());
 
-            if(removed) {
-                grant.removedAt(data.get("removedAt").getAsLong())
-                        .removedById(data.get("removedById") != null ? UUID.fromString(data.get("removedById").getAsString()) : null)
-                        .removedReason(StringConverter.Utils.convertToValue(data.get("removedReason")));
+            if(grant.isRemoved()) {
+                grant.setRemovedById(data.get("removedById") != null ? UUID.fromString(data.get("removedById").getAsString()) : null);
+                grant.setRemovedAt(data.get("removedAt").getAsLong());
+                grant.setRemovedReason(StringConverter.Utils.convertToValue(data.get("removedReason")));
             }
 
-            return grant.build();
+            return grant;
         }
 
         public static JsonElement convertToSimple(Grant value) {
             var data = new JsonObject();
 
             data.add("id", new JsonPrimitive(value.getId()));
-            data.add("playerId", new JsonPrimitive(value.getPlayerId().toString()));
+            data.add("playerId", value.getPlayerId() != null ? new JsonPrimitive(value.getPlayerId().toString()) : JsonNull.INSTANCE);
             data.add("rank", new JsonPrimitive(value.getRank().name()));
             data.add("addedById", value.getAddedById() != null ? new JsonPrimitive(value.getAddedById().toString()) : JsonNull.INSTANCE);
             data.add("addedAt", new JsonPrimitive(value.getAddedAt()));

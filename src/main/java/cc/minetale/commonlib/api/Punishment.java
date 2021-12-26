@@ -18,7 +18,7 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.*;
 
-@Getter @Setter @Builder @AllArgsConstructor
+@Getter @Setter
 public class Punishment {
 
     private String id;
@@ -33,42 +33,48 @@ public class Punishment {
     private String removedReason;
     private boolean removed;
 
-    public Punishment(UUID playerId, Type type, UUID addedById, long addedAt, String addedReason, long duration) {
-        this.id = StringUtil.generateId();
-        this.playerId = playerId;
-        this.type = type;
-        this.addedById = addedById;
-        this.addedAt = addedAt;
-        this.addedReason = addedReason;
-        this.duration = duration;
+    public static Punishment createPunishment(String id, UUID playerId, Type type, UUID addedById, long addedAt, String addedReason, long duration) {
+        var punishment = new Punishment();
+
+        punishment.setId(id != null ? id : StringUtil.generateId());
+        punishment.setPlayerId(playerId);
+        punishment.setType(type);
+        punishment.setAddedById(addedById);
+        punishment.setAddedAt(addedAt);
+        punishment.setAddedReason(addedReason);
+        punishment.setDuration(duration);
+
+        return punishment;
     }
 
     public static @Nullable Punishment fromDocument(Document document) {
         if(document != null) {
-            var punishment = Punishment.builder()
-                    .id(document.getString("_id"))
-                    .playerId(UUID.fromString(document.getString("playerId")))
-                    .type(Type.valueOf(document.getString("type")))
-                    .addedById(document.getString("addedById") != null ? UUID.fromString(document.getString("addedById")) : null)
-                    .addedAt(document.getLong("addedAt"))
-                    .addedReason(document.getString("addedReason"))
-                    .duration(document.getLong("duration"))
-                    .removed(document.getBoolean("removed"));
+            var punishment = createPunishment(
+                    document.getString("_id"),
+                    UUID.fromString(document.getString("playerId")),
+                    Type.valueOf(document.getString("type")),
+                    document.getString("addedById") != null ? UUID.fromString(document.getString("addedById")) : null,
+                    document.getLong("addedAt"),
+                    document.getString("addedReason"),
+                    document.getLong("duration")
+            );
 
-            if(punishment.removed) {
-                punishment.removedAt(document.getLong("removedAt"))
-                        .removedById(document.getString("removedById") != null ? UUID.fromString(document.getString("removedById")) : null)
-                        .removedReason(document.getString("removedReason"));
+            punishment.setRemoved(document.getBoolean("removed"));
+
+            if(punishment.isRemoved()) {
+                punishment.setRemovedAt(document.getLong("removedAt"));
+                punishment.setRemovedById(document.getString("removedById") != null ? UUID.fromString(document.getString("removedById")) : null);
+                punishment.setRemovedReason(document.getString("removedReason"));
             }
             
-            return punishment.build();
+            return punishment;
         }
         
         return null;
     }
 
     public static @Nullable Punishment getPunishment(String id) {
-        var document = Database.getDatabase().getPunishmentsCollection().find(Filters.eq("_id", id)).first();
+        var document = Database.getPunishmentsCollection().find(Filters.eq("_id", id)).first();
 
         if (document != null)
             return fromDocument(document);
@@ -77,64 +83,44 @@ public class Punishment {
     }
 
     public void delete() {
-        Database.getDatabase().getPunishmentsCollection().deleteOne(Filters.eq("_id", this.id));
+        Database.getPunishmentsCollection().deleteOne(Filters.eq("_id", this.id));
     }
 
     public void save() {
-        Database.getDatabase().getPunishmentsCollection().replaceOne(Filters.eq("_id", this.id), toDocument(), new ReplaceOptions().upsert(true));
+        Database.getPunishmentsCollection().replaceOne(Filters.eq("_id", this.id), toDocument(), new ReplaceOptions().upsert(true));
     }
 
     public Document toDocument() {
-        var document = new Document();
-
-        document.put("_id", this.id);
-        document.put("playerId", this.playerId.toString());
-        document.put("type", this.type.name());
-
-        document.put("addedById", this.addedById != null ? this.addedById.toString() : null);
-        document.put("addedAt", this.addedAt);
-        document.put("addedReason", this.addedReason);
-        document.put("duration", this.duration);
-
-        document.put("removed", this.removed);
-        document.put("removedAt", Objects.requireNonNullElse(this.removedAt, 0L));
-        document.put("removedById", this.removedById != null ? this.removedById.toString() : null);
-        document.put("removedReason", this.removedReason != null ? this.removedReason : null);
-
-        return document;
+        return new Document()
+                .append("_id", this.id)
+                .append("playerId", this.playerId.toString())
+                .append("type", this.type.name())
+                .append("addedById", this.addedById != null ? this.addedById.toString() : null)
+                .append("addedAt", this.addedAt)
+                .append("addedReason", this.addedReason)
+                .append("duration", this.duration)
+                .append("removed", this.removed)
+                .append("removedAt", this.removedAt)
+                .append("removedById", this.removedById != null ? this.removedById.toString() : null)
+                .append("removedReason", this.removedReason != null ? this.removedReason : null);
     }
 
-    /**
-     * Returns if the Punishment is permanent or not.
-     */
     public boolean isPermanent() {
         return this.type == Punishment.Type.BLACKLIST || this.duration == Integer.MAX_VALUE;
     }
 
-    /**
-     * Returns if the Punishment is active or not.
-     */
     public boolean isActive() {
         return !this.removed && (this.isPermanent() || this.getMillisRemaining() < 0L);
     }
 
-    /**
-     * Returns the remaining amount of milliseconds of the Punishment.
-     */
     public long getMillisRemaining() {
         return (this.addedAt + this.duration) - System.currentTimeMillis();
     }
 
-    /**
-     * Returns if the Punishment has expired or not.
-     */
     public boolean hasExpired() {
         return (!this.isPermanent()) && (System.currentTimeMillis() >= this.addedAt + this.duration);
     }
 
-    /**
-     * Returns the Duration String.
-     */
     public String getDurationText() {
         if (this.isPermanent() || this.duration == 0) {
             return "Permanent";
@@ -143,9 +129,6 @@ public class Punishment {
         }
     }
 
-    /**
-     * Returns the Remaining String.
-     */
     public String getTimeRemaining() {
         if (this.removed) {
             return "Removed";
@@ -162,9 +145,6 @@ public class Punishment {
         return TimeUtil.millisToRoundedTime((this.addedAt + this.duration) - System.currentTimeMillis());
     }
 
-    /**
-     * Returns the Context String.
-     */
     public String getContext() {
         if (!(this.type == Punishment.Type.BAN || this.type == Punishment.Type.MUTE)) {
             return this.removed ? this.type.getUndoContext() : this.type.getContext();
@@ -177,57 +157,61 @@ public class Punishment {
         }
     }
 
-    /**
-     * Gets a list of Components that form the Ban Message.
-     */
-    public List<Component> getBanMessage(boolean initial) {
-        Date date = new Date(this.getAddedAt());
+    public List<Component> getPunishmentMessage() {
+        switch (this.type) {
+            case BLACKLIST, BAN, MUTE -> {
+                return Arrays.asList(
+                        MC.SEPARATOR_80,
+                        Component.text(
+                                "You are " +
+                                        this.getContext() +
+                                        (!this.isPermanent() ? " for " + this.getTimeRemaining() : "") +
+                                        ".", NamedTextColor.RED
+                        ),
+                        Component.empty(),
+                        Component.text()
+                                .append(
+                                        Component.text("Reason: ", NamedTextColor.GRAY),
+                                        Component.text(this.addedReason, NamedTextColor.WHITE)
+                                ).build(),
+                        Component.text()
+                                .append(
+                                        Component.text("Added On: ", NamedTextColor.GRAY),
+                                        Component.text(TimeUtil.dateToString(new Date(this.getAddedAt()), true), NamedTextColor.WHITE)
+                                ).build(),
+                        Component.text()
+                                .append(
+                                        Component.text("Punishment ID: ", NamedTextColor.GRAY),
+                                        Component.text(this.id, NamedTextColor.WHITE)
+                                ).build(),
+                        Component.empty(),
+                        Component.text()
+                                .append(
+                                        Component.text("Appeal At: ", NamedTextColor.GRAY),
+                                        Component.text("https://minetale.cc/discord", NamedTextColor.AQUA, TextDecoration.UNDERLINED)
+                                ).build(),
+                        MC.SEPARATOR_80
+                );
+            }
+            case WARN -> {
+                return Arrays.asList(
+                        MC.SEPARATOR_80,
+                        Component.text("You have been warned", NamedTextColor.RED),
+                        Component.text()
+                                .append(
+                                        Component.text("Reason: ", NamedTextColor.GRAY),
+                                        Component.text(this.addedReason, NamedTextColor.WHITE)
+                                ).build(),
+                        Component.empty(),
+                        Component.text("Failure to correct your actions will result in a punishment.", NamedTextColor.GRAY),
+                        MC.SEPARATOR_80
+                );
+            }
+        }
 
-        return Arrays.asList(
-                MC.SEPARATOR_80,
-                Component.text(
-                        (initial ? "You have been " : "You are ") +
-                        this.getContext() +
-                        (!this.isPermanent() ? " for " + this.getTimeRemaining() : "") +
-                        ".", NamedTextColor.RED
-                ),
-                Component.empty(),
-                Component.text()
-                        .append(
-                                Component.text("Reason: ", NamedTextColor.GRAY)
-                        )
-                        .append(
-                                Component.text(this.addedReason, NamedTextColor.WHITE)
-                        ).build(),
-                Component.text()
-                        .append(
-                                Component.text("Added On: ", NamedTextColor.GRAY)
-                        )
-                        .append(
-                                Component.text(TimeUtil.dateToString(date, true), NamedTextColor.WHITE)
-                        ).build(),
-                Component.text()
-                        .append(
-                                Component.text("Punishment ID: ", NamedTextColor.GRAY)
-                        )
-                        .append(
-                                Component.text(this.id, NamedTextColor.WHITE)
-                        ).build(),
-                Component.empty(),
-                Component.text()
-                        .append(
-                                Component.text("Appeal At: ", NamedTextColor.GRAY)
-                        )
-                        .append(
-                                Component.text("https://minetale.cc/discord", NamedTextColor.AQUA, TextDecoration.UNDERLINED)
-                        ).build(),
-                MC.SEPARATOR_80
-        );
+        return Collections.emptyList();
     }
 
-    /**
-     * Removes a Punishment.
-     */
     public void remove(@Nullable UUID removedBy, Long removedAt, String removedReason) {
         this.removed = true;
         this.removedAt = removedAt;
@@ -240,6 +224,16 @@ public class Punishment {
     @Override
     public boolean equals(Object object) {
         return this == object || object instanceof Punishment other && other.getId().equalsIgnoreCase(this.id);
+    }
+
+    public NamedTextColor getPunishmentColor() {
+        switch (this.type) {
+            case BLACKLIST -> { return NamedTextColor.RED; }
+            case BAN -> { return NamedTextColor.GOLD; }
+            case MUTE -> { return NamedTextColor.GREEN; }
+            case WARN -> { return NamedTextColor.BLUE; }
+            default -> { return NamedTextColor.WHITE; }
+        }
     }
 
     @Override

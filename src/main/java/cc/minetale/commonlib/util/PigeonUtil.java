@@ -5,14 +5,15 @@ import cc.minetale.pigeon.PostalUnit;
 import cc.minetale.pigeon.payloads.bases.BasePayload;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
-import lombok.Setter;
 
 public class PigeonUtil {
 
-    @Getter @Setter private static Pigeon pigeon;
+    public static void sendTo(BasePayload payload, PostalUnit target) {
+        Pigeon.getPigeon().sendTo(payload, target);
+    }
 
     public static void broadcast(BasePayload payload) {
-        pigeon.broadcast(payload);
+        Pigeon.getPigeon().broadcast(payload);
     }
 
     @Getter @AllArgsConstructor

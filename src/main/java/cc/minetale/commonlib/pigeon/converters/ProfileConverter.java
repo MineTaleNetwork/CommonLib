@@ -1,8 +1,8 @@
 package cc.minetale.commonlib.pigeon.converters;
 
 import cc.minetale.commonlib.api.Grant;
-import cc.minetale.commonlib.profile.Profile;
 import cc.minetale.commonlib.api.Punishment;
+import cc.minetale.commonlib.api.Profile;
 import cc.minetale.pigeon.Converter;
 import cc.minetale.pigeon.converters.ListConverter;
 import com.google.gson.JsonElement;
@@ -34,39 +34,42 @@ public class ProfileConverter extends Converter<Profile> {
             var data = element.getAsJsonObject();
 
             var optionsObj = data.getAsJsonObject("optionsProfile");
-            var options = Profile.Options.builder()
-                    .receivingPartyRequests(optionsObj.get("receivingPartyRequests").getAsBoolean())
-                    .receivingFriendRequests(optionsObj.get("receivingFriendRequests").getAsBoolean())
-                    .receivingPublicChat(optionsObj.get("receivingPublicChat").getAsBoolean())
-                    .receivingConversations(optionsObj.get("receivingConversations").getAsBoolean())
-                    .receivingMessageSounds(optionsObj.get("receivingMessageSounds").getAsBoolean());
+            var options = new Profile.Options();
+
+            options.setReceivingPartyRequests(optionsObj.get("receivingPartyRequests").getAsBoolean());
+            options.setReceivingFriendRequests(optionsObj.get("receivingFriendRequests").getAsBoolean());
+            options.setReceivingPublicChat(optionsObj.get("receivingPublicChat").getAsBoolean());
+            options.setReceivingConversations(optionsObj.get("receivingConversations").getAsBoolean());
+            options.setReceivingMessageSounds(optionsObj.get("receivingMessageSounds").getAsBoolean());
 
             var staffObj = data.getAsJsonObject("staffProfile");
-            var staff = Profile.Staff.builder()
-                    .twoFactorKey(staffObj.get("twoFactorKey") != null ? staffObj.get("twoFactorKey").getAsString() : null)
-                    .receivingStaffMessages(staffObj.get("receivingStaffMessages").getAsBoolean())
-                    .locked(staffObj.get("locked").getAsBoolean());
+            var staff = new Profile.Staff();
 
-            var profile = Profile.builder()
-                    .id(UUID.fromString(data.get("id").getAsString()))
-                    .name(data.get("name").getAsString())
-                    .grant(GrantConverter.Utils.convertToValue(data.get("grant")))
-                    .currentAddress(data.get("currentAddress").getAsString())
-                    .firstSeen(data.get("firstSeen").getAsLong())
-                    .lastSeen(data.get("lastSeen").getAsLong())
-                    .discord(data.get("discord") != null ? data.get("discord").getAsString() : null)
-                    .gold(data.get("gold").getAsInt())
-                    .experience(data.get("experience").getAsLong())
-                    .ignored(ListConverter.Utils.convertToValue(data.get("ignored"), String.class))
-                    .friends(ListConverter.Utils.convertToValue(data.get("friends"), String.class))
-                    .punishments(ListConverter.Utils.convertToValue(data.get("punishments"), String.class))
-                    .cachedPunishments(ListConverter.Utils.convertToValue(data.get("cachedPunishments"), Punishment.class))
-                    .grants(ListConverter.Utils.convertToValue(data.get("grants"), String.class))
-                    .cachedGrants(ListConverter.Utils.convertToValue(data.get("cachedGrants"), Grant.class))
-                    .optionsProfile(options.build())
-                    .staffProfile(staff.build());
+            staff.setTwoFactorKey(staffObj.get("twoFactorKey") != null ? staffObj.get("twoFactorKey").getAsString() : null);
+            staff.setReceivingStaffMessages(staffObj.get("receivingStaffMessages").getAsBoolean());
+            staff.setLocked(staffObj.get("locked").getAsBoolean());
 
-            return profile.build();
+            var profile = new Profile();
+
+            profile.setId(UUID.fromString(data.get("id").getAsString()));
+            profile.setName(data.get("name").getAsString());
+            profile.setGrant(GrantConverter.Utils.convertToValue(data.get("grant")));
+            profile.setFirstSeen(data.get("firstSeen").getAsLong());
+            profile.setLastSeen(data.get("lastSeen").getAsLong());
+            profile.setCurrentAddress(data.get("currentAddress").getAsString());
+            profile.setOptionsProfile(options);
+            profile.setStaffProfile(staff);
+            profile.setDiscord(data.get("discord") != null ? data.get("discord").getAsString() : null);
+            profile.setGold(data.get("gold").getAsInt());
+            profile.setExperience(data.get("experience").getAsLong());
+            profile.setIgnored(ListConverter.Utils.convertToValue(data.get("ignored"), String.class));
+            profile.setFriends(ListConverter.Utils.convertToValue(data.get("friends"), String.class));
+            profile.setPunishments(ListConverter.Utils.convertToValue(data.get("punishments"), String.class));
+            profile.setGrants(ListConverter.Utils.convertToValue(data.get("grants"), String.class));
+            profile.setCachedPunishments(ListConverter.Utils.convertToValue(data.get("cachedPunishments"), Punishment.class));
+            profile.setCachedGrants(ListConverter.Utils.convertToValue(data.get("cachedGrants"), Grant.class));
+
+            return profile;
         }
 
         public static JsonElement convertToSimple(Profile value) {

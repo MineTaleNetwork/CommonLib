@@ -1,6 +1,5 @@
 package cc.minetale.commonlib.api;
 
-import cc.minetale.commonlib.profile.Profile;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import net.kyori.adventure.text.Component;
@@ -13,7 +12,7 @@ public enum Rank {
     OWNER(
             "Owner",
             NamedTextColor.DARK_RED,
-             true
+            true
     ),
     ADMIN(
             "Admin",
@@ -28,6 +27,31 @@ public enum Rank {
     HELPER(
             "Helper",
             NamedTextColor.BLUE,
+            true
+    ),
+    HIGHROLLER(
+            "Highroller",
+            NamedTextColor.DARK_PURPLE,
+            true
+    ),
+    LEGEND(
+            "Legend",
+            NamedTextColor.GOLD,
+            true
+    ),
+    MVP(
+            "MVP",
+            NamedTextColor.DARK_AQUA,
+            true
+    ),
+    VIP(
+            "VIP",
+            NamedTextColor.DARK_GREEN,
+            true
+    ),
+    PREMIUM(
+            "Premium",
+            NamedTextColor.GREEN,
             true
     ),
     MEMBER(

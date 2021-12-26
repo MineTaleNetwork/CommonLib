@@ -16,7 +16,7 @@ import java.util.Comparator;
 import java.util.Objects;
 import java.util.UUID;
 
-@Getter @Setter @Builder @AllArgsConstructor
+@Getter @Setter
 public class Grant {
 
     private String id;
@@ -31,54 +31,68 @@ public class Grant {
     private String removedReason;
     private boolean removed;
 
-    public static Comparator<Grant> COMPARATOR = Comparator.comparingInt(grant -> grant.getRank().getWeight());
-
-    public Grant(UUID playerId, Rank rank, UUID addedById, long addedAt, String addedReason, long duration) {
-        this.id = StringUtil.generateId();
-        this.playerId = playerId;
-        this.rank = rank;
-        this.addedById = addedById;
-        this.addedAt = addedAt;
-        this.addedReason = addedReason;
-        this.duration = duration;
+    @Override
+    public String toString() {
+        return "Grant{" +
+                "id='" + id + '\'' +
+                ", playerId=" + playerId +
+                ", rank=" + rank +
+                ", addedById=" + addedById +
+                ", addedAt=" + addedAt +
+                ", addedReason='" + addedReason + '\'' +
+                ", duration=" + duration +
+                ", removedById=" + removedById +
+                ", removedAt=" + removedAt +
+                ", removedReason='" + removedReason + '\'' +
+                ", removed=" + removed +
+                '}';
     }
 
-    public Grant(UUID playerId) {
-        this.id = "DEFAULT";
-        this.playerId = playerId;
-        this.rank = Rank.MEMBER;
-        this.addedById = null;
-        this.addedAt = 0;
-        this.addedReason = "Default";
-        this.duration = Integer.MAX_VALUE;
+    public static final Comparator<Grant> COMPARATOR = Comparator.comparingInt(grant -> grant.getRank().getWeight());
+    public static final Grant DEFAULT_GRANT = createGrant("DEFAULT", null, Rank.MEMBER, null, 0L, "Default", Integer.MAX_VALUE);
+
+    public static Grant createGrant(String id, UUID playerId, Rank rank, UUID addedById, long addedAt, String addedReason, long duration) {
+        var grant = new Grant();
+
+        grant.setId(id != null ? id : StringUtil.generateId());
+        grant.setPlayerId(playerId);
+        grant.setRank(rank);
+        grant.setAddedById(addedById);
+        grant.setAddedAt(addedAt);
+        grant.setAddedReason(addedReason);
+        grant.setDuration(duration);
+
+        return grant;
     }
 
     public static @Nullable Grant fromDocument(Document document) {
         if (document != null) {
-            var grant = Grant.builder()
-                    .id(document.getString("_id"))
-                    .playerId(UUID.fromString(document.getString("playerId")))
-                    .rank(Rank.valueOf(document.getString("rank")))
-                    .addedById(document.getString("addedById") != null ? UUID.fromString(document.getString("addedById")) : null)
-                    .addedAt(document.getLong("addedAt"))
-                    .addedReason(document.getString("addedReason"))
-                    .duration(document.getLong("duration"))
-                    .removed(document.getBoolean("removed"));
+            var grant = createGrant(
+                    document.getString("_id"),
+                    UUID.fromString(document.getString("playerId")),
+                    Rank.valueOf(document.getString("rank")),
+                    document.getString("addedById") != null ? UUID.fromString(document.getString("addedById")) : null,
+                    document.getLong("addedAt"),
+                    document.getString("addedReason"),
+                    document.getLong("duration")
+            );
 
-            if(grant.removed) {
-                grant.removedAt(document.getLong("removedAt"))
-                        .removedById(document.getString("removedById") != null ? UUID.fromString(document.getString("removedById")) : null)
-                        .removedReason(document.getString("removedReason"));
+            grant.setRemoved(document.getBoolean("removed"));
+
+            if(grant.isRemoved()) {
+                grant.setRemovedAt(document.getLong("removedAt"));
+                grant.setRemovedById(document.getString("removedById") != null ? UUID.fromString(document.getString("removedById")) : null);
+                grant.setRemovedReason(document.getString("removedReason"));
             }
 
-            return grant.build();
+            return grant;
         }
 
         return null;
     }
 
     public static @Nullable Grant getGrant(String id) {
-        var document = Database.getDatabase().getGrantsCollection().find(Filters.eq("_id", id)).first();
+        var document = Database.getGrantsCollection().find(Filters.eq("_id", id)).first();
 
         if (document != null)
             return fromDocument(document);
@@ -86,76 +100,49 @@ public class Grant {
         return null;
     }
 
-    public static Grant getDefaultGrant(UUID playerId) {
-        return new Grant(playerId);
-    }
-
     public void delete() {
-        Database.getDatabase().getGrantsCollection().deleteOne(Filters.eq("_id", this.id));
+        Database.getGrantsCollection().deleteOne(Filters.eq("_id", this.id));
     }
 
     public void save() {
-        Database.getDatabase().getGrantsCollection().replaceOne(Filters.eq("_id", this.id), toDocument(), new ReplaceOptions().upsert(true));
+        Database.getGrantsCollection().replaceOne(Filters.eq("_id", this.id), toDocument(), new ReplaceOptions().upsert(true));
     }
 
     public Document toDocument() {
-        var document = new Document();
-
-        document.put("_id", this.id);
-        document.put("playerId", this.playerId.toString());
-        document.put("rank", this.rank.name());
-
-        document.put("addedById", this.addedById != null ? this.addedById.toString() : null);
-        document.put("addedAt", this.addedAt);
-        document.put("addedReason", this.addedReason);
-        document.put("duration", this.duration);
-
-        document.put("removed", this.removed);
-        document.put("removedAt", Objects.requireNonNullElse(this.removedAt, 0L));
-        document.put("removedById", this.removedById != null ? this.removedById.toString() : null);
-        document.put("removedReason", this.removedReason != null ? this.removedReason : null);
-
-        return document;
+        return new Document()
+                .append("_id", this.id)
+                .append("playerId", this.playerId.toString())
+                .append("rank", this.rank.name())
+                .append("addedById", this.addedById != null ? this.addedById.toString() : null)
+                .append("addedAt", this.addedAt)
+                .append("addedReason", this.addedReason)
+                .append("duration", this.duration)
+                .append("removed", this.removed)
+                .append("removedAt", this.removedAt)
+                .append("removedById", this.removedById != null ? this.removedById.toString() : null)
+                .append("removedReason", this.removedReason != null ? this.removedReason : null);
     }
 
-    /**
-     * Returns if the Punishment is permanent or not.
-     */
     public boolean isPermanent() {
         return this.duration == Integer.MAX_VALUE;
     }
 
-    /**
-     * Returns if the Grant is active or not.
-     */
     public boolean isActive() {
         return !this.removed && (this.isPermanent() || this.getMillisRemaining() > 0L);
     }
 
-    /**
-     * Returns if the Grant is default or not.
-     */
     public boolean isDefault() {
         return this.id.equals("DEFAULT");
     }
 
-    /**
-     * Returns the remaining amount of milliseconds of the Grant.
-     */
     public long getMillisRemaining() {
         return (this.addedAt + this.duration) - System.currentTimeMillis();
     }
 
-    /**
-     * Returns if the Grant has expired or not.
-     */
     public boolean hasExpired() {
         return (!this.isPermanent()) && (System.currentTimeMillis() >= this.addedAt + this.duration);
     }
 
-    /**
-     * Returns the Duration String.
-     */
     public String getDurationText() {
         if (this.isPermanent() || this.duration == 0) {
             return "Permanent";
@@ -164,9 +151,6 @@ public class Grant {
         }
     }
 
-    /**
-     * Returns the Remaining String.
-     */
     public String getTimeRemaining() {
         if (this.removed) {
             return "Removed";
@@ -183,9 +167,6 @@ public class Grant {
         return TimeUtil.millisToRoundedTime((this.addedAt + this.duration) - System.currentTimeMillis());
     }
 
-    /**
-     * Removes a Grant.
-     */
     public void remove(@Nullable UUID removedBy, Long removedAt, String removedReason) {
         this.removed = true;
         this.removedAt = removedAt;

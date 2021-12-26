@@ -1,19 +1,12 @@
-package cc.minetale.commonlib.profile;
+package cc.minetale.commonlib.api;
 
-import cc.minetale.commonlib.CommonLib;
-import cc.minetale.commonlib.api.Grant;
-import cc.minetale.commonlib.api.Punishment;
 import cc.minetale.commonlib.pigeon.payloads.grant.GrantAddPayload;
-import cc.minetale.commonlib.pigeon.payloads.grant.GrantExpirePayload;
 import cc.minetale.commonlib.pigeon.payloads.grant.GrantRemovePayload;
 import cc.minetale.commonlib.pigeon.payloads.profile.ProfileRequestPayload;
 import cc.minetale.commonlib.pigeon.payloads.profile.ProfileUpdatePayload;
 import cc.minetale.commonlib.pigeon.payloads.punishment.PunishmentAddPayload;
-import cc.minetale.commonlib.pigeon.payloads.punishment.PunishmentExpirePayload;
 import cc.minetale.commonlib.pigeon.payloads.punishment.PunishmentRemovePayload;
 import cc.minetale.commonlib.util.PigeonUtil;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
 import net.kyori.adventure.text.Component;
@@ -25,18 +18,18 @@ import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
 
-@Getter @Setter @Builder @AllArgsConstructor
+@Getter @Setter
 public class Profile {
 
     private UUID id;
-    private List<String> punishments;
-    private List<Punishment> cachedPunishments;
-    private List<String> grants;
-    private List<Grant> cachedGrants;
-    private List<UUID> ignored;
-    private List<UUID> friends;
-    private Options optionsProfile;
-    private Staff staffProfile;
+    private List<String> punishments = new ArrayList<>();
+    private List<Punishment> cachedPunishments = new ArrayList<>();
+    private List<String> grants = new ArrayList<>();
+    private List<Grant> cachedGrants = new ArrayList<>();
+    private List<UUID> ignored = new ArrayList<>();
+    private List<UUID> friends = new ArrayList<>();
+    private Options optionsProfile = new Options();
+    private Staff staffProfile = new Staff();
     private String name;
     private String currentAddress;
     private String discord;
@@ -46,22 +39,14 @@ public class Profile {
     private long lastSeen;
     private long experience;
 
-    /**
-     * <strong>Usage reserved for Blitz.</strong> <br>
-     */
-    public Profile(String username, UUID id) {
-        this.id = id;
-        this.name = username;
-        this.punishments = new ArrayList<>();
-        this.cachedPunishments = new ArrayList<>();
-        this.grants = new ArrayList<>();
-        this.cachedGrants = new ArrayList<>();
-        this.ignored = new ArrayList<>();
-        this.friends = new ArrayList<>();
-        this.optionsProfile = new Options();
-        this.staffProfile = new Staff();
+    public static Profile createBlitzProfile(UUID uuid, String username) {
+        var profile = new Profile();
 
-        reloadGrant();
+        profile.setId(uuid);
+        profile.setName(username);
+        profile.reloadGrant();
+
+        return profile;
     }
 
     public static @Nullable Profile fromDocument(Document document) {
@@ -81,29 +66,27 @@ public class Profile {
             var punishmentsList = new ArrayList<>(document.getList("punishments", String.class));
             var grantsList = new ArrayList<>(document.getList("grants", String.class));
 
-            var profile = Profile.builder()
-                    .id(UUID.fromString(document.getString("_id")))
-                    .name(document.getString("name"))
-                    .firstSeen(document.getLong("firstSeen"))
-                    .lastSeen(document.getLong("lastSeen"))
-                    .currentAddress(document.getString("currentAddress"))
-                    .optionsProfile(new Options(document.get("optionsProfile", Document.class)))
-                    .staffProfile(new Staff(document.get("staffProfile", Document.class)))
-                    .discord(document.getString("discord"))
-                    .gold(document.getInteger("gold"))
-                    .experience(document.getLong("experience"))
-                    .ignored(ignoredList)
-                    .friends(friendsList)
-                    .punishments(punishmentsList)
-                    .cachedPunishments(new ArrayList<>(punishmentsList.stream().map(Punishment::getPunishment).filter(Objects::nonNull).collect(Collectors.toList()))) // TODO -> Find documents in bulk
-                    .grants(grantsList)
-                    .cachedGrants(new ArrayList<>(grantsList.stream().map(Grant::getGrant).filter(Objects::nonNull).collect(Collectors.toList()))); // TODO -> Find documents in bulk
+            var profile = new Profile();
 
-            var builtProfile = profile.build();
+            profile.setId(UUID.fromString(document.getString("_id")));
+            profile.setName(document.getString("name"));
+            profile.setFirstSeen(document.getLong("firstSeen"));
+            profile.setLastSeen(document.getLong("lastSeen"));
+            profile.setCurrentAddress(document.getString("currentAddress"));
+            profile.setOptionsProfile(new Options(document.get("optionsProfile", Document.class)));
+            profile.setStaffProfile(new Staff(document.get("staffProfile", Document.class)));
+            profile.setDiscord(document.getString("discord"));
+            profile.setGold(document.getInteger("gold"));
+            profile.setExperience(document.getLong("experience"));
+            profile.setIgnored(ignoredList);
+            profile.setFriends(friendsList);
+            profile.setPunishments(punishmentsList);
+            profile.setGrants(grantsList);
+            profile.setCachedPunishments(new ArrayList<>(punishmentsList.stream().map(Punishment::getPunishment).filter(Objects::nonNull).collect(Collectors.toList())));
+            profile.setCachedGrants(new ArrayList<>(grantsList.stream().map(Grant::getGrant).filter(Objects::nonNull).collect(Collectors.toList())));
+            profile.validate();
 
-            builtProfile.validate();
-
-            return builtProfile;
+            return profile;
         }
 
         return null;
@@ -112,9 +95,8 @@ public class Profile {
     public static CompletableFuture<Profile> getProfile(@NotNull UUID id) {
         var future = new CompletableFuture<Profile>();
 
-        PigeonUtil.getPigeon()
-                .sendTo(new ProfileRequestPayload(id, payload -> handleProfileRetrieval(future, payload)),
-                        PigeonUtil.GeneralUnits.BLITZ.getUnit());
+        PigeonUtil.sendTo(new ProfileRequestPayload(id, payload -> handleProfileRetrieval(future, payload)),
+                PigeonUtil.GeneralUnits.BLITZ.getUnit());
 
         return future;
     }
@@ -122,10 +104,8 @@ public class Profile {
     public static CompletableFuture<Profile> getProfile(@NotNull String name) {
         var future = new CompletableFuture<Profile>();
 
-        PigeonUtil.getPigeon()
-                .sendTo(new ProfileRequestPayload(name, payload -> handleProfileRetrieval(
-                        future, payload)),
-                        PigeonUtil.GeneralUnits.BLITZ.getUnit());
+        PigeonUtil.sendTo(new ProfileRequestPayload(name, payload -> handleProfileRetrieval(future, payload)),
+                PigeonUtil.GeneralUnits.BLITZ.getUnit());
 
         return future;
     }
@@ -133,10 +113,8 @@ public class Profile {
     public static CompletableFuture<Profile> getProfile(@Nullable String name, @NotNull UUID id) {
         var future = new CompletableFuture<Profile>();
 
-        PigeonUtil.getPigeon()
-                .sendTo(new ProfileRequestPayload(name, id, payload -> handleProfileRetrieval(
-                        future, payload)),
-                        PigeonUtil.GeneralUnits.BLITZ.getUnit());
+        PigeonUtil.sendTo(new ProfileRequestPayload(name, id, payload -> handleProfileRetrieval(future, payload)),
+                PigeonUtil.GeneralUnits.BLITZ.getUnit());
 
         return future;
     }
@@ -144,7 +122,7 @@ public class Profile {
     private static void handleProfileRetrieval(CompletableFuture<Profile> future, ProfileRequestPayload payload) {
         var result = payload.getResult();
 
-        if(result != null && result.isSuccessful() && payload.getProfiles() != null && payload.getProfiles().size() >= 1) {
+        if (result != null && result.isSuccessful() && payload.getProfiles() != null && payload.getProfiles().size() >= 1) {
             future.complete(payload.getProfiles().get(0));
         } else {
             future.complete(null);
@@ -154,10 +132,9 @@ public class Profile {
     public static CompletableFuture<List<Profile>> getProfilesByIds(@NotNull List<UUID> ids) {
         var future = new CompletableFuture<List<Profile>>();
 
-        PigeonUtil.getPigeon()
-                .sendTo(ProfileRequestPayload.bulkRequestByIds(ids,
-                                payload -> future.complete(Objects.requireNonNullElse(payload.getProfiles(), new ArrayList<>()))),
-                        PigeonUtil.GeneralUnits.BLITZ.getUnit());
+        PigeonUtil.sendTo(ProfileRequestPayload.bulkRequestByIds(ids,
+                        payload -> future.complete(Objects.requireNonNullElse(payload.getProfiles(), new ArrayList<>()))),
+                PigeonUtil.GeneralUnits.BLITZ.getUnit());
 
         return future;
     }
@@ -165,10 +142,9 @@ public class Profile {
     public static CompletableFuture<List<Profile>> getProfilesByNames(@NotNull List<String> names) {
         var future = new CompletableFuture<List<Profile>>();
 
-        PigeonUtil.getPigeon()
-                .sendTo(ProfileRequestPayload.bulkRequestByNames(names,
-                                payload -> future.complete(Objects.requireNonNullElse(payload.getProfiles(), new ArrayList<>()))),
-                        PigeonUtil.GeneralUnits.BLITZ.getUnit());
+        PigeonUtil.sendTo(ProfileRequestPayload.bulkRequestByNames(names,
+                        payload -> future.complete(Objects.requireNonNullElse(payload.getProfiles(), new ArrayList<>()))),
+                PigeonUtil.GeneralUnits.BLITZ.getUnit());
 
         return future;
     }
@@ -176,10 +152,9 @@ public class Profile {
     public static CompletableFuture<List<Profile>> getProfiles(List<String> names, List<UUID> ids) {
         var future = new CompletableFuture<List<Profile>>();
 
-        PigeonUtil.getPigeon()
-                .sendTo(new ProfileRequestPayload(names, ids,
-                                payload -> future.complete(Objects.requireNonNullElse(payload.getProfiles(), new ArrayList<>()))),
-                        PigeonUtil.GeneralUnits.BLITZ.getUnit());
+        PigeonUtil.sendTo(new ProfileRequestPayload(names, ids,
+                        payload -> future.complete(Objects.requireNonNullElse(payload.getProfiles(), new ArrayList<>()))),
+                PigeonUtil.GeneralUnits.BLITZ.getUnit());
 
         return future;
     }
@@ -187,23 +162,17 @@ public class Profile {
     public static CompletableFuture<List<Profile>> getProfiles(Map<UUID, String> info) {
         var future = new CompletableFuture<List<Profile>>();
 
-        PigeonUtil.getPigeon()
-                .sendTo(new ProfileRequestPayload(info,
-                                payload -> future.complete(Objects.requireNonNullElse(payload.getProfiles(), new ArrayList<>()))),
-                        PigeonUtil.GeneralUnits.BLITZ.getUnit());
+        PigeonUtil.sendTo(new ProfileRequestPayload(info,
+                        payload -> future.complete(Objects.requireNonNullElse(payload.getProfiles(), new ArrayList<>()))),
+                PigeonUtil.GeneralUnits.BLITZ.getUnit());
 
         return future;
     }
 
-    /**
-     * Updates the {@linkplain Profile} on Blitz. <br>
-     * Use this to make sure a {@linkplain Profile} is up-to-date when it changes or leaves a server.
-     */
     public CompletableFuture<ProfileQueryResult> update() {
         var future = new CompletableFuture<ProfileQueryResult>();
 
-        PigeonUtil.getPigeon()
-                .sendTo(new ProfileUpdatePayload(this, payload -> future.complete(payload.getResult())), PigeonUtil.GeneralUnits.BLITZ.getUnit());
+        PigeonUtil.sendTo(new ProfileUpdatePayload(this, payload -> future.complete(payload.getResult())), PigeonUtil.GeneralUnits.BLITZ.getUnit());
 
         return future;
     }
@@ -212,65 +181,41 @@ public class Profile {
      * <strong>Usage reserved for Blitz.</strong>
      */
     public Document toDocument() {
-        var document = new Document();
-
-        document.put("_id", this.id.toString());
-        document.put("name", this.name);
-        document.put("search", this.name.toUpperCase());
-        document.put("firstSeen", this.firstSeen);
-        document.put("lastSeen", this.lastSeen);
-        document.put("currentAddress", this.currentAddress);
-        document.put("optionsProfile", this.optionsProfile.toDocument());
-        document.put("staffProfile", this.staffProfile.toDocument());
-        document.put("discord", this.discord);
-        document.put("gold", this.gold);
-        document.put("experience", this.experience);
-        document.put("grants", this.grants);
-        document.put("punishments", this.punishments);
-        document.put("ignored", this.ignored);
-        document.put("friends", this.friends);
-
-        return document;
+        return new Document()
+                .append("_id", this.id.toString())
+                .append("name", this.name)
+                .append("search", this.name.toUpperCase())
+                .append("firstSeen", this.firstSeen)
+                .append("lastSeen", this.lastSeen)
+                .append("currentAddress", this.currentAddress)
+                .append("optionsProfile", this.optionsProfile.toDocument())
+                .append("staffProfile", this.staffProfile.toDocument())
+                .append("discord", this.discord)
+                .append("gold", this.gold)
+                .append("experience", this.experience)
+                .append("grants", this.grants)
+                .append("punishments", this.punishments)
+                .append("ignored", this.ignored)
+                .append("friends", this.friends);
     }
 
-    /**
-     * Sets the profiles Grant to the highest Grant.
-     */
     public void reloadGrant() {
         this.grant = this.getActiveGrant();
     }
 
-    /**
-     * Validates the profiles Punishments and Grants.
-     */
     public void validate() {
         this.validatePunishments();
         this.reloadGrant();
     }
 
-    /**
-     * Returns if the Profile is ignoring another Profile.
-     */
     public boolean isIgnoring(Profile profile) {
         return this.ignored.contains(profile.getId());
     }
 
-    /**
-     * Returns the amount of Punishments the Profile has by a Type.
-     */
     public int getPunishmentCountByType(Punishment.Type type) {
-        int i = 0;
-
-        for (Punishment punishment : this.cachedPunishments)
-            if (punishment.getType() == type)
-                i++;
-
-        return i;
+        return (int) this.cachedPunishments.stream().filter(punishment -> punishment.getType() == type).count();
     }
 
-    /**
-     * Returns the active Punishment by a Type.
-     */
     public Punishment getActivePunishmentByType(Punishment.Type type) {
         for (Punishment punishment : this.cachedPunishments)
             if (punishment.getType() == type && !punishment.isRemoved() && !punishment.hasExpired())
@@ -279,9 +224,6 @@ public class Profile {
         return null;
     }
 
-    /**
-     * Returns either an active Ban or Blacklist.
-     */
     public Punishment getActiveBan() {
         Punishment punishment = this.getActivePunishmentByType(Punishment.Type.BLACKLIST);
 
@@ -291,18 +233,12 @@ public class Profile {
         return this.getActivePunishmentByType(Punishment.Type.BAN);
     }
 
-    /**
-     * Validates the Profile's Punishments.
-     */
     public void validatePunishments() {
         for (Punishment punishment : this.cachedPunishments)
             if (!punishment.isRemoved() && punishment.hasExpired())
                 this.expirePunishment(punishment, System.currentTimeMillis());
     }
 
-    /**
-     * Adds a Punishment to the Profile.
-     */
     public void addPunishment(Punishment punishment) {
         this.punishments.add(punishment.getId());
         this.cachedPunishments.add(punishment);
@@ -311,48 +247,43 @@ public class Profile {
         this.update();
 
         PigeonUtil.broadcast(new PunishmentAddPayload(this.getId(), punishment.getId()));
-
-        CommonLib.getCommonLib().getApiListeners().forEach(provider -> provider.punishmentAdd(punishment));
     }
 
-    /**
-     * Removes a Punishment from the Profile.
-     */
     public void removePunishment(Punishment punishment, @Nullable UUID removedByUUID, Long removedAt, String removedReason) {
         punishment.remove(removedByUUID, removedAt, removedReason);
-
         this.update();
 
         PigeonUtil.broadcast(new PunishmentRemovePayload(this.getId(), punishment.getId()));
-
-        CommonLib.getCommonLib().getApiListeners().forEach(provider -> provider.punishmentRemove(punishment));
     }
 
-    /**
-     * Expires a Punishment on the Profile.
-     */
-    public void expirePunishment(Punishment punishment, Long removedAt) {
+    public void expirePunishment(Punishment punishment, long removedAt) {
         punishment.remove(null, removedAt, "Punishment Expired");
-
-        this.update();
-
-        PigeonUtil.broadcast(new PunishmentExpirePayload(this.getId(), punishment.getId()));
-
-        CommonLib.getCommonLib().getApiListeners().forEach(provider -> provider.punishmentExpire(punishment));
     }
 
-    /**
-     * Validates the Profile's Grants.
-     */
     public void validateGrants() {
-        for (Grant grant : this.cachedGrants)
+        for (var grant : this.cachedGrants)
             if (!grant.isRemoved() && grant.hasExpired())
                 this.expireGrant(grant, System.currentTimeMillis());
     }
 
-    /**
-     * Returns the active Grant of the Profile.
-     */
+    public List<Grant> getSortedGrants() {
+        List<Grant> sortedGrants = new ArrayList<>();
+
+        List<Grant> activeGrants = new ArrayList<>(this.cachedGrants);
+        List<Grant> removedGrants = new ArrayList<>(this.cachedGrants);
+
+        activeGrants.removeIf(Grant::isRemoved);
+        removedGrants.removeIf(Grant::isActive);
+
+        activeGrants.sort(Grant.COMPARATOR);
+        removedGrants.sort(Grant.COMPARATOR);
+
+        sortedGrants.addAll(activeGrants);
+        sortedGrants.addAll(removedGrants);
+
+        return sortedGrants;
+    }
+
     public Grant getActiveGrant() {
         this.validateGrants();
 
@@ -364,12 +295,9 @@ public class Profile {
 
         return activeGrants.stream()
                 .min(Grant.COMPARATOR)
-                .orElse(Grant.getDefaultGrant(this.getId()));
+                .orElse(Grant.DEFAULT_GRANT);
     }
 
-    /**
-     * Adds a new Grant to the Profile.
-     */
     public void addGrant(Grant grant) {
         if (grant.isDefault())
             return;
@@ -381,13 +309,8 @@ public class Profile {
         this.update();
 
         PigeonUtil.broadcast(new GrantAddPayload(this.id, grant.getId()));
-
-        CommonLib.getCommonLib().getApiListeners().forEach(provider -> provider.grantAdd(grant));
     }
 
-    /**
-     * Removes a Grant from the Profile.
-     */
     public void removeGrant(Grant grant, UUID removedBy, Long removedAt, String removedReason) {
         if (grant.isDefault())
             return;
@@ -396,28 +319,18 @@ public class Profile {
         this.update();
 
         PigeonUtil.broadcast(new GrantRemovePayload(this.id, grant.getId()));
-
-        CommonLib.getCommonLib().getApiListeners().forEach(provider -> provider.grantRemove(grant));
     }
 
-    /**
-     * Expires a Grant on the Profile.
-     */
-    public void expireGrant(Grant grant, Long removedAt) {
+    public void expireGrant(Grant grant, long removedAt) {
         if (grant.isDefault())
             return;
 
         grant.remove(null, removedAt, "Grant Expired");
-        this.update();
-
-        PigeonUtil.broadcast(new GrantExpirePayload(this.id, grant.getId()));
-
-        CommonLib.getCommonLib().getApiListeners().forEach(provider -> provider.grantExpire(grant));
     }
 
     public Component getChatFormat() {
         return Component.text().append(
-                getColoredPrefix(),
+                this.getColoredPrefix(),
                 Component.space(),
                 this.getColoredName()
         ).build();
@@ -441,7 +354,7 @@ public class Profile {
         return id.hashCode();
     }
 
-    @Getter @Setter @Builder @AllArgsConstructor
+    @Getter @Setter
     public static class Options {
 
         private boolean receivingPartyRequests = true;
@@ -450,7 +363,8 @@ public class Profile {
         private boolean receivingConversations = true;
         private boolean receivingMessageSounds = true;
 
-        public Options() {}
+        public Options() {
+        }
 
         public Options(Document document) {
             this.receivingPartyRequests = document.getBoolean("receivingPartyRequests");
@@ -471,14 +385,15 @@ public class Profile {
 
     }
 
-    @Getter @Setter @Builder @AllArgsConstructor
+    @Getter @Setter
     public static class Staff {
 
         private String twoFactorKey = "";
         private boolean receivingStaffMessages = true;
         private boolean locked;
 
-        public Staff() {}
+        public Staff() {
+        }
 
         public Staff(Document document) {
             this.twoFactorKey = document.getString("twoFactorKey");

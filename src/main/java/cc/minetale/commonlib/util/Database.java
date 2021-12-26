@@ -3,25 +3,21 @@ package cc.minetale.commonlib.util;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoDatabase;
 import lombok.Getter;
+import lombok.Setter;
 import org.bson.Document;
 
-@Getter
 public class Database {
 
-    @Getter private static Database database;
+    @Getter @Setter private static MongoCollection<Document> rankCollection;
+    @Getter @Setter private static MongoCollection<Document> grantsCollection;
+    @Getter @Setter private static MongoCollection<Document> punishmentsCollection;
+    @Getter @Setter private static MongoCollection<Document> profilesCollection;
 
-    private final MongoCollection<Document> rankCollection;
-    private final MongoCollection<Document> grantsCollection;
-    private final MongoCollection<Document> punishmentsCollection;
-    private final MongoCollection<Document> profilesCollection;
-
-    public Database(MongoDatabase mongoDatabase) {
-        Database.database = this;
-
-        this.rankCollection =  mongoDatabase.getCollection("ranks");
-        this.grantsCollection =  mongoDatabase.getCollection("grants");
-        this.punishmentsCollection =  mongoDatabase.getCollection("punishments");
-        this.profilesCollection =  mongoDatabase.getCollection("profiles");
+    public static void init(MongoDatabase database) {
+        rankCollection = database.getCollection("ranks");
+        grantsCollection = database.getCollection("grants");
+        punishmentsCollection = database.getCollection("punishments");
+        profilesCollection = database.getCollection("profiles");
     }
 
 }

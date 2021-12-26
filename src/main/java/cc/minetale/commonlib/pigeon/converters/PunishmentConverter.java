@@ -1,6 +1,8 @@
 package cc.minetale.commonlib.pigeon.converters;
 
+import cc.minetale.commonlib.api.Grant;
 import cc.minetale.commonlib.api.Punishment;
+import cc.minetale.commonlib.api.Rank;
 import cc.minetale.pigeon.Converter;
 import cc.minetale.pigeon.converters.EnumConverter;
 import cc.minetale.pigeon.converters.StringConverter;
@@ -32,25 +34,25 @@ public class PunishmentConverter extends Converter<Punishment> {
             if(!element.isJsonObject()) { return null; }
             var data = element.getAsJsonObject();
 
-            var removed = data.get("removed").getAsBoolean();
+            var punishment = Punishment.createPunishment(
+                    data.get("id").getAsString(),
+                    UUID.fromString(data.get("playerId").getAsString()),
+                    EnumConverter.Utils.convertToValue(Punishment.Type.class, data.get("type")),
+                    data.get("addedById") != null ? UUID.fromString(data.get("addedById").getAsString()) : null,
+                    data.get("addedAt").getAsLong(),
+                    StringConverter.Utils.convertToValue(data.get("addedReason")),
+                    data.get("duration").getAsLong()
+            );
 
-            var punishment = Punishment.builder()
-                    .id(data.get("id").getAsString())
-                    .playerId(UUID.fromString(data.get("playedId").getAsString()))
-                    .type(EnumConverter.Utils.convertToValue(Punishment.Type.class, data.get("type")))
-                    .addedById(data.get("addedById") != null ? UUID.fromString(data.get("addedById").getAsString()) : null)
-                    .addedAt(data.get("addedAt").getAsLong())
-                    .addedReason(StringConverter.Utils.convertToValue(data.get("addedReason")))
-                    .duration(data.get("duration").getAsLong())
-                    .removed(removed);
+            punishment.setRemoved(data.get("removed").getAsBoolean());
 
-            if(removed) {
-                punishment.removedAt(data.get("removedAt").getAsLong())
-                        .removedById(data.get("removedById") != null ? UUID.fromString(data.get("removedByUUID").getAsString()) : null)
-                        .removedReason(StringConverter.Utils.convertToValue(data.get("removedReason")));
+            if(punishment.isRemoved()) {
+                punishment.setRemovedAt(data.get("removedAt").getAsLong());
+                punishment.setRemovedById(data.get("removedById") != null ? UUID.fromString(data.get("removedById").getAsString()) : null);
+                punishment.setRemovedReason(StringConverter.Utils.convertToValue(data.get("removedReason")));
             }
 
-            return punishment.build();
+            return punishment;
         }
 
         public static JsonElement convertToSimple(Punishment value) {

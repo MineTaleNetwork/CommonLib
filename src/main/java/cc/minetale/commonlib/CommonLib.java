@@ -1,51 +1,51 @@
 package cc.minetale.commonlib;
 
-import cc.minetale.commonlib.api.APIListener;
-import cc.minetale.commonlib.pigeon.Listeners;
 import cc.minetale.commonlib.util.Database;
-import cc.minetale.commonlib.util.PigeonUtil;
-import cc.minetale.commonlib.util.timer.TimerManager;
+import cc.minetale.commonlib.util.StringUtil;
 import cc.minetale.pigeon.Pigeon;
 import com.mongodb.MongoClient;
 import com.mongodb.client.MongoDatabase;
 import lombok.Getter;
 
-import java.util.HashSet;
-import java.util.Set;
-
-@Getter
 public class CommonLib {
 
-    @Getter private static CommonLib commonLib;
+    @Getter private static MongoClient mongoClient;
+    @Getter private static MongoDatabase mongoDatabase;
 
-    private final MongoClient mongoClient;
-    private final MongoDatabase mongoDatabase;
-    private final Pigeon pigeon;
-    private final TimerManager timerManager;
-    private final Set<APIListener> apiListeners;
+    public static void init() {
+        loadPigeon();
+        loadMongo();
 
-    public CommonLib(MongoClient mongoClient, MongoDatabase mongoDatabase, Pigeon pigeon) {
-        CommonLib.commonLib = this;
+        var pigeon = Pigeon.getPigeon();
 
-        this.timerManager = new TimerManager();
-        this.apiListeners = new HashSet<>();
-
-        this.mongoClient = mongoClient;
-        this.mongoDatabase = mongoDatabase;
-        this.pigeon = pigeon;
-
-        this.pigeon.getConvertersRegistry()
+        pigeon.getConvertersRegistry()
                 .registerConvertersInPackage("cc.minetale.commonlib.pigeon.converters");
 
-        this.pigeon.getPayloadsRegistry()
+        pigeon.getPayloadsRegistry()
                 .registerPayloadsInPackage("cc.minetale.commonlib.pigeon.payloads");
 
-        this.pigeon.getListenersRegistry()
-                .registerListener(new Listeners());
+        pigeon.setupDefaultUpdater();
+        pigeon.acceptDelivery();
 
-        new Database(this.mongoDatabase);
+        Database.init(mongoDatabase);
+    }
 
-        PigeonUtil.setPigeon(this.pigeon);
+    private static void loadPigeon() {
+        var pigeon = new Pigeon();
+
+        pigeon.initialize(
+                System.getProperty("pigeonHost", "127.0.0.1"),
+                Integer.getInteger("pigeonPort", 5672),
+                System.getProperty("pigeonNetwork", "minetale"),
+                System.getProperty("pigeonUnit", StringUtil.generateId())
+        );
+
+        pigeon.setupDefaultUpdater();
+    }
+
+    private static void loadMongo() {
+        mongoClient = new MongoClient(System.getProperty("mongoHost", "127.0.0.1"), Integer.getInteger("mongoPort", 27017));
+        mongoDatabase = mongoClient.getDatabase(System.getProperty("mongoDatabase", "MineTale"));
     }
 
 }

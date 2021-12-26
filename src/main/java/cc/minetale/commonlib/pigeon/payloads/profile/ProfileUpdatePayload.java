@@ -1,7 +1,7 @@
 package cc.minetale.commonlib.pigeon.payloads.profile;
 
-import cc.minetale.commonlib.profile.Profile;
-import cc.minetale.commonlib.profile.ProfileQueryResult;
+import cc.minetale.commonlib.api.Profile;
+import cc.minetale.commonlib.api.ProfileQueryResult;
 import cc.minetale.pigeon.annotations.Payload;
 import cc.minetale.pigeon.annotations.RequestConstructor;
 import cc.minetale.pigeon.annotations.ResponseConstructor;
