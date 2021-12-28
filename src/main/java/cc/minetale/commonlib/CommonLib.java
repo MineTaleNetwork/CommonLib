@@ -1,8 +1,12 @@
 package cc.minetale.commonlib;
 
+import cc.minetale.commonlib.redis.RedisUtil;
 import cc.minetale.commonlib.util.Database;
 import cc.minetale.commonlib.util.StringUtil;
 import cc.minetale.pigeon.Pigeon;
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+import com.google.gson.LongSerializationPolicy;
 import com.mongodb.MongoClient;
 import com.mongodb.client.MongoDatabase;
 import lombok.Getter;
@@ -11,8 +15,14 @@ public class CommonLib {
 
     @Getter private static MongoClient mongoClient;
     @Getter private static MongoDatabase mongoDatabase;
+    @Getter private static Gson gson;
 
     public static void init() {
+        gson = new GsonBuilder()
+                .serializeNulls()
+                .setLongSerializationPolicy(LongSerializationPolicy.STRING)
+                .create();
+
         loadPigeon();
         loadMongo();
 
@@ -27,6 +37,7 @@ public class CommonLib {
         pigeon.setupDefaultUpdater();
         pigeon.acceptDelivery();
 
+        RedisUtil.init();
         Database.init(mongoDatabase);
     }
 

@@ -2,7 +2,7 @@ package cc.minetale.commonlib.pigeon.converters;
 
 import cc.minetale.commonlib.api.Grant;
 import cc.minetale.commonlib.api.Punishment;
-import cc.minetale.commonlib.api.Profile;
+import cc.minetale.commonlib.profile.Profile;
 import cc.minetale.pigeon.Converter;
 import cc.minetale.pigeon.converters.ListConverter;
 import com.google.gson.JsonElement;
@@ -51,7 +51,7 @@ public class ProfileConverter extends Converter<Profile> {
 
             var profile = new Profile();
 
-            profile.setId(UUID.fromString(data.get("id").getAsString()));
+            profile.setUuid(UUID.fromString(data.get("id").getAsString()));
             profile.setName(data.get("name").getAsString());
             profile.setGrant(GrantConverter.Utils.convertToValue(data.get("grant")));
             profile.setFirstSeen(data.get("firstSeen").getAsLong());
@@ -75,7 +75,7 @@ public class ProfileConverter extends Converter<Profile> {
         public static JsonElement convertToSimple(Profile value) {
             var data = new JsonObject();
 
-            data.add("id", new JsonPrimitive(value.getId().toString()));
+            data.add("id", new JsonPrimitive(value.getUuid().toString()));
             data.add("name", new JsonPrimitive(value.getName()));
             data.add("grant", GrantConverter.Utils.convertToSimple(value.getGrant()));
 

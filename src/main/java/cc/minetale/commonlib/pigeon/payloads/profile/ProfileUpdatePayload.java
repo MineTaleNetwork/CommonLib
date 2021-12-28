@@ -1,49 +1,24 @@
 package cc.minetale.commonlib.pigeon.payloads.profile;
 
-import cc.minetale.commonlib.api.Profile;
-import cc.minetale.commonlib.api.ProfileQueryResult;
 import cc.minetale.pigeon.annotations.Payload;
-import cc.minetale.pigeon.annotations.RequestConstructor;
-import cc.minetale.pigeon.annotations.ResponseConstructor;
 import cc.minetale.pigeon.annotations.Transmit;
-import cc.minetale.pigeon.feedback.FeedbackState;
-import cc.minetale.pigeon.feedback.RequiredState;
-import cc.minetale.pigeon.payloads.bases.FeedbackPayload;
+import cc.minetale.pigeon.payloads.bases.BasePayload;
 import lombok.Getter;
-import org.jetbrains.annotations.Nullable;
 
 import java.util.UUID;
-import java.util.function.Consumer;
 
 @Getter @Payload
-public class ProfileUpdatePayload extends FeedbackPayload {
+public class ProfileUpdatePayload extends BasePayload {
+
+    @Transmit UUID player;
 
     public ProfileUpdatePayload() {
-        this.payloadId = "profileUpdatePayload";
-        this.payloadTimeout = 10000;
+        payloadId = "profileUpdatePayload";
     }
 
-    @Transmit(direction = RequiredState.REQUEST) Profile profile;
-
-    @RequestConstructor
-    public ProfileUpdatePayload(Profile profile, Consumer<ProfileUpdatePayload> feedback) {
+    public ProfileUpdatePayload(UUID player) {
         this();
-        this.payloadState = FeedbackState.REQUEST;
-        this.feedbackID = UUID.randomUUID();
-
-        this.profile = profile;
-
-        this.feedback = feedback;
-    }
-
-    @Nullable @Transmit(direction = RequiredState.RESPONSE) ProfileQueryResult result;
-
-    @ResponseConstructor
-    public ProfileUpdatePayload(ProfileQueryResult result) {
-        this();
-        this.payloadState = FeedbackState.RESPONSE;
-
-        this.result = result;
+        this.player = player;
     }
 
     @Override

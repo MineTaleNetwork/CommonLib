@@ -17,6 +17,7 @@ dependencies {
 	compileOnly         group: 'org.projectlombok', name: 'lombok', version: '1.18.22'
     annotationProcessor group: 'org.projectlombok', name: 'lombok', version: '1.18.22'
 
+    implementation group: 'redis.clients',      name: 'jedis',                            version: '4.0.0'
     implementation group: 'net.kyori',          name: 'adventure-text-serializer-gson',   version: '4.9.2'
     implementation group: 'net.kyori',          name: 'adventure-api',                    version: '4.9.2'
     implementation group: 'cc.minetale',        name: 'Pigeon',                           version: 'LATEST'

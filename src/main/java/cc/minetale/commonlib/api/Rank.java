@@ -1,5 +1,6 @@
 package cc.minetale.commonlib.api;
 
+import cc.minetale.commonlib.profile.Profile;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import net.kyori.adventure.text.Component;

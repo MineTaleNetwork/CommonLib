@@ -1,8 +1,11 @@
 package cc.minetale.commonlib.api;
 
+import cc.minetale.commonlib.profile.Profile;
 import cc.minetale.commonlib.util.Database;
+import cc.minetale.commonlib.util.JSONUtil;
 import cc.minetale.commonlib.util.TimeUtil;
 import cc.minetale.commonlib.util.StringUtil;
+import com.google.gson.annotations.SerializedName;
 import com.mongodb.client.model.Filters;
 import com.mongodb.client.model.ReplaceOptions;
 import lombok.AllArgsConstructor;
@@ -12,13 +15,12 @@ import lombok.Setter;
 import org.bson.Document;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.Comparator;
-import java.util.Objects;
-import java.util.UUID;
+import java.util.*;
 
 @Getter @Setter
 public class Grant {
 
+    @SerializedName("_id")
     private String id;
     private UUID playerId;
     private Rank rank;
@@ -30,23 +32,6 @@ public class Grant {
     private long removedAt;
     private String removedReason;
     private boolean removed;
-
-    @Override
-    public String toString() {
-        return "Grant{" +
-                "id='" + id + '\'' +
-                ", playerId=" + playerId +
-                ", rank=" + rank +
-                ", addedById=" + addedById +
-                ", addedAt=" + addedAt +
-                ", addedReason='" + addedReason + '\'' +
-                ", duration=" + duration +
-                ", removedById=" + removedById +
-                ", removedAt=" + removedAt +
-                ", removedReason='" + removedReason + '\'' +
-                ", removed=" + removed +
-                '}';
-    }
 
     public static final Comparator<Grant> COMPARATOR = Comparator.comparingInt(grant -> grant.getRank().getWeight());
     public static final Grant DEFAULT_GRANT = createGrant("DEFAULT", null, Rank.MEMBER, null, 0L, "Default", Integer.MAX_VALUE);
@@ -65,37 +50,25 @@ public class Grant {
         return grant;
     }
 
-    public static @Nullable Grant fromDocument(Document document) {
-        if (document != null) {
-            var grant = createGrant(
-                    document.getString("_id"),
-                    UUID.fromString(document.getString("playerId")),
-                    Rank.valueOf(document.getString("rank")),
-                    document.getString("addedById") != null ? UUID.fromString(document.getString("addedById")) : null,
-                    document.getLong("addedAt"),
-                    document.getString("addedReason"),
-                    document.getLong("duration")
-            );
+    public static List<Grant> getGrants(Profile profile) {
+        return getGrants(profile.getUuid());
+    }
 
-            grant.setRemoved(document.getBoolean("removed"));
+    public static List<Grant> getGrants(UUID uuid) {
+        var grants = new ArrayList<Grant>();
 
-            if(grant.isRemoved()) {
-                grant.setRemovedAt(document.getLong("removedAt"));
-                grant.setRemovedById(document.getString("removedById") != null ? UUID.fromString(document.getString("removedById")) : null);
-                grant.setRemovedReason(document.getString("removedReason"));
-            }
-
-            return grant;
+        for (var document : Database.getGrantsCollection().find(Filters.eq("playerId", uuid))) {
+            grants.add(JSONUtil.fromDocument(document, Grant.class));
         }
 
-        return null;
+        return grants;
     }
 
     public static @Nullable Grant getGrant(String id) {
         var document = Database.getGrantsCollection().find(Filters.eq("_id", id)).first();
 
         if (document != null)
-            return fromDocument(document);
+            return JSONUtil.fromDocument(document, Grant.class);
 
         return null;
     }
@@ -105,22 +78,7 @@ public class Grant {
     }
 
     public void save() {
-        Database.getGrantsCollection().replaceOne(Filters.eq("_id", this.id), toDocument(), new ReplaceOptions().upsert(true));
-    }
-
-    public Document toDocument() {
-        return new Document()
-                .append("_id", this.id)
-                .append("playerId", this.playerId.toString())
-                .append("rank", this.rank.name())
-                .append("addedById", this.addedById != null ? this.addedById.toString() : null)
-                .append("addedAt", this.addedAt)
-                .append("addedReason", this.addedReason)
-                .append("duration", this.duration)
-                .append("removed", this.removed)
-                .append("removedAt", this.removedAt)
-                .append("removedById", this.removedById != null ? this.removedById.toString() : null)
-                .append("removedReason", this.removedReason != null ? this.removedReason : null);
+        Database.getGrantsCollection().replaceOne(Filters.eq("_id", this.id), JSONUtil.toDocument(this), new ReplaceOptions().upsert(true));
     }
 
     public boolean isPermanent() {

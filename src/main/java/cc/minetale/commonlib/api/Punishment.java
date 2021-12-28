@@ -1,9 +1,8 @@
 package cc.minetale.commonlib.api;
 
-import cc.minetale.commonlib.util.Database;
-import cc.minetale.commonlib.util.MC;
-import cc.minetale.commonlib.util.TimeUtil;
-import cc.minetale.commonlib.util.StringUtil;
+import cc.minetale.commonlib.profile.Profile;
+import cc.minetale.commonlib.util.*;
+import com.google.gson.annotations.SerializedName;
 import com.mongodb.client.model.Filters;
 import com.mongodb.client.model.ReplaceOptions;
 import lombok.AllArgsConstructor;
@@ -21,6 +20,7 @@ import java.util.*;
 @Getter @Setter
 public class Punishment {
 
+    @SerializedName("_id")
     private String id;
     private UUID playerId;
     private Type type;
@@ -47,37 +47,25 @@ public class Punishment {
         return punishment;
     }
 
-    public static @Nullable Punishment fromDocument(Document document) {
-        if(document != null) {
-            var punishment = createPunishment(
-                    document.getString("_id"),
-                    UUID.fromString(document.getString("playerId")),
-                    Type.valueOf(document.getString("type")),
-                    document.getString("addedById") != null ? UUID.fromString(document.getString("addedById")) : null,
-                    document.getLong("addedAt"),
-                    document.getString("addedReason"),
-                    document.getLong("duration")
-            );
+    public static List<Punishment> getPunishments(Profile profile) {
+        return getPunishments(profile.getUuid());
+    }
 
-            punishment.setRemoved(document.getBoolean("removed"));
+    public static List<Punishment> getPunishments(UUID uuid) {
+        var punishments = new ArrayList<Punishment>();
 
-            if(punishment.isRemoved()) {
-                punishment.setRemovedAt(document.getLong("removedAt"));
-                punishment.setRemovedById(document.getString("removedById") != null ? UUID.fromString(document.getString("removedById")) : null);
-                punishment.setRemovedReason(document.getString("removedReason"));
-            }
-            
-            return punishment;
+        for (var document : Database.getPunishmentsCollection().find(Filters.eq("playerId", uuid))) {
+            punishments.add(JSONUtil.fromDocument(document, Punishment.class));
         }
-        
-        return null;
+
+        return punishments;
     }
 
     public static @Nullable Punishment getPunishment(String id) {
         var document = Database.getPunishmentsCollection().find(Filters.eq("_id", id)).first();
 
         if (document != null)
-            return fromDocument(document);
+            return JSONUtil.fromDocument(document, Punishment.class);
 
         return null;
     }
@@ -87,22 +75,7 @@ public class Punishment {
     }
 
     public void save() {
-        Database.getPunishmentsCollection().replaceOne(Filters.eq("_id", this.id), toDocument(), new ReplaceOptions().upsert(true));
-    }
-
-    public Document toDocument() {
-        return new Document()
-                .append("_id", this.id)
-                .append("playerId", this.playerId.toString())
-                .append("type", this.type.name())
-                .append("addedById", this.addedById != null ? this.addedById.toString() : null)
-                .append("addedAt", this.addedAt)
-                .append("addedReason", this.addedReason)
-                .append("duration", this.duration)
-                .append("removed", this.removed)
-                .append("removedAt", this.removedAt)
-                .append("removedById", this.removedById != null ? this.removedById.toString() : null)
-                .append("removedReason", this.removedReason != null ? this.removedReason : null);
+        Database.getPunishmentsCollection().replaceOne(Filters.eq("_id", this.id), JSONUtil.toDocument(this), new ReplaceOptions().upsert(true));
     }
 
     public boolean isPermanent() {
@@ -110,7 +83,7 @@ public class Punishment {
     }
 
     public boolean isActive() {
-        return !this.removed && (this.isPermanent() || this.getMillisRemaining() < 0L);
+        return !this.removed && (this.isPermanent() || !this.hasExpired());
     }
 
     public long getMillisRemaining() {
