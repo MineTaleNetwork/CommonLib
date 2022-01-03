@@ -1,7 +1,5 @@
 package cc.minetale.commonlib.pigeon.converters;
 
-import cc.minetale.commonlib.api.Grant;
-import cc.minetale.commonlib.api.Punishment;
 import cc.minetale.commonlib.profile.Profile;
 import cc.minetale.pigeon.Converter;
 import cc.minetale.pigeon.converters.ListConverter;
@@ -53,7 +51,6 @@ public class ProfileConverter extends Converter<Profile> {
 
             profile.setUuid(UUID.fromString(data.get("id").getAsString()));
             profile.setName(data.get("name").getAsString());
-            profile.setGrant(GrantConverter.Utils.convertToValue(data.get("grant")));
             profile.setFirstSeen(data.get("firstSeen").getAsLong());
             profile.setLastSeen(data.get("lastSeen").getAsLong());
             profile.setCurrentAddress(data.get("currentAddress").getAsString());
@@ -64,10 +61,6 @@ public class ProfileConverter extends Converter<Profile> {
             profile.setExperience(data.get("experience").getAsLong());
             profile.setIgnored(ListConverter.Utils.convertToValue(data.get("ignored"), String.class));
             profile.setFriends(ListConverter.Utils.convertToValue(data.get("friends"), String.class));
-            profile.setPunishments(ListConverter.Utils.convertToValue(data.get("punishments"), String.class));
-            profile.setGrants(ListConverter.Utils.convertToValue(data.get("grants"), String.class));
-            profile.setCachedPunishments(ListConverter.Utils.convertToValue(data.get("cachedPunishments"), Punishment.class));
-            profile.setCachedGrants(ListConverter.Utils.convertToValue(data.get("cachedGrants"), Grant.class));
 
             return profile;
         }
@@ -77,7 +70,6 @@ public class ProfileConverter extends Converter<Profile> {
 
             data.add("id", new JsonPrimitive(value.getUuid().toString()));
             data.add("name", new JsonPrimitive(value.getName()));
-            data.add("grant", GrantConverter.Utils.convertToSimple(value.getGrant()));
 
             data.add("currentAddress", new JsonPrimitive(value.getCurrentAddress()));
             data.add("firstSeen", new JsonPrimitive(value.getFirstSeen()));
@@ -86,10 +78,6 @@ public class ProfileConverter extends Converter<Profile> {
             data.add("gold", new JsonPrimitive(value.getGold()));
             data.add("experience", new JsonPrimitive(value.getExperience()));
 
-            data.add("punishments", ListConverter.Utils.convertToSimple(value.getPunishments(), String.class));
-            data.add("cachedPunishments", ListConverter.Utils.convertToSimple(value.getCachedPunishments(), Punishment.class));
-            data.add("grants", ListConverter.Utils.convertToSimple(value.getGrants(), String.class));
-            data.add("cachedGrants", ListConverter.Utils.convertToSimple(value.getCachedGrants(), Grant.class));
             data.add("ignored", ListConverter.Utils.convertToSimple(value.getIgnored(), String.class));
             data.add("friends", ListConverter.Utils.convertToSimple(value.getFriends(), String.class));
 

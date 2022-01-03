@@ -8,16 +8,16 @@ import lombok.Getter;
 import java.util.UUID;
 
 @Getter @Payload
-public class GrantRemovePayload extends BasePayload {
+public class GrantExpirePayload extends BasePayload {
 
     @Transmit UUID playerUuid;
     @Transmit String grant;
 
-    public GrantRemovePayload() {
-        payloadId = "grantRemovePayload";
+    public GrantExpirePayload() {
+        payloadId = "grantExpirePayload";
     }
 
-    public GrantRemovePayload(UUID playerUuid, String grant) {
+    public GrantExpirePayload(UUID playerUuid, String grant) {
         this();
         this.playerUuid = playerUuid;
         this.grant = grant;

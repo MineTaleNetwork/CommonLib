@@ -1,8 +1,7 @@
 package cc.minetale.commonlib.pigeon.converters;
 
-import cc.minetale.commonlib.api.Grant;
-import cc.minetale.commonlib.api.Punishment;
-import cc.minetale.commonlib.api.Rank;
+import cc.minetale.commonlib.punishment.Punishment;
+import cc.minetale.commonlib.punishment.PunishmentType;
 import cc.minetale.pigeon.Converter;
 import cc.minetale.pigeon.converters.EnumConverter;
 import cc.minetale.pigeon.converters.StringConverter;
@@ -34,10 +33,10 @@ public class PunishmentConverter extends Converter<Punishment> {
             if(!element.isJsonObject()) { return null; }
             var data = element.getAsJsonObject();
 
-            var punishment = Punishment.createPunishment(
+            var punishment = new Punishment(
                     data.get("id").getAsString(),
                     UUID.fromString(data.get("playerId").getAsString()),
-                    EnumConverter.Utils.convertToValue(Punishment.Type.class, data.get("type")),
+                    EnumConverter.Utils.convertToValue(PunishmentType.class, data.get("type")),
                     data.get("addedById") != null ? UUID.fromString(data.get("addedById").getAsString()) : null,
                     data.get("addedAt").getAsLong(),
                     StringConverter.Utils.convertToValue(data.get("addedReason")),
@@ -60,7 +59,7 @@ public class PunishmentConverter extends Converter<Punishment> {
 
             data.add("id", new JsonPrimitive(value.getId()));
             data.add("playerId", new JsonPrimitive(value.getPlayerId().toString()));
-            data.add("type", EnumConverter.Utils.convertToSimple(value.getType()));
+            data.add("type", EnumConverter.Utils.convertToSimple(value.getPunishmentType()));
             data.add("addedById", value.getAddedById() != null ? new JsonPrimitive(value.getAddedById().toString()) : JsonNull.INSTANCE);
             data.add("addedAt", new JsonPrimitive(value.getAddedAt()));
             data.add("addedReason", StringConverter.Utils.convertToSimple(value.getAddedReason()));

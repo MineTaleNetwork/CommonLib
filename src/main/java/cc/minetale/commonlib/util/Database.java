@@ -8,12 +8,14 @@ import org.bson.Document;
 
 public class Database {
 
+    @Getter @Setter private static MongoCollection<Document> serversCollection;
     @Getter @Setter private static MongoCollection<Document> rankCollection;
     @Getter @Setter private static MongoCollection<Document> grantsCollection;
     @Getter @Setter private static MongoCollection<Document> punishmentsCollection;
     @Getter @Setter private static MongoCollection<Document> profilesCollection;
 
     public static void init(MongoDatabase database) {
+        serversCollection = database.getCollection("servers");
         rankCollection = database.getCollection("ranks");
         grantsCollection = database.getCollection("grants");
         punishmentsCollection = database.getCollection("punishments");

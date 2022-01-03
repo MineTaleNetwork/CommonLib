@@ -1,4 +1,4 @@
-package cc.minetale.commonlib.api;
+package cc.minetale.commonlib.grant;
 
 import cc.minetale.commonlib.profile.Profile;
 import lombok.AllArgsConstructor;
@@ -61,11 +61,11 @@ public enum Rank {
             false
     );
 
-    private String name;
-    private NamedTextColor color;
-    private boolean staff;
+    private final String name;
+    private final NamedTextColor color;
+    private final boolean staff;
 
-    public static Comparator<Rank> COMPARATOR = Comparator.comparingInt(Rank::getWeight);
+    public static final Comparator<Rank> COMPARATOR = Comparator.comparingInt(Rank::getWeight);
 
     public int getWeight() {
         return this.ordinal();

@@ -1,21 +1,29 @@
-package cc.minetale.commonlib.api;
+package cc.minetale.commonlib.punishment;
 
+import cc.minetale.commonlib.CommonLib;
 import cc.minetale.commonlib.profile.Profile;
-import cc.minetale.commonlib.util.*;
+import cc.minetale.commonlib.util.Database;
+import cc.minetale.commonlib.util.MC;
+import cc.minetale.commonlib.util.StringUtil;
+import cc.minetale.commonlib.util.TimeUtil;
 import com.google.gson.annotations.SerializedName;
+import com.google.gson.reflect.TypeToken;
 import com.mongodb.client.model.Filters;
 import com.mongodb.client.model.ReplaceOptions;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
+import com.mongodb.client.result.DeleteResult;
+import com.mongodb.client.result.UpdateResult;
 import lombok.Getter;
 import lombok.Setter;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.format.TextDecoration;
 import org.bson.Document;
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import java.lang.reflect.Type;
 import java.util.*;
+import java.util.concurrent.CompletableFuture;
 
 @Getter @Setter
 public class Punishment {
@@ -23,7 +31,7 @@ public class Punishment {
     @SerializedName("_id")
     private String id;
     private UUID playerId;
-    private Type type;
+    private PunishmentType punishmentType;
     private UUID addedById;
     private long addedAt;
     private String addedReason;
@@ -33,53 +41,76 @@ public class Punishment {
     private String removedReason;
     private boolean removed;
 
-    public static Punishment createPunishment(String id, UUID playerId, Type type, UUID addedById, long addedAt, String addedReason, long duration) {
-        var punishment = new Punishment();
+    public static final Type LIST_TYPE_TOKEN = new TypeToken<List<Punishment>>(){}.getType();
 
-        punishment.setId(id != null ? id : StringUtil.generateId());
-        punishment.setPlayerId(playerId);
-        punishment.setType(type);
-        punishment.setAddedById(addedById);
-        punishment.setAddedAt(addedAt);
-        punishment.setAddedReason(addedReason);
-        punishment.setDuration(duration);
-
-        return punishment;
+    public Punishment(String id, UUID playerId, PunishmentType punishmentType, UUID addedById, long addedAt, String addedReason, long duration) {
+        this.id = id != null ? id : StringUtil.generateId();
+        this.playerId = playerId;
+        this.punishmentType = punishmentType;
+        this.addedById = addedById;
+        this.addedAt = addedAt;
+        this.addedReason = addedReason;
+        this.duration = duration;
     }
 
-    public static List<Punishment> getPunishments(Profile profile) {
+    public static CompletableFuture<@NotNull ArrayList<Punishment>> getPunishments(Profile profile) {
         return getPunishments(profile.getUuid());
     }
 
-    public static List<Punishment> getPunishments(UUID uuid) {
-        var punishments = new ArrayList<Punishment>();
+    public static CompletableFuture<@NotNull ArrayList<Punishment>> getPunishments(UUID uuid) {
+        return new CompletableFuture<ArrayList<Punishment>>()
+                .completeAsync(() -> {
+                    var punishments = new ArrayList<Punishment>();
 
-        for (var document : Database.getPunishmentsCollection().find(Filters.eq("playerId", uuid))) {
-            punishments.add(JSONUtil.fromDocument(document, Punishment.class));
-        }
+                    for (var document : Database.getPunishmentsCollection().find(Filters.eq("playerId", uuid.toString()))) {
+                        punishments.add(CommonLib.getGson().fromJson(document.toJson(), Punishment.class));
+                    }
 
-        return punishments;
+                    return punishments;
+                });
     }
 
-    public static @Nullable Punishment getPunishment(String id) {
-        var document = Database.getPunishmentsCollection().find(Filters.eq("_id", id)).first();
+    public static CompletableFuture<@Nullable Punishment> getPunishment(String id) {
+        return new CompletableFuture<Punishment>()
+                .completeAsync(() -> {
+                    var document = Database.getPunishmentsCollection().find(Filters.eq("_id", id)).first();
 
-        if (document != null)
-            return JSONUtil.fromDocument(document, Punishment.class);
+                    if (document != null)
+                        return CommonLib.getGson().fromJson(document.toJson(), Punishment.class);
 
-        return null;
+                    return null;
+                });
     }
 
-    public void delete() {
-        Database.getPunishmentsCollection().deleteOne(Filters.eq("_id", this.id));
+    public CompletableFuture<UpdateResult> remove(@Nullable UUID removedBy, Long removedAt, String removedReason) {
+        this.removed = true;
+        this.removedAt = removedAt;
+        this.removedById = removedBy;
+        this.removedReason = removedReason;
+
+        return this.save();
     }
 
-    public void save() {
-        Database.getPunishmentsCollection().replaceOne(Filters.eq("_id", this.id), JSONUtil.toDocument(this), new ReplaceOptions().upsert(true));
+    public CompletableFuture<DeleteResult> delete() {
+        return new CompletableFuture<DeleteResult>()
+                .completeAsync(() -> Database.getPunishmentsCollection()
+                        .deleteOne(
+                                Filters.eq("_id", this.id)
+                        ));
+    }
+
+    public CompletableFuture<UpdateResult> save() {
+        return new CompletableFuture<UpdateResult>()
+                .completeAsync(() -> Database.getPunishmentsCollection()
+                        .replaceOne(
+                                Filters.eq("_id", this.id),
+                                Document.parse(CommonLib.getGson().toJson(this)),
+                                new ReplaceOptions().upsert(true)
+                        ));
     }
 
     public boolean isPermanent() {
-        return this.type == Punishment.Type.BLACKLIST || this.duration == Integer.MAX_VALUE;
+        return this.punishmentType == PunishmentType.BLACKLIST || this.duration == Integer.MAX_VALUE;
     }
 
     public boolean isActive() {
@@ -95,11 +126,7 @@ public class Punishment {
     }
 
     public String getDurationText() {
-        if (this.isPermanent() || this.duration == 0) {
-            return "Permanent";
-        } else {
-            return TimeUtil.millisToRoundedTime(this.duration);
-        }
+        return (this.isPermanent() || this.duration == 0) ? "Permanent" : TimeUtil.millisToRoundedTime(this.duration);
     }
 
     public String getTimeRemaining() {
@@ -119,19 +146,19 @@ public class Punishment {
     }
 
     public String getContext() {
-        if (!(this.type == Punishment.Type.BAN || this.type == Punishment.Type.MUTE)) {
-            return this.removed ? this.type.getUndoContext() : this.type.getContext();
+        if (!(this.punishmentType.isBan() || this.punishmentType == PunishmentType.MUTE)) {
+            return this.removed ? this.punishmentType.getUndoContext() : this.punishmentType.getContext();
         }
 
         if (this.isPermanent()) {
-            return (this.removed ? this.type.getUndoContext() : "permanently " + this.type.getContext());
+            return (this.removed ? this.punishmentType.getUndoContext() : "permanently " + this.punishmentType.getContext());
         } else {
-            return (this.removed ? this.type.getUndoContext() : "temporarily " + this.type.getContext());
+            return (this.removed ? this.punishmentType.getUndoContext() : "temporarily " + this.punishmentType.getContext());
         }
     }
 
     public List<Component> getPunishmentMessage() {
-        switch (this.type) {
+        switch (this.punishmentType) {
             case BLACKLIST, BAN, MUTE -> {
                 return Arrays.asList(
                         MC.SEPARATOR_80,
@@ -185,22 +212,13 @@ public class Punishment {
         return Collections.emptyList();
     }
 
-    public void remove(@Nullable UUID removedBy, Long removedAt, String removedReason) {
-        this.removed = true;
-        this.removedAt = removedAt;
-        this.removedById = removedBy;
-        this.removedReason = removedReason;
-        
-        this.save();
-    }
-
     @Override
     public boolean equals(Object object) {
         return this == object || object instanceof Punishment other && other.getId().equalsIgnoreCase(this.id);
     }
 
     public NamedTextColor getPunishmentColor() {
-        switch (this.type) {
+        switch (this.punishmentType) {
             case BLACKLIST -> { return NamedTextColor.RED; }
             case BAN -> { return NamedTextColor.GOLD; }
             case MUTE -> { return NamedTextColor.GREEN; }
@@ -212,21 +230,6 @@ public class Punishment {
     @Override
     public int hashCode() {
         return this.id.hashCode();
-    }
-
-    @Getter
-    @AllArgsConstructor
-    public enum Type {
-        BLACKLIST("Blacklist", "blacklisted", "unblacklisted", true, true),
-        BAN("Ban", "banned", "unbanned", true, true),
-        MUTE("Mute", "muted", "unmuted", false, true),
-        WARN("Warning", "warned", null, false, false);
-
-        private final String readable;
-        private final String context;
-        private final String undoContext;
-        private final boolean ban;
-        private final boolean removable;
     }
 
 }

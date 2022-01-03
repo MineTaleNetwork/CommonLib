@@ -11,7 +11,6 @@ import java.util.UUID;
 public class GrantAddPayload extends BasePayload {
 
     @Transmit UUID playerUuid;
-
     @Transmit String grant;
 
     public GrantAddPayload() {
