@@ -10,13 +10,23 @@ import java.util.List;
 public class CachedProfile {
 
     private final Profile profile;
+    private final String currentServer;
     private final List<Grant> grants;
     private final List<Punishment> punishments;
 
-    public CachedProfile(Profile profile) {
+    public CachedProfile(Profile profile, String currentServer) {
         this.profile = profile;
+        this.currentServer = currentServer;
+
         this.grants = profile.getGrants();
         this.punishments = profile.getPunishments();
+    }
+
+    public Profile getProfile() {
+        this.profile.setGrants(this.grants);
+        this.profile.setPunishments(this.punishments);
+
+        return this.profile;
     }
 
 }

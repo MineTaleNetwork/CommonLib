@@ -22,9 +22,7 @@ import net.kyori.adventure.text.Component;
 import org.bson.Document;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.UUID;
+import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentSkipListMap;
 
@@ -134,20 +132,12 @@ public class Profile {
     }
 
     public List<Grant> getSortedGrants() {
-        var sortedGrants = new ArrayList<Grant>();
         var activeGrants = new ArrayList<>(this.grants);
-        var removedGrants = new ArrayList<>(this.grants);
 
-        activeGrants.removeIf(Grant::isRemoved);
-        removedGrants.removeIf(Grant::isActive);
+        var sorter = (Comparator<Grant>) (grant1, grant2) -> Boolean.compare(grant2.isActive(), grant1.isActive());
+        activeGrants.sort(sorter.thenComparingInt(grant -> grant.getRank().getWeight()));
 
-        activeGrants.sort(Grant.COMPARATOR);
-        removedGrants.sort(Grant.COMPARATOR);
-
-        sortedGrants.addAll(activeGrants);
-        sortedGrants.addAll(removedGrants);
-
-        return sortedGrants;
+        return activeGrants;
     }
 
     public void checkGrants() {
@@ -194,8 +184,8 @@ public class Profile {
         this.grants.add(grant);
 
         grant.save()
-                .thenRun(() -> ProfileCache.updateCacheAsync(this))
-                .thenRun(() -> PigeonUtil.broadcast(new GrantAddPayload(this.uuid, grant.getId())));
+                .thenRun(() -> ProfileCache.updateCacheAsync(this)
+                        .thenRun(() -> PigeonUtil.broadcast(new GrantAddPayload(this.uuid, grant.getId()))));
 
         for(var provider : CommonLib.getProviders()) {
             provider.addGrant(grant);

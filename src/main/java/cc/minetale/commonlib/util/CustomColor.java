@@ -11,7 +11,7 @@ public class CustomColor {
     public static TextColor DARK_YELLOW    = TextColor.color(243, 156, 18);
     public static TextColor YELLOW         = TextColor.color(241, 196, 15);
     public static TextColor DARK_GREEN     = TextColor.color(39, 174, 96);
-    public static TextColor GREEN          = TextColor.color(46, 204, 113);
+    public static TextColor GREEN          = TextColor.color(60, 220, 130);
     public static TextColor DARK_TURQUOISE = TextColor.color(22, 160, 133);
     public static TextColor TURQUOISE      = TextColor.color(26, 188, 156);
     public static TextColor DARK_BLUE      = TextColor.color(41, 128, 185);

@@ -1,7 +1,6 @@
 package cc.minetale.commonlib;
 
 import cc.minetale.commonlib.api.LibProvider;
-import cc.minetale.commonlib.api.Pterodactyl;
 import cc.minetale.commonlib.util.Database;
 import cc.minetale.commonlib.util.StringUtil;
 import cc.minetale.pigeon.Pigeon;
@@ -29,8 +28,6 @@ public class CommonLib {
                 .serializeNulls()
                 .setLongSerializationPolicy(LongSerializationPolicy.STRING)
                 .create();
-
-        Pterodactyl.init();
 
         loadPigeon();
         loadMongo();

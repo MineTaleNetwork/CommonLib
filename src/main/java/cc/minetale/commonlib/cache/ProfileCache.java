@@ -12,6 +12,8 @@ import com.google.gson.JsonSyntaxException;
 import com.mongodb.client.model.Filters;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
@@ -19,6 +21,47 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
 public class ProfileCache {
+
+    public static CompletableFuture<List<Profile>> getProfiles(List<UUID> uuids) {
+        return new CompletableFuture<List<Profile>>()
+                .completeAsync(() -> {
+                    var gson = CommonLib.getGson();
+                    var profiles = new ArrayList<Profile>();
+
+                    List<String> jsonArray;
+
+                    try (var redis = CommonLib.getJedisPool().getResource()) {
+                        jsonArray = redis.mget(uuids.stream()
+                                .map(uuid -> "minetale:profile-cache:" + uuid)
+                                .toArray(String[]::new));
+                    }
+
+                    var index = 0;
+                    var iterator = jsonArray.iterator();
+                    var nonCachedUuids = new ArrayList<UUID>();
+
+                    while (iterator.hasNext()) {
+                        if (iterator.next() == null) {
+                            nonCachedUuids.add(uuids.get(index));
+                            iterator.remove();
+                        }
+
+                        index++;
+                    }
+
+                    var documents = Database.getProfilesCollection()
+                            .find(Filters.in("_id", nonCachedUuids));
+
+                    for (var document : documents)
+                        profiles.add(gson.fromJson(document.toJson(), Profile.class));
+
+                    for (var profileJson : jsonArray) {
+                        profiles.add(gson.fromJson(profileJson, CachedProfile.class).getProfile());
+                    }
+
+                    return profiles;
+                });
+    }
 
     public static CompletableFuture<@Nullable Profile> getProfile(UUID uuid) {
         return new CompletableFuture<Profile>()
@@ -160,8 +203,6 @@ public class ProfileCache {
                 });
     }
 
-
-
     public static CompletableFuture<Void> updateCacheAsync(Profile profile) {
         return CompletableFuture.runAsync(() -> updateCache(profile));
     }
@@ -172,8 +213,8 @@ public class ProfileCache {
 
             var key = "minetale:profile-cache:" + profile.getUuid();
 
-            pipeline.set(key, CommonLib.getGson().toJson(new CachedProfile(profile)));
-            pipeline.expire(key, 7200);
+            pipeline.set(key, CommonLib.getGson().toJson(new CachedProfile(profile, null)));
+            pipeline.expire(key, TimeUnit.DAYS.toSeconds(2));
             pipeline.sync();
         }
 

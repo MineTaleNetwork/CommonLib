@@ -38,7 +38,6 @@ public class Grant {
     private boolean removed;
 
     public static final Type LIST_TYPE_TOKEN = new TypeToken<List<Grant>>(){}.getType();
-    public static final Comparator<Grant> COMPARATOR = Comparator.comparingInt(grant -> grant.getRank().getWeight());
     public static final Grant DEFAULT_GRANT = new Grant("DEFAULT", null, Rank.MEMBER, null, 0L, "Default", Integer.MAX_VALUE);
 
     public Grant(String id, UUID playerId, Rank rank, UUID addedById, long addedAt, String addedReason, long duration) {
