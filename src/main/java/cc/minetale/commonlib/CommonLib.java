@@ -4,9 +4,9 @@ import cc.minetale.commonlib.api.LibProvider;
 import cc.minetale.commonlib.util.Database;
 import cc.minetale.commonlib.util.StringUtil;
 import cc.minetale.pigeon.Pigeon;
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
-import com.google.gson.LongSerializationPolicy;
+import com.fasterxml.jackson.annotation.JsonAutoDetect;
+import com.fasterxml.jackson.annotation.PropertyAccessor;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.mongodb.MongoClient;
 import com.mongodb.client.MongoDatabase;
 import lombok.Getter;
@@ -18,16 +18,14 @@ import java.util.List;
 public class CommonLib {
 
     @Getter private static final List<LibProvider> providers = new ArrayList<>();
-    @Getter private static Gson gson;
+    @Getter private static ObjectMapper mapper;
     @Getter private static JedisPool jedisPool;
     @Getter private static MongoClient mongoClient;
     @Getter private static MongoDatabase mongoDatabase;
 
     public static void init() {
-        gson = new GsonBuilder()
-                .serializeNulls()
-                .setLongSerializationPolicy(LongSerializationPolicy.STRING)
-                .create();
+        mapper = new ObjectMapper()
+                .setVisibility(PropertyAccessor.FIELD, JsonAutoDetect.Visibility.ANY);
 
         loadPigeon();
         loadMongo();

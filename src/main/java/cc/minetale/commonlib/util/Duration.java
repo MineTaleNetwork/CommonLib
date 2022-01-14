@@ -6,17 +6,11 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 @Getter
-public class Duration {
-
-    private final long value;
-
-    public Duration(long value) {
-        this.value = value;
-    }
+public record Duration(long value) {
 
     public static Duration fromString(String source) {
         if (source.equalsIgnoreCase("perm") || source.equalsIgnoreCase("permanent")) {
-            return new Duration(Integer.MAX_VALUE);
+            return new Duration(-1);
         }
 
         long totalTime = 0L;

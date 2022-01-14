@@ -10,19 +10,17 @@ import java.util.UUID;
 @Getter @Payload
 public class PartyDisbandPayload extends BasePayload {
 
-    @Transmit UUID initiator;
+    @Transmit UUID player;
 
     public PartyDisbandPayload() {
         payloadId = "partyDisbandPayload";
     }
 
-    public PartyDisbandPayload(UUID initiator) {
+    public PartyDisbandPayload(UUID player) {
         this();
-        this.initiator = initiator;
+        this.player = player;
     }
 
     @Override
-    public void receive() {
-    }
-
+    public void receive() {}
 }

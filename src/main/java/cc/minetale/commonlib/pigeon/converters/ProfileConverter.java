@@ -47,10 +47,8 @@ public class ProfileConverter extends Converter<Profile> {
             staff.setReceivingStaffMessages(staffObj.get("receivingStaffMessages").getAsBoolean());
             staff.setLocked(staffObj.get("locked").getAsBoolean());
 
-            var profile = new Profile();
+            var profile = new Profile(UUID.fromString(data.get("id").getAsString()), data.get("name").getAsString());
 
-            profile.setUuid(UUID.fromString(data.get("id").getAsString()));
-            profile.setName(data.get("name").getAsString());
             profile.setFirstSeen(data.get("firstSeen").getAsLong());
             profile.setLastSeen(data.get("lastSeen").getAsLong());
             profile.setCurrentAddress(data.get("currentAddress").getAsString());

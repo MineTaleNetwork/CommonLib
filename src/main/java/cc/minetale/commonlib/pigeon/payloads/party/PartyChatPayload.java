@@ -10,21 +10,19 @@ import java.util.UUID;
 @Getter @Payload
 public class PartyChatPayload extends BasePayload {
 
-    @Transmit UUID initiator;
+    @Transmit UUID player;
     @Transmit String message;
 
     public PartyChatPayload() {
         payloadId = "partyChatPayload";
     }
 
-    public PartyChatPayload(UUID initiator, String message) {
+    public PartyChatPayload(UUID player, String message) {
         this();
-        this.initiator = initiator;
+        this.player = player;
         this.message = message;
     }
 
     @Override
-    public void receive() {
-    }
-
+    public void receive() {}
 }

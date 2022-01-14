@@ -3,20 +3,20 @@ package cc.minetale.commonlib.profile;
 import cc.minetale.commonlib.grant.Grant;
 import cc.minetale.commonlib.punishment.Punishment;
 import lombok.Getter;
+import lombok.Setter;
 
 import java.util.List;
 
-@Getter
+@Getter @Setter
 public class CachedProfile {
 
-    private final Profile profile;
-    private final String currentServer;
-    private final List<Grant> grants;
-    private final List<Punishment> punishments;
+    private Profile profile;
+    private List<Grant> grants;
+    private String server;
+    private List<Punishment> punishments;
 
-    public CachedProfile(Profile profile, String currentServer) {
+    public CachedProfile(Profile profile) {
         this.profile = profile;
-        this.currentServer = currentServer;
 
         this.grants = profile.getGrants();
         this.punishments = profile.getPunishments();

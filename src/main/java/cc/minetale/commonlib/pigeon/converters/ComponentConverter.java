@@ -1,6 +1,5 @@
 package cc.minetale.commonlib.pigeon.converters;
 
-import cc.minetale.commonlib.util.MC;
 import cc.minetale.pigeon.Converter;
 import cc.minetale.pigeon.converters.StringConverter;
 import com.google.gson.JsonElement;

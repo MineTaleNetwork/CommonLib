@@ -12,15 +12,17 @@ import java.util.UUID;
 public class MessagePlayerPayload extends BasePayload {
 
     @Transmit UUID player;
-    @Transmit Component message;
+    @Transmit String prefix;
+    @Transmit String message;
 
     public MessagePlayerPayload() {
         payloadId = "messagePlayerPayload";
     }
 
-    public MessagePlayerPayload(UUID player, Component message) {
+    public MessagePlayerPayload(UUID player, String prefix, String message) {
         this();
         this.player = player;
+        this.prefix = prefix;
         this.message = message;
     }
 

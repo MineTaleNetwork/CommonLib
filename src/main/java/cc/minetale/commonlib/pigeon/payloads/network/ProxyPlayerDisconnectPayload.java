@@ -10,17 +10,15 @@ import java.util.UUID;
 @Getter @Payload
 public class ProxyPlayerDisconnectPayload extends BasePayload {
 
-    @Transmit UUID uuid;
-    @Transmit String player;
+    @Transmit UUID player;
     @Transmit String server;
 
     public ProxyPlayerDisconnectPayload() {
         payloadId = "proxyPlayerDisconnectPayload";
     }
 
-    public ProxyPlayerDisconnectPayload(UUID uuid, String player, String server) {
+    public ProxyPlayerDisconnectPayload(UUID player, String server) {
         this();
-        this.uuid = uuid;
         this.player = player;
         this.server = server;
     }

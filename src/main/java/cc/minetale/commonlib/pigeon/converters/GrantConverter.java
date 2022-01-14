@@ -2,7 +2,6 @@ package cc.minetale.commonlib.pigeon.converters;
 
 import cc.minetale.commonlib.grant.Grant;
 import cc.minetale.commonlib.grant.Rank;
-import cc.minetale.commonlib.util.JsonChain;
 import cc.minetale.pigeon.Converter;
 import cc.minetale.pigeon.converters.StringConverter;
 import com.google.gson.JsonElement;

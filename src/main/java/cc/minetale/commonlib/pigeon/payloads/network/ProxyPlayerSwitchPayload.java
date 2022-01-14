@@ -10,8 +10,7 @@ import java.util.UUID;
 @Getter @Payload
 public class ProxyPlayerSwitchPayload extends BasePayload {
 
-    @Transmit UUID uuid;
-    @Transmit String player;
+    @Transmit UUID player;
     @Transmit String serverFrom;
     @Transmit String serverTo;
 
@@ -19,9 +18,8 @@ public class ProxyPlayerSwitchPayload extends BasePayload {
         payloadId = "proxyPlayerSwitchPayload";
     }
 
-    public ProxyPlayerSwitchPayload(UUID uuid, String player, String serverFrom, String serverTo) {
+    public ProxyPlayerSwitchPayload(UUID player, String serverFrom, String serverTo) {
         this();
-        this.uuid = uuid;
         this.player = player;
         this.serverFrom = serverFrom;
         this.serverTo = serverTo;

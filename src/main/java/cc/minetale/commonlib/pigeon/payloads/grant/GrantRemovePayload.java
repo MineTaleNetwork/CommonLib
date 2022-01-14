@@ -10,16 +10,16 @@ import java.util.UUID;
 @Getter @Payload
 public class GrantRemovePayload extends BasePayload {
 
-    @Transmit UUID playerUuid;
+    @Transmit UUID player;
     @Transmit String grant;
 
     public GrantRemovePayload() {
         payloadId = "grantRemovePayload";
     }
 
-    public GrantRemovePayload(UUID playerUuid, String grant) {
+    public GrantRemovePayload(UUID player, String grant) {
         this();
-        this.playerUuid = playerUuid;
+        this.player = player;
         this.grant = grant;
     }
 

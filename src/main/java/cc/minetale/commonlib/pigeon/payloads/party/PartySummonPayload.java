@@ -10,19 +10,17 @@ import java.util.UUID;
 @Getter @Payload
 public class PartySummonPayload extends BasePayload {
 
-    @Transmit UUID initiator;
+    @Transmit UUID player;
 
     public PartySummonPayload() {
         payloadId = "partySummonPayload";
     }
 
-    public PartySummonPayload(UUID initiator) {
+    public PartySummonPayload(UUID player) {
         this();
-        this.initiator = initiator;
+        this.player = player;
     }
 
     @Override
-    public void receive() {
-    }
-
+    public void receive() {}
 }

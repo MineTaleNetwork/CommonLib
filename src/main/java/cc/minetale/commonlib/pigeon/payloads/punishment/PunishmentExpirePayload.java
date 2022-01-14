@@ -1,4 +1,4 @@
-package cc.minetale.commonlib.pigeon.payloads.network;
+package cc.minetale.commonlib.pigeon.payloads.punishment;
 
 import cc.minetale.pigeon.annotations.Payload;
 import cc.minetale.pigeon.annotations.Transmit;
@@ -8,19 +8,19 @@ import lombok.Getter;
 import java.util.UUID;
 
 @Getter @Payload
-public class ProxyPlayerConnectPayload extends BasePayload {
+public class PunishmentExpirePayload extends BasePayload {
 
     @Transmit UUID player;
-    @Transmit String server;
+    @Transmit String punishment;
 
-    public ProxyPlayerConnectPayload() {
-        payloadId = "proxyPlayerConnectPayload";
+    public PunishmentExpirePayload() {
+        payloadId = "punishmentExpirePayload";
     }
 
-    public ProxyPlayerConnectPayload(UUID player, String server) {
+    public PunishmentExpirePayload(UUID player, String punishment) {
         this();
         this.player = player;
-        this.server = server;
+        this.punishment = punishment;
     }
 
     @Override

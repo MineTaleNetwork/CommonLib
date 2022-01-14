@@ -24,7 +24,5 @@ public class PartyKickPayload extends BasePayload {
     }
 
     @Override
-    public void receive() {
-    }
-
+    public void receive() {}
 }

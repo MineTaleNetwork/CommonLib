@@ -17,7 +17,7 @@ public class FriendCache {
                     Set<String> stringRequests;
 
                     try (var redis = CommonLib.getJedisPool().getResource()) {
-                        stringRequests = redis.keys("minetale:friend-requests:" + player + ":*");
+                        stringRequests = redis.keys(getKey(player.toString(), "*"));
                     }
 
                     Set<UUID> uuidRequests = new HashSet<>();
@@ -36,7 +36,7 @@ public class FriendCache {
                     Set<String> stringRequests;
 
                     try (var redis = CommonLib.getJedisPool().getResource()) {
-                        stringRequests = redis.keys("minetale:friend-requests:*:" + player);
+                        stringRequests = redis.keys(getKey("*", player.toString()));
                     }
 
                     Set<UUID> uuidRequests = new HashSet<>();
@@ -55,33 +55,35 @@ public class FriendCache {
                     boolean request;
 
                     try (var redis = CommonLib.getJedisPool().getResource()) {
-                        request = redis.exists(getKey(player, target));
+                        request = redis.exists(getKey(player.toString(), target.toString()));
                     }
+
                     return request;
                 });
     }
 
-    public static CompletableFuture<Void> removeCacheAsync(UUID player, UUID target) {
-        return CompletableFuture.runAsync(() -> removeCache(player, target));
-    }
+    public static CompletableFuture<Void> removeCache(UUID player, UUID target) {
+        return CompletableFuture.runAsync(() -> {
+            try (var redis = CommonLib.getJedisPool().getResource()) {
+                redis.del(getKey(player.toString(), target.toString()));
+            }
+        });
 
-    public static void removeCache(UUID player, UUID target) {
-        try (var redis = CommonLib.getJedisPool().getResource()) {
-            redis.del(getKey(player, target));
-        }
     }
 
     public static CompletableFuture<Void> updateCacheAsync(UUID player, UUID target) {
         return CompletableFuture.runAsync(() -> updateCache(player, target));
     }
 
-    public static void updateCache(UUID player, UUID target) {
-        try (var redis = CommonLib.getJedisPool().getResource()) {
-            redis.set(getKey(player, target), "true", new SetParams().ex(TimeUnit.DAYS.toSeconds(7)));
-        }
+    public static CompletableFuture<Void> updateCache(UUID player, UUID target) {
+        return CompletableFuture.runAsync(() -> {
+            try (var redis = CommonLib.getJedisPool().getResource()) {
+                redis.set(getKey(player.toString(), target.toString()), "true", new SetParams().ex(TimeUnit.DAYS.toSeconds(7)));
+            }
+        });
     }
 
-    public static String getKey(UUID player, UUID target) {
+    public static String getKey(String player, String target) {
         return "minetale:friend-requests:" + player + ":" + target;
     }
 

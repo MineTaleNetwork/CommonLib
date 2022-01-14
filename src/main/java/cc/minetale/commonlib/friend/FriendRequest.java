@@ -44,16 +44,6 @@ public class FriendRequest {
         });
     }
 
-    public enum AddResponse {
-        SUCCESS,
-        ERROR,
-        PENDING_REQUEST,
-        REQUEST_EXIST,
-        REQUESTS_TOGGLED,
-        PLAYER_IS_IGNORED,
-        TARGET_IS_IGNORED;
-    }
-
     public static CompletableFuture<AcceptResponse> acceptRequest(Profile player, Profile target) {
         var playerUuid = player.getUuid();
         var targetUuid = target.getUuid();
@@ -76,8 +66,8 @@ public class FriendRequest {
                     player.getFriends().add(targetUuid);
                     target.getFriends().add(playerUuid);
 
-                    ProfileCache.updateCache(player);
-                    ProfileCache.updateCache(target);
+                    ProfileCache.updateProfile(player);
+                    ProfileCache.updateProfile(target);
 
                     return AcceptResponse.SUCCESS;
                 } else {
@@ -87,14 +77,6 @@ public class FriendRequest {
 
             return AcceptResponse.ERROR;
         });
-    }
-
-    public enum AcceptResponse {
-        SUCCESS,
-        ERROR,
-        NO_REQUEST,
-        PLAYER_IS_IGNORED,
-        TARGET_IS_IGNORED;
     }
 
 }

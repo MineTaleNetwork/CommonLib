@@ -11,7 +11,6 @@ import java.util.UUID;
 public class PunishmentAddPayload extends BasePayload {
 
     @Transmit UUID playerUuid;
-
     @Transmit String punishment;
 
     public PunishmentAddPayload() {

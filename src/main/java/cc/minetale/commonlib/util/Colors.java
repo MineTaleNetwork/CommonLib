@@ -1,8 +1,11 @@
 package cc.minetale.commonlib.util;
 
+import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.format.TextColor;
 
-public class CustomColor {
+import java.awt.*;
+
+public class Colors {
 
     public static TextColor DARK_RED       = TextColor.color(192, 57, 43);
     public static TextColor RED            = TextColor.color(231, 76, 60);
@@ -24,5 +27,33 @@ public class CustomColor {
     public static TextColor GRAY           = TextColor.color(149, 165, 166);
     public static TextColor LIGHT_GRAY     = TextColor.color(189, 195, 199);
     public static TextColor WHITE          = TextColor.color(236, 240, 241);
+
+    public static TextColor getColorBetween(TextColor from, TextColor to, float x) {
+        float stepR = Math.abs(from.red() - to.red());
+        float stepG = Math.abs(from.green() - to.green());
+        float stepB = Math.abs(from.blue() - to.blue());
+
+        return TextColor.color(
+                (int) (from.red() < to.red() ? from.red() + (stepR * x) : from.red() - (stepR * x)),
+                (int) (from.green() < to.green() ? from.green() + (stepG * x) : from.green() - (stepG * x)),
+                (int) (from.blue() < to.blue() ? from.blue() + (stepB * x) : from.blue() - (stepB * x))
+        );
+    }
+
+    public static Color hexToColor(String colorStr) {
+        return new Color(
+                Integer.valueOf(colorStr.substring(0, 2), 16),
+                Integer.valueOf(colorStr.substring(2, 4), 16),
+                Integer.valueOf(colorStr.substring(4, 6), 16)
+        );
+    }
+
+    public static TextColor bleach(NamedTextColor color, double amount) {
+        return TextColor.color(
+                (int) ((color.red() * (1 - amount) / 255 + amount) * 255),
+                (int) ((color.green() * (1 - amount) / 255 + amount) * 255),
+                (int) ((color.blue() * (1 - amount) / 255 + amount) * 255)
+        );
+    }
 
 }

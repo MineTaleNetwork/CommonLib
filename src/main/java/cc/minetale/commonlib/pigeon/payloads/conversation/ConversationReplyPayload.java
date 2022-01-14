@@ -10,16 +10,16 @@ import java.util.UUID;
 @Getter @Payload
 public class ConversationReplyPayload extends BasePayload {
 
-    @Transmit UUID initiator;
+    @Transmit UUID player;
     @Transmit String message;
 
     public ConversationReplyPayload() {
         payloadId = "conversationReplyPayload";
     }
 
-    public ConversationReplyPayload(UUID initiator, String message) {
+    public ConversationReplyPayload(UUID player, String message) {
         this();
-        this.initiator = initiator;
+        this.player = player;
         this.message = message;
     }
 

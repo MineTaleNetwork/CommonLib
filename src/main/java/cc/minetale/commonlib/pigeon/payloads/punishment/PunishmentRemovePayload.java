@@ -10,17 +10,16 @@ import java.util.UUID;
 @Getter @Payload
 public class PunishmentRemovePayload extends BasePayload {
 
-    @Transmit UUID playerUuid;
-
+    @Transmit UUID player;
     @Transmit String punishment;
 
     public PunishmentRemovePayload() {
         payloadId = "punishmentRemovePayload";
     }
 
-    public PunishmentRemovePayload(UUID playerUuid, String punishment) {
+    public PunishmentRemovePayload(UUID player, String punishment) {
         this();
-        this.playerUuid = playerUuid;
+        this.player = player;
         this.punishment = punishment;
     }
 

@@ -7,7 +7,8 @@ import lombok.Getter;
 
 import java.util.UUID;
 
-@Getter @Payload
+@Getter
+@Payload
 public class PartyTransferPayload extends BasePayload {
 
     @Transmit UUID initiator;
@@ -24,7 +25,6 @@ public class PartyTransferPayload extends BasePayload {
     }
 
     @Override
-    public void receive() {
-    }
+    public void receive() {}
 
 }
