@@ -89,43 +89,19 @@ public class ProfileUtil {
                     var documents = Database.getProfilesCollection()
                             .find(Filters.in("_id", nonCachedUuids.stream().map(UUID::toString).toList()));
 
-                    var keyValues = new ArrayList<String>();
-
-                    try (var pipeline = CommonLib.getJedisPool().getResource().pipelined()) {
+                    try {
                         for (var document : documents) {
                             var profile = CommonLib.getMapper().readValue(document.toJson(), Profile.class);
+                            var cachedProfile = new CachedProfile(profile);
 
-                            keyValues.add(ProfileCache.getKey(profile.getUuid().toString()));
-                            keyValues.add(CommonLib.getMapper().writeValueAsString(new CachedProfile(profile)));
-
-                            keyValues.add(UUIDCache.getKey(UUIDCache.getKey(profile.getName())));
-                            keyValues.add(profile.getUuid().toString());
-
-                            profiles.add(new CachedProfile(profile));
-                        }
-
-                        var keys = keyValues.toArray(new String[0]);
-
-                        if(keys.length % 4 == 0) {
-                            pipeline.mset(keys);
-
-                            for(int i = 0; i < keys.length; i++) {
-                                if(i % 2 == 1) continue;
-
-                                if(i % 4 == 2) {
-                                    pipeline.expire(keys[i], TimeUnit.DAYS.toSeconds(4));
-                                } else {
-                                    pipeline.expire(keys[i], TimeUnit.DAYS.toSeconds(2));
-                                }
-                            }
-
-                            pipeline.sync();
-                        } else {
-                            // TODO -> Something fucked up really bad
+                            ProfileCache.createCachedProfile(cachedProfile);
+                            UUIDCache.updateCache(profile.getName(), profile.getUuid());
+                            profiles.add(cachedProfile);
                         }
                     } catch (JsonProcessingException e) {
                         e.printStackTrace();
                     }
+
 
                     for (var profileJson : jsonArray) {
                         try {
@@ -272,7 +248,7 @@ public class ProfileUtil {
         return new CompletableFuture<CachedProfile>()
                 .completeAsync(() -> {
                     try {
-                        var uuid = UUIDCache.getFromCache(name).get();
+                        var uuid = UUIDCache.getUuid(name).get();
 
                         if (uuid != null) {
                             return fromCache(uuid).get();

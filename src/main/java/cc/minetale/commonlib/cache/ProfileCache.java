@@ -62,6 +62,18 @@ public class ProfileCache {
         });
     }
 
+    public static CompletableFuture<Void> createCachedProfile(CachedProfile cachedProfile) {
+        return CompletableFuture.runAsync(() -> {
+            try (var redis = CommonLib.getJedisPool().getResource()) {
+                redis.set(
+                        getKey(cachedProfile.getProfile().getUuid().toString()),
+                        CommonLib.getMapper().writeValueAsString(cachedProfile),
+                        SetParams.setParams().ex(TimeUnit.DAYS.toSeconds(2))
+                );
+            } catch (JsonProcessingException ignored) {}
+        });
+    }
+
     public static String getKey(String player) {
         return "minetale:profile-cache:" + player;
     }

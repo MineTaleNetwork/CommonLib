@@ -4,10 +4,11 @@ import cc.minetale.commonlib.cache.FriendCache;
 import cc.minetale.commonlib.cache.ProfileCache;
 import cc.minetale.commonlib.profile.Profile;
 
+import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 
-public class FriendRequest {
+public record FriendRequest(UUID initiator, UUID receiver, long ttl) {
 
     public static CompletableFuture<AddResponse> addRequest(Profile player, Profile target) {
         var playerUuid = player.getUuid();
@@ -25,11 +26,11 @@ public class FriendRequest {
                     }
 
                     if(player.isIgnoring(target)) {
-                        return AddResponse.TARGET_IS_IGNORED;
+                        return AddResponse.TARGET_IGNORED;
                     }
 
                     if(target.isIgnoring(player)) {
-                        return AddResponse.PLAYER_IS_IGNORED;
+                        return AddResponse.PLAYER_IGNORED;
                     }
 
                     FriendCache.updateCache(playerUuid, targetUuid);
@@ -56,11 +57,11 @@ public class FriendRequest {
                     FriendCache.removeCache(targetUuid, playerUuid);
 
                     if(player.isIgnoring(target)) {
-                        return AcceptResponse.TARGET_IS_IGNORED;
+                        return AcceptResponse.TARGET_IGNORED;
                     }
 
                     if(target.isIgnoring(player)) {
-                        return AcceptResponse.PLAYER_IS_IGNORED;
+                        return AcceptResponse.PLAYER_IGNORED;
                     }
 
                     player.getFriends().add(targetUuid);

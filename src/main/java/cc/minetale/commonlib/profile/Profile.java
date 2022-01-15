@@ -42,7 +42,7 @@ public class Profile {
     @JsonProperty("_id")
     private final UUID uuid;
     private final String name;
-    private String search = name.toUpperCase();
+    private String search;
     private String currentAddress;
     private String discord;
     private int gold;

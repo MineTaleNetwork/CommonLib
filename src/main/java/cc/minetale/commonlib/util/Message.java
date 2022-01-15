@@ -2,7 +2,9 @@ package cc.minetale.commonlib.util;
 
 import lombok.experimental.UtilityClass;
 import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.ComponentLike;
 import net.kyori.adventure.text.TextComponent;
+import net.kyori.adventure.text.TextReplacementConfig;
 import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.format.TextColor;
 import net.kyori.adventure.text.format.TextDecoration;
@@ -20,12 +22,20 @@ public class Message {
                 ).build();
     }
 
+    public static Component separator(int times) {
+        return Component.text(StringUtil.repeat(" ", times), NamedTextColor.DARK_GRAY, TextDecoration.STRIKETHROUGH);
+    }
+
     public static Component chatSeparator() {
         return separator(80);
     }
 
-    public static Component separator(int times) {
-        return Component.text(StringUtil.repeat(" ", times), NamedTextColor.DARK_GRAY, TextDecoration.STRIKETHROUGH);
+    public static Component menuSeparator() {
+        return separator(50);
+    }
+
+    public static Component scoreboardSeparator() {
+        return separator(32);
     }
 
     public static Component gradientComponent(String text, TextColor from, TextColor to) {
@@ -41,6 +51,23 @@ public class Message {
         }
 
         return builder.build();
+    }
+
+    public static Component format(Component base, Object... replacements) {
+        var config = TextReplacementConfig.builder();
+
+        for(int i = 0; i < replacements.length; i++) {
+            var replacement = replacements[i];
+            var match = config.matchLiteral("{" + i + "}");
+
+            if(replacement instanceof ComponentLike component) {
+                match.replacement(component);
+            } else {
+                match.replacement(replacement.toString());
+            }
+        }
+
+        return base.replaceText(config.build());
     }
 
     public static Component coloredPing(int ping) {

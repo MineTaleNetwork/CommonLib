@@ -1,16 +1,13 @@
 package cc.minetale.commonlib.util;
 
-import lombok.Getter;
-
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-@Getter
 public record Duration(long value) {
 
     public static Duration fromString(String source) {
         if (source.equalsIgnoreCase("perm") || source.equalsIgnoreCase("permanent")) {
-            return new Duration(-1);
+            return new Duration(Integer.MAX_VALUE);
         }
 
         long totalTime = 0L;

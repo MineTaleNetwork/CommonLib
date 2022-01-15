@@ -30,7 +30,7 @@ public abstract class ProvidableObject {
     }
 
     public boolean isPermanent() {
-        return duration == -1;
+        return duration == Integer.MAX_VALUE;
     }
 
     public boolean isActive() {

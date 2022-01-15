@@ -1,6 +1,7 @@
 package cc.minetale.commonlib.cache;
 
 import cc.minetale.commonlib.CommonLib;
+import cc.minetale.commonlib.friend.FriendRequest;
 import redis.clients.jedis.params.SetParams;
 
 import java.util.HashSet;
@@ -11,41 +12,41 @@ import java.util.concurrent.TimeUnit;
 
 public class FriendCache {
 
-    public static CompletableFuture<Set<UUID>> getOutgoingRequests(UUID player) {
-        return new CompletableFuture<Set<UUID>>()
+    public static CompletableFuture<Set<FriendRequest>> getOutgoingRequests(UUID player) {
+        return new CompletableFuture<Set<FriendRequest>>()
                 .completeAsync(() -> {
-                    Set<String> stringRequests;
-
                     try (var redis = CommonLib.getJedisPool().getResource()) {
-                        stringRequests = redis.keys(getKey(player.toString(), "*"));
+                        var response = redis.keys(getKey(player.toString(), "*"));
+
+                        var friendRequests = new HashSet<FriendRequest>();
+
+                        for(var request : response) {
+                            var key = request.split(":");
+
+                            friendRequests.add(new FriendRequest(UUID.fromString(key[2]), UUID.fromString(key[3]), redis.pttl(request)));
+                        }
+
+                        return friendRequests;
                     }
-
-                    Set<UUID> uuidRequests = new HashSet<>();
-
-                    for(var request : stringRequests) {
-                        uuidRequests.add(UUID.fromString(request.split(":")[3]));
-                    }
-
-                    return uuidRequests;
                 });
     }
 
-    public static CompletableFuture<Set<UUID>> getIncomingRequests(UUID player) {
-        return new CompletableFuture<Set<UUID>>()
+    public static CompletableFuture<Set<FriendRequest>> getIncomingRequests(UUID player) {
+        return new CompletableFuture<Set<FriendRequest>>()
                 .completeAsync(() -> {
-                    Set<String> stringRequests;
-
                     try (var redis = CommonLib.getJedisPool().getResource()) {
-                        stringRequests = redis.keys(getKey("*", player.toString()));
+                        var response = redis.keys(getKey("*", player.toString()));
+
+                        var friendRequests = new HashSet<FriendRequest>();
+
+                        for(var request : response) {
+                            var key = request.split(":");
+
+                            friendRequests.add(new FriendRequest(UUID.fromString(key[2]), UUID.fromString(key[3]), redis.pttl(request)));
+                        }
+
+                        return friendRequests;
                     }
-
-                    Set<UUID> uuidRequests = new HashSet<>();
-
-                    for(var request : stringRequests) {
-                        uuidRequests.add(UUID.fromString(request.split(":")[2]));
-                    }
-
-                    return uuidRequests;
                 });
     }
 
@@ -69,10 +70,6 @@ public class FriendCache {
             }
         });
 
-    }
-
-    public static CompletableFuture<Void> updateCacheAsync(UUID player, UUID target) {
-        return CompletableFuture.runAsync(() -> updateCache(player, target));
     }
 
     public static CompletableFuture<Void> updateCache(UUID player, UUID target) {
