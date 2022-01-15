@@ -1,6 +1,7 @@
 package cc.minetale.commonlib.grant;
 
 import cc.minetale.commonlib.CommonLib;
+import cc.minetale.commonlib.lang.Language;
 import cc.minetale.commonlib.util.Database;
 import cc.minetale.commonlib.util.ProvidableObject;
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -21,7 +22,7 @@ public class Grant extends ProvidableObject {
 
     private final Rank rank;
 
-    public static final Grant DEFAULT_GRANT = new Grant("DEFAULT", null, null, 0L, "Default", -1,  Rank.MEMBER);
+    public static final Grant DEFAULT_GRANT = new Grant("DEFAULT", null, null, 0L, "Default", Integer.MAX_VALUE,  Rank.MEMBER);
 
     public Grant(String id, UUID playerId, UUID addedById, long addedAt, String addedReason, long duration, Rank rank) {
         super(id, playerId, addedById, addedAt, addedReason, duration);

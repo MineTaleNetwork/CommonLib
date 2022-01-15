@@ -1,45 +1,65 @@
 package cc.minetale.commonlib.cache;
 
 import cc.minetale.commonlib.CommonLib;
-import redis.clients.jedis.params.SetParams;
 
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.TimeUnit;
 
 public class UUIDCache {
 
-    public static CompletableFuture<UUID> getFromCache(String name) {
-        return new CompletableFuture<UUID>()
+    public static CompletableFuture<String> getName(UUID uuid) {
+        return new CompletableFuture<String>()
                 .completeAsync(() -> {
-                    String uuidString;
-
                     try (var redis = CommonLib.getJedisPool().getResource()) {
-                        uuidString = redis.get(getKey(name) + name.toUpperCase());
-                    }
+                        var name = redis.hget(getUuidKey(), uuid.toString());
 
-                    if(uuidString != null) {
-                        return UUID.fromString(uuidString);
+                        if(name != null) {
+                            return name;
+                        }
                     }
 
                     return null;
                 });
     }
 
-    public static CompletableFuture<Void> updateCacheAsync(String name, UUID uuid) {
-        return CompletableFuture.runAsync(() -> updateCache(name, uuid));
+    public static CompletableFuture<UUID> getUuid(String name) {
+        return new CompletableFuture<UUID>()
+                .completeAsync(() -> {
+                    try (var redis = CommonLib.getJedisPool().getResource()) {
+                        var uuid = redis.hget(getNameKey(), name.toUpperCase());
+
+                        if(uuid != null) {
+                            return UUID.fromString(uuid);
+                        }
+                    }
+
+                    return null;
+                });
     }
 
-    public static void updateCache(String name, UUID uuid) {
-        CompletableFuture.runAsync(() -> {
-            try (var redis = CommonLib.getJedisPool().getResource()) {
-                redis.set(getKey(name), uuid.toString(), SetParams.setParams().ex(TimeUnit.DAYS.toSeconds(4)));
-            }
+    public static CompletableFuture<Void> updateCache(String name, UUID uuid) {
+        return CompletableFuture.runAsync(() -> {
+                try (var pipeline = CommonLib.getJedisPool().getResource().pipelined()) {
+                    var oldName = pipeline.hget(getUuidKey(), uuid.toString()).get();
+
+                    if(!oldName.equalsIgnoreCase(name.toUpperCase())) {
+                        pipeline.del(oldName);
+                    }
+
+                    pipeline.hset(getNameKey(), name.toUpperCase(), uuid.toString());
+                    pipeline.hset(getUuidKey(), uuid.toString(), name);
+
+                    pipeline.sync();
+                }
         });
     }
 
-    public static String getKey(String name) {
-        return "minetale:uuid-cache:" + name.toUpperCase();
+    public static String getNameKey() {
+        return "minetale:name-to-uuid";
+    }
+
+    public static String getUuidKey() {
+        return "minetale:uuid-to-name";
     }
 
 }

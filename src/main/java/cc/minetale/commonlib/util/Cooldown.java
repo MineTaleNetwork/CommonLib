@@ -11,7 +11,7 @@ public class Cooldown {
     private final Duration duration;
     private long lastUpdate;
 
-    private static final DecimalFormat format = new DecimalFormat("0.00");
+    public static final DecimalFormat format = new DecimalFormat("0.00");
 
     public Cooldown(Duration duration) {
         this.duration = duration;
