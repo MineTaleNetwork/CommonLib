@@ -6,6 +6,7 @@ import cc.minetale.commonlib.profile.CachedProfile;
 import cc.minetale.commonlib.profile.Profile;
 import cc.minetale.commonlib.util.PigeonUtil;
 import cc.minetale.commonlib.util.ProfileUtil;
+import cc.minetale.commonlib.util.Redis;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import redis.clients.jedis.params.SetParams;
 
@@ -62,15 +63,23 @@ public class ProfileCache {
         });
     }
 
-    public static CompletableFuture<Void> createCachedProfile(CachedProfile cachedProfile) {
+    public static CompletableFuture<Void> createCachedProfile(Profile profile) {
         return CompletableFuture.runAsync(() -> {
-            try (var redis = CommonLib.getJedisPool().getResource()) {
-                redis.set(
-                        getKey(cachedProfile.getProfile().getUuid().toString()),
-                        CommonLib.getMapper().writeValueAsString(cachedProfile),
-                        SetParams.setParams().ex(TimeUnit.DAYS.toSeconds(2))
-                );
-            } catch (JsonProcessingException ignored) {}
+            var cachedProfile = new CachedProfile(profile);
+
+            Redis.runRedisCommand(jedis -> {
+                try {
+                    return jedis.set(
+                            getKey(cachedProfile.getProfile().getUuid().toString()),
+                            CommonLib.getMapper().writeValueAsString(cachedProfile),
+                            SetParams.setParams().ex(TimeUnit.DAYS.toSeconds(2))
+                    );
+                } catch (JsonProcessingException e) {
+                    e.printStackTrace();
+                }
+
+                return null;
+            });
         });
     }
 

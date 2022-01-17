@@ -6,6 +6,14 @@ import net.kyori.adventure.text.format.NamedTextColor;
 
 public class Language {
 
+    public static class General {
+        public static Component NETWORK_ERROR = Message.message("Error", Component.text("An error has occurred, please try rejoining the network.", NamedTextColor.RED));
+        public static Component UNKNOWN_PLAYER_ERROR = Message.message("Error", Component.text("That player does not exist or hasn't joined.", NamedTextColor.RED));
+        public static Component PROFILE_LOAD_ERROR = Component.text("Failed to load your profile. Try again later.", NamedTextColor.RED);
+        public static Component PLAYER_OFFLINE_ERROR = Message.message("Error", Component.text("That player is currently not online.", NamedTextColor.RED));
+        public static Component COMMAND_ERROR = Message.message("Error", Component.text("An error occurred when trying to execute that command.", NamedTextColor.RED));
+    }
+
     public static class Error {
         public static Component PLAYER_ERROR = Message.message("Error", Component.text("An error has occurred, please try rejoining the network.", NamedTextColor.RED));
         public static Component UNKNOWN_PLAYER = Message.message("Error", Component.text("That player does not exist or hasn't joined.", NamedTextColor.RED));
@@ -21,8 +29,9 @@ public class Language {
 
     public static class Friend  {
         public static class General {
-            public static Component MAXIMUM_REQUESTS = Message.message("Friend", Component.text("You've hit the max amount of friend requests.", NamedTextColor.RED));
-            public static Component MAXIMUM_FRIENDS = Message.message("Friend", Component.text("You've hit the max amount of friends.", NamedTextColor.RED));
+            public static Component MAXIMUM_REQUESTS = Message.message("Friend", Component.text("You've hit the maximum amount of friend requests.", NamedTextColor.RED));
+            public static Component PLAYER_MAXIMUM_FRIENDS = Message.message("Friend", Component.text("You've hit the maximum amount of friends.", NamedTextColor.RED));
+            public static Component TARGET_MAXIMUM_FRIENDS = Message.message("Friend", Component.text("That player already has the maximum amount of friends.", NamedTextColor.RED));
             public static Component TARGET_IGNORED = Message.message("Friend", Component.text("You are currently ignoring that player.", NamedTextColor.RED));
             public static Component TARGET_TOGGLED = Message.message("Friend", Component.text("That players is not receiving new friends at this moment.", NamedTextColor.RED));
         }

@@ -18,10 +18,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.mongodb.client.model.Filters;
 import com.mongodb.client.model.ReplaceOptions;
 import com.mongodb.client.result.UpdateResult;
-import lombok.EqualsAndHashCode;
-import lombok.Getter;
-import lombok.RequiredArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 import net.kyori.adventure.text.Component;
 import org.bson.Document;
 import org.jetbrains.annotations.Nullable;
@@ -36,13 +33,12 @@ import java.util.concurrent.ConcurrentSkipListMap;
 @Getter
 @Setter
 @EqualsAndHashCode(of = { "uuid" })
-@RequiredArgsConstructor
+//@RequiredArgsConstructor
 public class Profile {
 
     @JsonProperty("_id")
-    private final UUID uuid;
-    private final String name;
-    private String search;
+    private UUID uuid;
+    private String name;
     private String currentAddress;
     private String discord;
     private int gold;
@@ -57,6 +53,19 @@ public class Profile {
     private transient Grant grant = Grant.DEFAULT_GRANT;
     private transient List<Punishment> punishments = new ArrayList<>();
     private transient List<Grant> grants = new ArrayList<>();
+
+    public Profile() {
+
+    }
+
+    public Profile(UUID uuid) {
+        this.uuid = uuid;
+    }
+
+    public Profile name(String name) {
+        this.name = name;
+        return this;
+    }
 
     /**
      * Update a player's profile in our database

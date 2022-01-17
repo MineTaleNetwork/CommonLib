@@ -10,6 +10,7 @@ import cc.minetale.commonlib.punishment.Punishment;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.google.gson.JsonSyntaxException;
 import com.mongodb.client.model.Filters;
+import lombok.SneakyThrows;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -21,7 +22,8 @@ import java.util.concurrent.TimeoutException;
 
 public class ProfileUtil {
 
-    public static CompletableFuture<Profile> getOrCreateDatabaseProfile(UUID uuid, String name) {
+    @SneakyThrows
+    public static CompletableFuture<Profile> retrieveOrCreateProfile(UUID uuid, String name) {
         return new CompletableFuture<Profile>()
                 .completeAsync(() -> {
                     try {
@@ -29,13 +31,12 @@ public class ProfileUtil {
 
                         if(databaseProfile != null) {
                             return databaseProfile;
+                        } else {
+                            return new Profile(uuid).name(name);
                         }
-                    } catch (InterruptedException | ExecutionException e) {
-                        e.printStackTrace();
-                        return null;
-                    }
+                    } catch (InterruptedException | ExecutionException ignored) {}
 
-                    return new Profile(uuid, name);
+                    return null;
                 });
     }
 
@@ -92,11 +93,10 @@ public class ProfileUtil {
                     try {
                         for (var document : documents) {
                             var profile = CommonLib.getMapper().readValue(document.toJson(), Profile.class);
-                            var cachedProfile = new CachedProfile(profile);
 
-                            ProfileCache.createCachedProfile(cachedProfile);
+                            ProfileCache.createCachedProfile(profile);
                             UUIDCache.updateCache(profile.getName(), profile.getUuid());
-                            profiles.add(cachedProfile);
+                            profiles.add(new CachedProfile(profile));
                         }
                     } catch (JsonProcessingException e) {
                         e.printStackTrace();
@@ -147,21 +147,18 @@ public class ProfileUtil {
         return new CompletableFuture<Profile>()
                 .completeAsync(() -> {
                     try {
-                        var cachedProfile = fromCache(player).get();
+                        var uuid = UUIDCache.getUuid(player).get();
+
+                        var cachedProfile = fromCache(uuid).get();
 
                         if (cachedProfile != null) {
-                            var profile = cachedProfile.getProfile();
-
-                            UUIDCache.updateCache(profile.getName(), profile.getUuid());
-
-                            return profile;
+                            return cachedProfile.getProfile();
                         }
 
-                        var databaseProfile = fromDatabase(player).get();
+                        var databaseProfile = fromDatabase(uuid).get();
 
                         if (databaseProfile != null) {
-                            ProfileCache.updateProfile(databaseProfile);
-                            UUIDCache.updateCache(databaseProfile.getName(), databaseProfile.getUuid());
+                            ProfileCache.createCachedProfile(databaseProfile);
 
                             return databaseProfile;
                         }
@@ -203,42 +200,15 @@ public class ProfileUtil {
                 });
     }
 
-    public static CompletableFuture<Profile> fromDatabase(String name) {
-        return new CompletableFuture<Profile>()
-                .completeAsync(() -> {
-                    var collection = Database.getProfilesCollection();
-                    var document = collection.find(Filters.eq("search", name.toUpperCase())).first();
-
-                    if (document == null) {
-                        return null;
-                    }
-
-                    try {
-                        return CommonLib.getMapper().readValue(document.toJson(), Profile.class);
-                    } catch (JsonProcessingException e) {
-                        e.printStackTrace();
-                    }
-
-                    return null;
-                });
-    }
-
     public static CompletableFuture<CachedProfile> fromCache(UUID uuid) {
         return new CompletableFuture<CachedProfile>()
                 .completeAsync(() -> {
-                    String profileJson;
+                    String profile;
 
-                    try (var redis = CommonLib.getJedisPool().getResource()) {
-                        profileJson = redis.get(ProfileCache.getKey(uuid.toString()));
-                    }
-
-                    if (profileJson != null) {
-                        try {
-                            return CommonLib.getMapper().readValue(profileJson, CachedProfile.class);
-                        } catch (JsonSyntaxException | JsonProcessingException e) {
-                            e.printStackTrace();
-                        }
-                    }
+                    try {
+                        return ((profile = Redis.runRedisCommand(jedis -> jedis.get(ProfileCache.getKey(uuid.toString())))) != null) ?
+                                CommonLib.getMapper().readValue(profile, CachedProfile.class) : null;
+                    } catch (JsonProcessingException ignored) {}
 
                     return null;
                 });

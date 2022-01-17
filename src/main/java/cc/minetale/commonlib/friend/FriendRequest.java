@@ -16,6 +16,12 @@ public record FriendRequest(UUID initiator, UUID receiver, long ttl) {
 
         return new CompletableFuture<AddResponse>().completeAsync(() -> {
             try {
+                var outgoing = FriendCache.getOutgoingRequests(player.getUuid()).get();
+
+                if(outgoing.size() >= 100) {
+                    return AddResponse.MAXIMUM_REQUESTS;
+                }
+
                 if(!FriendCache.hasRequest(playerUuid, targetUuid).get()) {
                     if(FriendCache.hasRequest(targetUuid, playerUuid).get()) {
                         return AddResponse.PENDING_REQUEST;
@@ -55,6 +61,14 @@ public record FriendRequest(UUID initiator, UUID receiver, long ttl) {
 
                 if(request) {
                     FriendCache.removeCache(targetUuid, playerUuid);
+
+                    if(player.getFriends().size() >= 100) {
+                        return AcceptResponse.PLAYER_MAXIMUM_FRIENDS;
+                    }
+
+                    if(target.getFriends().size() >= 100) {
+                        return AcceptResponse.TARGET_MAXIMUM_FRIENDS;
+                    }
 
                     if(player.isIgnoring(target)) {
                         return AcceptResponse.TARGET_IGNORED;
