@@ -83,7 +83,7 @@ public class ProfileUtil {
                 });
     }
 
-    public static CompletableFuture<List<CachedProfile>> getProfiles(List<UUID> players) {
+    public static CompletableFuture<List<CachedProfile>> getProfiles(List<UUID> uuids) {
         return new CompletableFuture<List<CachedProfile>>()
                 .completeAsync(() -> {
                     var profiles = new ArrayList<CachedProfile>();
@@ -137,11 +137,11 @@ public class ProfileUtil {
                 });
     }
 
-    public static CompletableFuture<Profile> getProfile(UUID player) {
+    public static CompletableFuture<Profile> getProfile(UUID uuid) {
         return new CompletableFuture<Profile>()
                 .completeAsync(() -> {
                     try {
-                        var cachedProfile = fromCache(player).get();
+                        var cachedProfile = fromCache(uuid).get();
 
                         if (cachedProfile != null) {
                             return cachedProfile.getProfile();
@@ -160,12 +160,11 @@ public class ProfileUtil {
                 });
     }
 
-    public static CompletableFuture<Profile> getProfile(String player) {
+    public static CompletableFuture<Profile> getProfile(String username) {
         return new CompletableFuture<Profile>()
                 .completeAsync(() -> {
                     try {
-                        var uuid = UUIDCache.getUuid(player).get();
-
+                        var uuid = UUIDCache.getUuid(username).get();
                         var cachedProfile = fromCache(uuid).get();
 
                         if (cachedProfile != null) {
@@ -233,10 +232,10 @@ public class ProfileUtil {
                 });
     }
 
-    public static CompletableFuture<Retrieval> fromDatabase(UUID player) {
+    public static CompletableFuture<Retrieval> fromDatabase(UUID uuid) {
         return new CompletableFuture<Retrieval>()
                 .completeAsync(() -> {
-                    var document = Database.getProfilesCollection().find(Filters.eq("_id", player.toString())).first();
+                    var document = Database.getProfilesCollection().find(Filters.eq("_id", uuid.toString())).first();
 
                     try {
                         return fromDocument(document).get();
@@ -264,11 +263,11 @@ public class ProfileUtil {
                 });
     }
 
-    public static CompletableFuture<CachedProfile> fromCache(String name) {
+    public static CompletableFuture<CachedProfile> fromCache(String username) {
         return new CompletableFuture<CachedProfile>()
                 .completeAsync(() -> {
                     try {
-                        var uuid = UUIDCache.getUuid(name).get();
+                        var uuid = UUIDCache.getUuid(username).get();
 
                         if (uuid != null) {
                             return fromCache(uuid).get();

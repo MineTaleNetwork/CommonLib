@@ -6,8 +6,6 @@ import lombok.Getter;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 
-import java.util.Comparator;
-
 @Getter
 @AllArgsConstructor
 public enum Rank {

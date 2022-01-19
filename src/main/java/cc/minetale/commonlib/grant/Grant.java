@@ -3,6 +3,7 @@ package cc.minetale.commonlib.grant;
 import cc.minetale.commonlib.CommonLib;
 import cc.minetale.commonlib.util.Database;
 import cc.minetale.commonlib.util.ProvidableObject;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.mongodb.client.model.Filters;
 import com.mongodb.client.model.ReplaceOptions;

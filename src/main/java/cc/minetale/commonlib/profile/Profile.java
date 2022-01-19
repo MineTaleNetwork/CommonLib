@@ -53,7 +53,7 @@ public class Profile {
     private transient List<Punishment> punishments = new ArrayList<>();
     private transient List<Grant> grants = new ArrayList<>();
 
-    public Profile(UUID uuid, String name) {
+    public Profile(UUID uuid, String username) {
         this.uuid = uuid;
         this.name = name;
     }
@@ -349,7 +349,7 @@ public class Profile {
      * @return The decorated component
      */
     public Component getColoredName() {
-        return Component.text(this.name, this.grant.getRank().getColor());
+        return Component.text(this.username, this.grant.getRank().getColor());
     }
 
     /**
