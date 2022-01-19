@@ -83,7 +83,7 @@ public class ProfileUtil {
                 });
     }
 
-    public static CompletableFuture<List<CachedProfile>> getProfiles(List<UUID> uuids) {
+    public static CompletableFuture<List<CachedProfile>> getProfiles(List<UUID> players) {
         return new CompletableFuture<List<CachedProfile>>()
                 .completeAsync(() -> {
                     var profiles = new ArrayList<CachedProfile>();
@@ -147,7 +147,7 @@ public class ProfileUtil {
                             return cachedProfile.getProfile();
                         }
 
-                        var response = fromDatabase(player).get();
+                        var response = fromDatabase(uuid).get();
 
                         if (response != null && response.response() == Retrieval.Response.RETRIEVED) {
                             return response.profile();
@@ -221,7 +221,7 @@ public class ProfileUtil {
                         }
 
                         ProfileCache.writeCachedProfile(new CachedProfile(profile));
-                        UUIDCache.updateCache(uuid, profile.getName());
+                        UUIDCache.updateCache(uuid, profile.getUsername());
 
                         return new Retrieval(Retrieval.Response.RETRIEVED, profile);
                     } catch (JsonProcessingException e) {

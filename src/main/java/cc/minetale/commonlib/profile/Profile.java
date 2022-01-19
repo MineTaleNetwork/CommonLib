@@ -37,7 +37,7 @@ public class Profile {
 
     @JsonProperty("_id")
     private UUID uuid;
-    private String name;
+    private String username;
     private String currentAddress;
     private String discord;
     private int gold;
@@ -55,7 +55,7 @@ public class Profile {
 
     public Profile(UUID uuid, String username) {
         this.uuid = uuid;
-        this.name = name;
+        this.username = username;
     }
 
     public Profile(UUID uuid) {
