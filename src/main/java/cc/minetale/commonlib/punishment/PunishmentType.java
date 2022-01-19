@@ -2,9 +2,6 @@ package cc.minetale.commonlib.punishment;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
-import net.kyori.adventure.text.format.NamedTextColor;
-
-import java.util.function.Consumer;
 
 @Getter
 @AllArgsConstructor

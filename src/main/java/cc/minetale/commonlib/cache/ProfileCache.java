@@ -40,17 +40,15 @@ public class ProfileCache {
         return CompletableFuture.runAsync(() -> {
             try {
                 var uuid = profile.getUuid();
-                var cachedProfile = ProfileUtil.getCachedProfile(uuid).get();
+                var oldCached = ProfileUtil.getCachedProfile(uuid).get();
 
-                if (cachedProfile != null) {
-                    cachedProfile.setProfile(profile);
-                    cachedProfile.setGrants(profile.getGrants());
-                    cachedProfile.setPunishments(profile.getPunishments());
+                if (oldCached != null) {
+                    var newCached = new CachedProfile(oldCached, profile);
 
                     try (var redis = CommonLib.getJedisPool().getResource()) {
                         redis.set(
                                 getKey(uuid.toString()),
-                                CommonLib.getMapper().writeValueAsString(cachedProfile),
+                                CommonLib.getMapper().writeValueAsString(newCached),
                                 SetParams.setParams().ex(TimeUnit.DAYS.toSeconds(2))
                         );
                     }

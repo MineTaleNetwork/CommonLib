@@ -21,7 +21,7 @@ import java.util.concurrent.TimeoutException;
 
 public class ProfileUtil {
 
-    public static CompletableFuture<Profile> getOrCreateDatabaseProfile(UUID uuid, String name) {
+    public static CompletableFuture<Profile> getOrCreateDatabaseProfile(UUID uuid, String username) {
         return new CompletableFuture<Profile>()
                 .completeAsync(() -> {
                     try {
@@ -35,7 +35,11 @@ public class ProfileUtil {
                         return null;
                     }
 
-                    return new Profile(uuid, name);
+                    var profile = new Profile(uuid);
+
+                    profile.setUsername(username);
+
+                    return profile;
                 });
     }
 
@@ -60,7 +64,7 @@ public class ProfileUtil {
                 });
     }
 
-    public static CompletableFuture<List<CachedProfile>> getProfiles(List<UUID> players) {
+    public static CompletableFuture<List<CachedProfile>> getProfiles(List<UUID> uuids) {
         return new CompletableFuture<List<CachedProfile>>()
                 .completeAsync(() -> {
                     var profiles = new ArrayList<CachedProfile>();
@@ -68,7 +72,7 @@ public class ProfileUtil {
                     List<String> jsonArray;
 
                     try (var redis = CommonLib.getJedisPool().getResource()) {
-                        jsonArray = redis.mget(players.stream()
+                        jsonArray = redis.mget(uuids.stream()
                                 .map(uuid -> ProfileCache.getKey(uuid.toString()))
                                 .toArray(String[]::new));
                     }
@@ -79,7 +83,7 @@ public class ProfileUtil {
 
                     while (iterator.hasNext()) {
                         if (iterator.next() == null) {
-                            nonCachedUuids.add(players.get(index));
+                            nonCachedUuids.add(uuids.get(index));
                             iterator.remove();
                         }
 
@@ -95,7 +99,7 @@ public class ProfileUtil {
                             var cachedProfile = new CachedProfile(profile);
 
                             ProfileCache.createCachedProfile(cachedProfile);
-                            UUIDCache.updateCache(profile.getName(), profile.getUuid());
+                            UUIDCache.updateCache(profile.getUsername(), profile.getUuid());
                             profiles.add(cachedProfile);
                         }
                     } catch (JsonProcessingException e) {
@@ -115,25 +119,25 @@ public class ProfileUtil {
                 });
     }
 
-    public static CompletableFuture<Profile> getProfile(UUID player) {
+    public static CompletableFuture<Profile> getProfile(UUID uuid) {
         return new CompletableFuture<Profile>()
                 .completeAsync(() -> {
                     try {
-                        var cachedProfile = fromCache(player).get();
+                        var cachedProfile = fromCache(uuid).get();
 
                         if (cachedProfile != null) {
                             var profile = cachedProfile.getProfile();
 
-                            UUIDCache.updateCache(profile.getName(), profile.getUuid());
+                            UUIDCache.updateCache(profile.getUsername(), profile.getUuid());
 
                             return profile;
                         }
 
-                        var databaseProfile = fromDatabase(player).get();
+                        var databaseProfile = fromDatabase(uuid).get();
 
                         if (databaseProfile != null) {
                             ProfileCache.updateProfile(databaseProfile);
-                            UUIDCache.updateCache(databaseProfile.getName(), databaseProfile.getUuid());
+                            UUIDCache.updateCache(databaseProfile.getUsername(), databaseProfile.getUuid());
 
                             return databaseProfile;
                         }
@@ -143,25 +147,25 @@ public class ProfileUtil {
                 });
     }
 
-    public static CompletableFuture<Profile> getProfile(String player) {
+    public static CompletableFuture<Profile> getProfile(String username) {
         return new CompletableFuture<Profile>()
                 .completeAsync(() -> {
                     try {
-                        var cachedProfile = fromCache(player).get();
+                        var cachedProfile = fromCache(username).get();
 
                         if (cachedProfile != null) {
                             var profile = cachedProfile.getProfile();
 
-                            UUIDCache.updateCache(profile.getName(), profile.getUuid());
+                            UUIDCache.updateCache(profile.getUsername(), profile.getUuid());
 
                             return profile;
                         }
 
-                        var databaseProfile = fromDatabase(player).get();
+                        var databaseProfile = fromDatabase(username).get();
 
                         if (databaseProfile != null) {
                             ProfileCache.updateProfile(databaseProfile);
-                            UUIDCache.updateCache(databaseProfile.getName(), databaseProfile.getUuid());
+                            UUIDCache.updateCache(databaseProfile.getUsername(), databaseProfile.getUuid());
 
                             return databaseProfile;
                         }
@@ -171,11 +175,11 @@ public class ProfileUtil {
                 });
     }
 
-    public static CompletableFuture<Profile> fromDatabase(UUID player) {
+    public static CompletableFuture<Profile> fromDatabase(UUID uuid) {
         return new CompletableFuture<Profile>()
                 .completeAsync(() -> {
                     var collection = Database.getProfilesCollection();
-                    var document = collection.find(Filters.eq("_id", player.toString())).first();
+                    var document = collection.find(Filters.eq("_id", uuid.toString())).first();
 
                     if (document == null) {
                         return null;
@@ -203,11 +207,11 @@ public class ProfileUtil {
                 });
     }
 
-    public static CompletableFuture<Profile> fromDatabase(String name) {
+    public static CompletableFuture<Profile> fromDatabase(String username) {
         return new CompletableFuture<Profile>()
                 .completeAsync(() -> {
                     var collection = Database.getProfilesCollection();
-                    var document = collection.find(Filters.eq("search", name.toUpperCase())).first();
+                    var document = collection.find(Filters.eq("search", username.toUpperCase())).first();
 
                     if (document == null) {
                         return null;
@@ -244,11 +248,11 @@ public class ProfileUtil {
                 });
     }
 
-    public static CompletableFuture<CachedProfile> fromCache(String name) {
+    public static CompletableFuture<CachedProfile> fromCache(String username) {
         return new CompletableFuture<CachedProfile>()
                 .completeAsync(() -> {
                     try {
-                        var uuid = UUIDCache.getUuid(name).get();
+                        var uuid = UUIDCache.getUuid(username).get();
 
                         if (uuid != null) {
                             return fromCache(uuid).get();

@@ -33,16 +33,14 @@ import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentSkipListMap;
 
-@Getter
-@Setter
+@Getter @Setter
 @EqualsAndHashCode(of = { "uuid" })
 @RequiredArgsConstructor
 public class Profile {
 
     @JsonProperty("_id")
     private final UUID uuid;
-    private final String name;
-    private String search;
+    private String username;
     private String currentAddress;
     private String discord;
     private int gold;
@@ -340,7 +338,7 @@ public class Profile {
      * @return The decorated component
      */
     public Component getColoredName() {
-        return Component.text(this.name, this.grant.getRank().getColor());
+        return Component.text(this.username, this.grant.getRank().getColor());
     }
 
     /**

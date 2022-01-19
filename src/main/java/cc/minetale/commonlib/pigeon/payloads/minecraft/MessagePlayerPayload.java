@@ -4,7 +4,6 @@ import cc.minetale.pigeon.annotations.Payload;
 import cc.minetale.pigeon.annotations.Transmit;
 import cc.minetale.pigeon.payloads.bases.BasePayload;
 import lombok.Getter;
-import net.kyori.adventure.text.Component;
 
 import java.util.UUID;
 

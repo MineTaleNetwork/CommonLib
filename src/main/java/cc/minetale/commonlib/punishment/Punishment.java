@@ -89,8 +89,8 @@ public class Punishment extends ProvidableObject {
                 });
     }
 
-    public static CompletableFuture<@NotNull ArrayList<Punishment>> getPunishments(UUID uuid) {
-        return new CompletableFuture<ArrayList<Punishment>>()
+    public static CompletableFuture<@NotNull List<Punishment>> getPunishments(UUID uuid) {
+        return new CompletableFuture<List<Punishment>>()
                 .completeAsync(() -> {
                     var punishments = new ArrayList<Punishment>();
 

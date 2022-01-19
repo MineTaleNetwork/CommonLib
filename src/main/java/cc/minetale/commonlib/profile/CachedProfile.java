@@ -2,12 +2,15 @@ package cc.minetale.commonlib.profile;
 
 import cc.minetale.commonlib.grant.Grant;
 import cc.minetale.commonlib.punishment.Punishment;
+import lombok.AccessLevel;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import java.util.List;
 
 @Getter @Setter
+@NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class CachedProfile {
 
     private Profile profile;
@@ -20,6 +23,11 @@ public class CachedProfile {
 
         this.grants = profile.getGrants();
         this.punishments = profile.getPunishments();
+    }
+
+    public CachedProfile(CachedProfile oldCache, Profile profile) {
+        this(profile);
+        this.server = oldCache.getServer();
     }
 
     public Profile getProfile() {
