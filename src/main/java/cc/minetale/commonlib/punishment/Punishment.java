@@ -16,7 +16,6 @@ import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.format.TextDecoration;
 import org.bson.Document;
-import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.*;
@@ -86,7 +85,7 @@ public class Punishment extends ProvidableObject {
 
                     if (document != null) {
                         try {
-                            return CommonLib.getMapper().readValue(document.toJson(), Punishment.class);
+                            return CommonLib.getJsonMapper().readValue(document.toJson(), Punishment.class);
                         } catch (JsonProcessingException e) {
                             e.printStackTrace();
                         }
@@ -103,7 +102,7 @@ public class Punishment extends ProvidableObject {
 
                     for (var document : Database.getPunishmentsCollection().find(Filters.eq("playerId", uuid.toString()))) {
                         try {
-                            punishments.add(CommonLib.getMapper().readValue(document.toJson(), Punishment.class));
+                            punishments.add(CommonLib.getJsonMapper().readValue(document.toJson(), Punishment.class));
                         } catch (JsonProcessingException e) {
                             e.printStackTrace();
                             return null;
@@ -121,7 +120,7 @@ public class Punishment extends ProvidableObject {
                         return Database.getPunishmentsCollection()
                                 .replaceOne(
                                         Filters.eq("_id", getId()),
-                                        Document.parse(CommonLib.getMapper().writeValueAsString(this)),
+                                        Document.parse(CommonLib.getJsonMapper().writeValueAsString(this)),
                                         new ReplaceOptions().upsert(true)
                                 );
                     } catch (JsonProcessingException e) {

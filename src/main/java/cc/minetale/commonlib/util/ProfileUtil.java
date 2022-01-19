@@ -104,7 +104,7 @@ public class ProfileUtil {
                                 uuidQueue.add(players.get(i));
                             } else {
                                 try {
-                                    profiles.add(CommonLib.getMapper().readValue(profile, CachedProfile.class));
+                                    profiles.add(CommonLib.getJsonMapper().readValue(profile, CachedProfile.class));
                                 } catch (JsonProcessingException e) {
                                     e.printStackTrace();
                                 }
@@ -196,7 +196,7 @@ public class ProfileUtil {
                     }
 
                     try {
-                        var profile = CommonLib.getMapper().readValue(document.toJson(), Profile.class);
+                        var profile = CommonLib.getJsonMapper().readValue(document.toJson(), Profile.class);
                         var uuid = profile.getUuid();
 
                         try {
@@ -254,7 +254,7 @@ public class ProfileUtil {
 
                     try {
                         return ((profile = Redis.runRedisCommand(jedis -> jedis.get(ProfileCache.getKey(uuid.toString())))) != null) ?
-                                CommonLib.getMapper().readValue(profile, CachedProfile.class) : null;
+                                CommonLib.getJsonMapper().readValue(profile, CachedProfile.class) : null;
                     } catch (JsonProcessingException e) {
                         e.printStackTrace();
                     }
