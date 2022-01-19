@@ -8,6 +8,8 @@ import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.format.TextColor;
 import net.kyori.adventure.text.format.TextDecoration;
 
+import java.util.stream.Collectors;
+
 public class Message {
 
     public static TextComponent CONSOLE = Component.text("Console", NamedTextColor.DARK_RED);
@@ -52,21 +54,29 @@ public class Message {
         return builder.build();
     }
 
+    public static Component removeItalics(Component component) {
+        if(component.decoration(TextDecoration.ITALIC) == TextDecoration.State.NOT_SET) {
+            component = component.decoration(TextDecoration.ITALIC, TextDecoration.State.FALSE);
+        }
+
+        return component;
+    }
+
     public static Component format(Component base, Object... replacements) {
         var config = TextReplacementConfig.builder();
 
-        for(int i = 0; i < replacements.length; i++) {
+        for (int i = 0; i < replacements.length; i++) {
             var replacement = replacements[i];
             var match = config.matchLiteral("{" + i + "}");
 
-            if(replacement instanceof ComponentLike component) {
+            if (replacement instanceof ComponentLike component) {
                 match.replacement(component);
             } else {
                 match.replacement(replacement.toString());
             }
         }
 
-        return base.replaceText(config.build());
+        return removeItalics(base).replaceText(config.build());
     }
 
     public static Component coloredPing(int ping) {

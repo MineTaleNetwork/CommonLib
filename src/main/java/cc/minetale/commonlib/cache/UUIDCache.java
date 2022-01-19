@@ -1,6 +1,6 @@
 package cc.minetale.commonlib.cache;
 
-import cc.minetale.commonlib.CommonLib;
+import cc.minetale.commonlib.util.Redis;
 
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
@@ -9,49 +9,34 @@ public class UUIDCache {
 
     public static CompletableFuture<String> getName(UUID uuid) {
         return new CompletableFuture<String>()
-                .completeAsync(() -> {
-                    try (var redis = CommonLib.getJedisPool().getResource()) {
-                        var name = redis.hget(getUuidKey(), uuid.toString());
-
-                        if(name != null) {
-                            return name;
-                        }
-                    }
-
-                    return null;
-                });
+                .completeAsync(() -> Redis.runRedisCommand(jedis -> jedis.hget(getUuidKey(), uuid.toString())));
     }
 
     public static CompletableFuture<UUID> getUuid(String name) {
         return new CompletableFuture<UUID>()
                 .completeAsync(() -> {
-                    try (var redis = CommonLib.getJedisPool().getResource()) {
-                        var uuid = redis.hget(getNameKey(), name.toUpperCase());
-
-                        if(uuid != null) {
-                            return UUID.fromString(uuid);
-                        }
-                    }
-
-                    return null;
+                    String uuid;
+                    return ((uuid = Redis.runRedisCommand(jedis -> jedis.hget(getNameKey(), name.toUpperCase()))) != null) ?
+                            UUID.fromString(uuid) : null;
                 });
     }
 
     public static CompletableFuture<Void> updateCache(String name, UUID uuid) {
-        return CompletableFuture.runAsync(() -> {
-                try (var pipeline = CommonLib.getJedisPool().getResource().pipelined()) {
-                    var oldName = pipeline.hget(getUuidKey(), uuid.toString()).get();
+        return CompletableFuture.runAsync(() -> Redis.runRedisCommand(jedis -> {
+            var pipeline = jedis.pipelined();
+            var oldName = pipeline.hget(getUuidKey(), uuid.toString()).get();
 
-                    if(!oldName.equalsIgnoreCase(name.toUpperCase())) {
-                        pipeline.del(oldName);
-                    }
+            if(!oldName.equalsIgnoreCase(name)) {
+                pipeline.del(oldName);
+            }
 
-                    pipeline.hset(getNameKey(), name.toUpperCase(), uuid.toString());
-                    pipeline.hset(getUuidKey(), uuid.toString(), name);
+            pipeline.hset(getNameKey(), name.toUpperCase(), uuid.toString());
+            pipeline.hset(getUuidKey(), uuid.toString(), name);
 
-                    pipeline.sync();
-                }
-        });
+            pipeline.sync();
+
+            return null;
+        }));
     }
 
     public static String getNameKey() {

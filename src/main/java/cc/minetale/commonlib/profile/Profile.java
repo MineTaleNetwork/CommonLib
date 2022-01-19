@@ -56,6 +56,11 @@ public class Profile {
     private transient List<Punishment> punishments = new ArrayList<>();
     private transient List<Grant> grants = new ArrayList<>();
 
+    public Profile(UUID uuid, String username) {
+        this.uuid = uuid;
+        this.username = username;
+    }
+
     /**
      * Update a player's profile in our database
      * with data from the profile object
