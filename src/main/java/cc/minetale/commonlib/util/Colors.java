@@ -28,15 +28,15 @@ public class Colors {
     public static TextColor LIGHT_GRAY     = TextColor.color(189, 195, 199);
     public static TextColor WHITE          = TextColor.color(236, 240, 241);
 
-    public static TextColor getColorBetween(TextColor from, TextColor to, float x) {
+    public static TextColor getColorBetween(TextColor from, TextColor to, float percent) {
         float stepR = Math.abs(from.red() - to.red());
         float stepG = Math.abs(from.green() - to.green());
         float stepB = Math.abs(from.blue() - to.blue());
 
         return TextColor.color(
-                (int) (from.red() < to.red() ? from.red() + (stepR * x) : from.red() - (stepR * x)),
-                (int) (from.green() < to.green() ? from.green() + (stepG * x) : from.green() - (stepG * x)),
-                (int) (from.blue() < to.blue() ? from.blue() + (stepB * x) : from.blue() - (stepB * x))
+                (int) (from.red() < to.red() ? from.red() + (stepR * percent) : from.red() - (stepR * percent)),
+                (int) (from.green() < to.green() ? from.green() + (stepG * percent) : from.green() - (stepG * percent)),
+                (int) (from.blue() < to.blue() ? from.blue() + (stepB * percent) : from.blue() - (stepB * percent))
         );
     }
 

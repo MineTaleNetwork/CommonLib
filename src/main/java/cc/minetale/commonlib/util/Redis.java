@@ -15,7 +15,6 @@ public class Redis {
         return null;
     }
 
-
     public interface RedisCommand<T> {
         T execute(Jedis paramJedis);
     }

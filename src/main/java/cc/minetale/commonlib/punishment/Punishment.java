@@ -11,6 +11,7 @@ import com.mongodb.client.model.ReplaceOptions;
 import com.mongodb.client.result.DeleteResult;
 import com.mongodb.client.result.UpdateResult;
 import lombok.Getter;
+import lombok.Setter;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.format.TextDecoration;
@@ -22,15 +23,21 @@ import java.util.*;
 import java.util.concurrent.CompletableFuture;
 
 @Getter
+@Setter
 public class Punishment extends ProvidableObject {
 
-    private final PunishmentType type;
+    private PunishmentType type;
 
     public Punishment(String id, UUID playerId, UUID addedById, long addedAt, String addedReason, long duration, PunishmentType type) {
         super(id, playerId, addedById, addedAt, addedReason, duration);
 
         this.type = type;
     }
+
+    /**
+     * Default constructor used for Jackson.
+     */
+    public Punishment() {}
 
     public String getContext() {
         if (isPermanent()) {
@@ -89,7 +96,7 @@ public class Punishment extends ProvidableObject {
                 });
     }
 
-    public static CompletableFuture<@NotNull ArrayList<Punishment>> getPunishments(UUID uuid) {
+    public static CompletableFuture<ArrayList<Punishment>> getPunishments(UUID uuid) {
         return new CompletableFuture<ArrayList<Punishment>>()
                 .completeAsync(() -> {
                     var punishments = new ArrayList<Punishment>();
@@ -99,6 +106,7 @@ public class Punishment extends ProvidableObject {
                             punishments.add(CommonLib.getMapper().readValue(document.toJson(), Punishment.class));
                         } catch (JsonProcessingException e) {
                             e.printStackTrace();
+                            return null;
                         }
                     }
 

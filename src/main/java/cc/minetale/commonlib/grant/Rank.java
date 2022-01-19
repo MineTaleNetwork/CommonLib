@@ -49,11 +49,11 @@ public enum Rank {
      * @return The prefix
      */
     public Component getPrefix() {
-        return Component.text()
-                .append(Component.text("[", NamedTextColor.DARK_GRAY)
-                        .append(Component.text(this.name, this.color))
-                        .append(Component.text("]", NamedTextColor.DARK_GRAY)))
-                .build();
+        return Component.text().append(
+                Component.text("[", NamedTextColor.DARK_GRAY),
+                Component.text(this.name, this.color),
+                Component.text("]", NamedTextColor.DARK_GRAY)
+        ).build();
     }
 
     /**

@@ -14,7 +14,7 @@ public class ProxyPlayerDisconnectPayload extends BasePayload {
     @Transmit String server;
 
     public ProxyPlayerDisconnectPayload() {
-        payloadId = "proxyPlayerDisconnectPayload";
+        payloadId = this.getClass().getSimpleName();
     }
 
     public ProxyPlayerDisconnectPayload(UUID player, String server) {

@@ -14,7 +14,7 @@ public class ProxyPlayerConnectPayload extends BasePayload {
     @Transmit String server;
 
     public ProxyPlayerConnectPayload() {
-        payloadId = "proxyPlayerConnectPayload";
+        payloadId = this.getClass().getSimpleName();
     }
 
     public ProxyPlayerConnectPayload(UUID player, String server) {

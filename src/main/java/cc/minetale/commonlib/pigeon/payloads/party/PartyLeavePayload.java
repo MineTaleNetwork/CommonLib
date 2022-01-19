@@ -13,7 +13,7 @@ public class PartyLeavePayload extends BasePayload {
     @Transmit UUID player;
 
     public PartyLeavePayload() {
-        payloadId = "partyLeavePayload";
+        payloadId = this.getClass().getSimpleName();
     }
 
     public PartyLeavePayload(UUID player) {

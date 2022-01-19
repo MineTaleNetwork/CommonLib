@@ -14,7 +14,7 @@ public class FriendRequestAcceptPayload extends BasePayload {
     @Transmit UUID target;
 
     public FriendRequestAcceptPayload() {
-        payloadId = "friendRequestAcceptPayload";
+        payloadId = this.getClass().getSimpleName();
     }
 
     public FriendRequestAcceptPayload(UUID initiator, UUID target) {

@@ -14,7 +14,7 @@ public class GrantAddPayload extends BasePayload {
     @Transmit String grant;
 
     public GrantAddPayload() {
-        payloadId = "grantAddPayload";
+        payloadId = this.getClass().getSimpleName();
     }
 
     public GrantAddPayload(UUID player, String grant) {

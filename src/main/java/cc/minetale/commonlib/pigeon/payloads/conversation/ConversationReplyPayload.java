@@ -14,7 +14,7 @@ public class ConversationReplyPayload extends BasePayload {
     @Transmit String message;
 
     public ConversationReplyPayload() {
-        payloadId = "conversationReplyPayload";
+        payloadId = this.getClass().getSimpleName();
     }
 
     public ConversationReplyPayload(UUID player, String message) {

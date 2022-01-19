@@ -2,6 +2,7 @@ package cc.minetale.commonlib.util;
 
 
 import java.security.SecureRandom;
+import java.util.regex.Pattern;
 
 public class StringUtil {
 

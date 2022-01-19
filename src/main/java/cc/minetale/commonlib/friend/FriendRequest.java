@@ -18,6 +18,14 @@ public record FriendRequest(UUID initiator, UUID receiver, long ttl) {
             try {
                 var outgoing = FriendCache.getOutgoingRequests(player.getUuid()).get();
 
+                if(target.getFriends().contains(playerUuid) || player.getFriends().contains(targetUuid)) {
+                    return AddResponse.ALREADY_FRIENDS;
+                }
+
+                if(targetUuid.equals(playerUuid)) {
+                    return AddResponse.TARGET_IS_PLAYER;
+                }
+
                 if(outgoing.size() >= 100) {
                     return AddResponse.MAXIMUM_REQUESTS;
                 }
@@ -27,7 +35,7 @@ public record FriendRequest(UUID initiator, UUID receiver, long ttl) {
                         return AddResponse.PENDING_REQUEST;
                     }
 
-                    if(!player.getOptionsProfile().isReceivingFriendRequests()) {
+                    if(!target.getOptionsProfile().isReceivingFriendRequests()) {
                         return AddResponse.REQUESTS_TOGGLED;
                     }
 
@@ -45,7 +53,9 @@ public record FriendRequest(UUID initiator, UUID receiver, long ttl) {
                 } else {
                     return AddResponse.REQUEST_EXIST;
                 }
-            } catch (InterruptedException | ExecutionException ignored) {}
+            } catch (InterruptedException | ExecutionException e) {
+                e.printStackTrace();
+            }
 
             return AddResponse.ERROR;
         });
@@ -88,7 +98,9 @@ public record FriendRequest(UUID initiator, UUID receiver, long ttl) {
                 } else {
                     return AcceptResponse.NO_REQUEST;
                 }
-            } catch (InterruptedException | ExecutionException ignored) {}
+            } catch (InterruptedException | ExecutionException e) {
+                e.printStackTrace();
+            }
 
             return AcceptResponse.ERROR;
         });

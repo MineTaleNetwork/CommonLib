@@ -14,7 +14,7 @@ public class PunishmentExpirePayload extends BasePayload {
     @Transmit String punishment;
 
     public PunishmentExpirePayload() {
-        payloadId = "punishmentExpirePayload";
+        payloadId = this.getClass().getSimpleName();
     }
 
     public PunishmentExpirePayload(UUID player, String punishment) {

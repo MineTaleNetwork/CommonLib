@@ -14,7 +14,7 @@ public class PartyKickPayload extends BasePayload {
     @Transmit UUID target;
 
     public PartyKickPayload() {
-        payloadId = "partyKickPayload";
+        payloadId = this.getClass().getSimpleName();
     }
 
     public PartyKickPayload(UUID initiator, UUID target) {

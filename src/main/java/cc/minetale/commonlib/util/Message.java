@@ -8,13 +8,11 @@ import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.format.TextColor;
 import net.kyori.adventure.text.format.TextDecoration;
 
-import java.util.stream.Collectors;
-
 public class Message {
 
     public static TextComponent CONSOLE = Component.text("Console", NamedTextColor.DARK_RED);
 
-    public static Component message(String prefix, Component component) {
+    public static Component notification(String prefix, Component component) {
         return Component.text()
                 .append(
                         Component.text(prefix, NamedTextColor.GOLD, TextDecoration.BOLD),
@@ -65,9 +63,13 @@ public class Message {
     public static Component format(Component base, Object... replacements) {
         var config = TextReplacementConfig.builder();
 
+        if(replacements.length == 0) {
+            return removeItalics(base);
+        }
+
         for (int i = 0; i < replacements.length; i++) {
             var replacement = replacements[i];
-            var match = config.matchLiteral("{" + i + "}");
+            var match = config.match("{" + i + "}").once();
 
             if (replacement instanceof ComponentLike component) {
                 match.replacement(component);

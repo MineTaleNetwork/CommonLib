@@ -33,7 +33,6 @@ import java.util.concurrent.ConcurrentSkipListMap;
 @Getter
 @Setter
 @EqualsAndHashCode(of = { "uuid" })
-//@RequiredArgsConstructor
 public class Profile {
 
     @JsonProperty("_id")
@@ -54,22 +53,23 @@ public class Profile {
     private transient List<Punishment> punishments = new ArrayList<>();
     private transient List<Grant> grants = new ArrayList<>();
 
-    public Profile() {
-
+    public Profile(UUID uuid, String name) {
+        this.uuid = uuid;
+        this.name = name;
     }
 
     public Profile(UUID uuid) {
         this.uuid = uuid;
     }
 
-    public Profile name(String name) {
-        this.name = name;
-        return this;
-    }
+    /**
+     * Default constructor used for Jackson.
+     */
+    public Profile() {}
 
     /**
      * Update a player's profile in our database
-     * with data from the profile object
+     * with data from the profile object.
      *
      * @return The update result of saving
      */
@@ -149,9 +149,9 @@ public class Profile {
     public void issuePunishment(Punishment punishment) {
         this.punishments.add(punishment);
 
-        punishment.save();
-        ProfileCache.updateProfile(this)
-                .thenRun(() -> PigeonUtil.broadcast(new PunishmentAddPayload(this.uuid, punishment.getId())));
+        punishment.save()
+                .thenRun(() -> ProfileCache.updateProfile(this)
+                        .thenRun(() -> PigeonUtil.broadcast(new PunishmentAddPayload(this.uuid, punishment.getId()))));
 
         for(var provider : CommonLib.getProviders()) {
             provider.addPunishment(punishment);

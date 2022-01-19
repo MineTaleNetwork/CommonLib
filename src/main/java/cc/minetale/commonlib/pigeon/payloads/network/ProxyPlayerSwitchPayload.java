@@ -15,7 +15,7 @@ public class ProxyPlayerSwitchPayload extends BasePayload {
     @Transmit String serverTo;
 
     public ProxyPlayerSwitchPayload() {
-        payloadId = "proxyPlayerSwitchPayload";
+        payloadId = this.getClass().getSimpleName();
     }
 
     public ProxyPlayerSwitchPayload(UUID player, String serverFrom, String serverTo) {

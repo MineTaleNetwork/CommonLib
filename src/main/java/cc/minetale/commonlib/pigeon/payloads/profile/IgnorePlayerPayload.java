@@ -14,7 +14,7 @@ public class IgnorePlayerPayload extends BasePayload {
     @Transmit UUID player;
 
     public IgnorePlayerPayload() {
-        payloadId = "ignorePlayerPayload";
+        payloadId = this.getClass().getSimpleName();
     }
 
     public IgnorePlayerPayload(UUID initiator, UUID player) {

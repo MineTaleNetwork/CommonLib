@@ -7,7 +7,8 @@ import lombok.Setter;
 
 import java.util.List;
 
-@Getter @Setter
+@Getter
+@Setter
 public class CachedProfile {
 
     private Profile profile;
@@ -21,6 +22,8 @@ public class CachedProfile {
         this.grants = profile.getGrants();
         this.punishments = profile.getPunishments();
     }
+
+    public CachedProfile() {}
 
     public Profile getProfile() {
         this.profile.setGrants(this.grants);

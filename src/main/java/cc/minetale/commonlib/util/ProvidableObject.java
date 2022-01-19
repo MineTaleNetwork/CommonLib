@@ -3,27 +3,40 @@ package cc.minetale.commonlib.util;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
-import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 
 import java.util.UUID;
 
+
 @Getter
 @Setter
 @EqualsAndHashCode(of = { "id" })
-@RequiredArgsConstructor
 public abstract class ProvidableObject {
 
     @JsonProperty("_id")
-    private final String id;
-    private final UUID playerId;
-    private final UUID addedById;
-    private final long addedAt;
-    private final String addedReason;
-    private final long duration;
+    private String id;
+    private UUID playerId;
+    private UUID addedById;
+    private long addedAt;
+    private String addedReason;
+    private long duration;
     private UUID removedById;
     private long removedAt;
     private String removedReason;
+
+    public ProvidableObject(String id, UUID playerId, UUID addedById, long addedAt, String addedReason, long duration) {
+        this.id = id;
+        this.playerId = playerId;
+        this.addedById = addedById;
+        this.addedAt = addedAt;
+        this.addedReason = addedReason;
+        this.duration = duration;
+    }
+
+    /**
+     * Default constructor used for Jackson.
+     */
+    public ProvidableObject() {}
 
     public boolean isRemoved() {
         return removedAt != 0L;

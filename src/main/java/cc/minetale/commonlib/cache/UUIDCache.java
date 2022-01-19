@@ -9,31 +9,46 @@ public class UUIDCache {
 
     public static CompletableFuture<String> getName(UUID uuid) {
         return new CompletableFuture<String>()
-                .completeAsync(() -> Redis.runRedisCommand(jedis -> jedis.hget(getUuidKey(), uuid.toString())));
+                .completeAsync(() -> Redis.runRedisCommand(jedis -> jedis.hget(
+                        getUuidKey(),
+                        uuid.toString()
+                )));
     }
 
     public static CompletableFuture<UUID> getUuid(String name) {
         return new CompletableFuture<UUID>()
                 .completeAsync(() -> {
                     String uuid;
-                    return ((uuid = Redis.runRedisCommand(jedis -> jedis.hget(getNameKey(), name.toUpperCase()))) != null) ?
-                            UUID.fromString(uuid) : null;
+
+                    return ((uuid = Redis.runRedisCommand(jedis -> jedis.hget(
+                            getNameKey(),
+                            name.toUpperCase()
+                    ))) != null) ? UUID.fromString(uuid) : null;
                 });
     }
 
-    public static CompletableFuture<Void> updateCache(String name, UUID uuid) {
+    public static CompletableFuture<Void> updateCache(UUID uuid, String name) {
         return CompletableFuture.runAsync(() -> Redis.runRedisCommand(jedis -> {
-            var pipeline = jedis.pipelined();
-            var oldName = pipeline.hget(getUuidKey(), uuid.toString()).get();
+            var oldName = jedis.hget(
+                    getUuidKey(),
+                    uuid.toString()
+            );
 
-            if(!oldName.equalsIgnoreCase(name)) {
-                pipeline.del(oldName);
+            if(oldName != null && !oldName.equalsIgnoreCase(name)) {
+                jedis.del(oldName);
             }
 
-            pipeline.hset(getNameKey(), name.toUpperCase(), uuid.toString());
-            pipeline.hset(getUuidKey(), uuid.toString(), name);
+            jedis.hset(
+                    getNameKey(),
+                    name.toUpperCase(),
+                    uuid.toString()
+            );
 
-            pipeline.sync();
+            jedis.hset(
+                    getUuidKey(),
+                    uuid.toString(),
+                    name
+            );
 
             return null;
         }));

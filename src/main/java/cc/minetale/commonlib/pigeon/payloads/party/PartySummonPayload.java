@@ -13,7 +13,7 @@ public class PartySummonPayload extends BasePayload {
     @Transmit UUID player;
 
     public PartySummonPayload() {
-        payloadId = "partySummonPayload";
+        payloadId = this.getClass().getSimpleName();
     }
 
     public PartySummonPayload(UUID player) {

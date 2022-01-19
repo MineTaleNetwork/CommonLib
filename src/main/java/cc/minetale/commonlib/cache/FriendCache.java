@@ -1,7 +1,7 @@
 package cc.minetale.commonlib.cache;
 
-import cc.minetale.commonlib.CommonLib;
 import cc.minetale.commonlib.friend.FriendRequest;
+import cc.minetale.commonlib.util.Redis;
 import redis.clients.jedis.params.SetParams;
 
 import java.util.HashSet;
@@ -14,70 +14,61 @@ public class FriendCache {
 
     public static CompletableFuture<Set<FriendRequest>> getOutgoingRequests(UUID player) {
         return new CompletableFuture<Set<FriendRequest>>()
-                .completeAsync(() -> {
-                    try (var redis = CommonLib.getJedisPool().getResource()) {
-                        var response = redis.keys(getKey(player.toString(), "*"));
+                .completeAsync(() -> Redis.runRedisCommand(jedis -> {
+                    var friendRequests = new HashSet<FriendRequest>();
 
-                        var friendRequests = new HashSet<FriendRequest>();
+                    for(var request : jedis.keys(getKey(player.toString(), "*"))) {
+                        var key = request.split(":");
 
-                        for(var request : response) {
-                            var key = request.split(":");
-
-                            friendRequests.add(new FriendRequest(UUID.fromString(key[2]), UUID.fromString(key[3]), redis.pttl(request)));
-                        }
-
-                        return friendRequests;
+                        friendRequests.add(new FriendRequest(
+                                UUID.fromString(key[2]),
+                                UUID.fromString(key[3]),
+                                jedis.pttl(request)
+                        ));
                     }
-                });
+
+                    return friendRequests;
+                }));
     }
 
     public static CompletableFuture<Set<FriendRequest>> getIncomingRequests(UUID player) {
         return new CompletableFuture<Set<FriendRequest>>()
-                .completeAsync(() -> {
-                    try (var redis = CommonLib.getJedisPool().getResource()) {
-                        var response = redis.keys(getKey("*", player.toString()));
+                .completeAsync(() -> Redis.runRedisCommand(jedis -> {
+                    var friendRequests = new HashSet<FriendRequest>();
 
-                        var friendRequests = new HashSet<FriendRequest>();
+                    for(var request : jedis.keys(getKey("*", player.toString()))) {
+                        var key = request.split(":");
 
-                        for(var request : response) {
-                            var key = request.split(":");
-
-                            friendRequests.add(new FriendRequest(UUID.fromString(key[2]), UUID.fromString(key[3]), redis.pttl(request)));
-                        }
-
-                        return friendRequests;
+                        friendRequests.add(new FriendRequest(
+                                UUID.fromString(key[2]),
+                                UUID.fromString(key[3]),
+                                jedis.pttl(request)
+                        ));
                     }
-                });
+
+                    return friendRequests;
+                }));
     }
 
     public static CompletableFuture<Boolean> hasRequest(UUID player, UUID target) {
         return new CompletableFuture<Boolean>()
-                .completeAsync(() -> {
-                    boolean request;
-
-                    try (var redis = CommonLib.getJedisPool().getResource()) {
-                        request = redis.exists(getKey(player.toString(), target.toString()));
-                    }
-
-                    return request;
-                });
+                .completeAsync(() -> Redis.runRedisCommand(jedis -> jedis.exists(
+                        getKey(player.toString(), target.toString())
+                )));
     }
 
     public static CompletableFuture<Void> removeCache(UUID player, UUID target) {
-        return CompletableFuture.runAsync(() -> {
-            try (var redis = CommonLib.getJedisPool().getResource()) {
-                redis.del(getKey(player.toString(), target.toString()));
-            }
-        });
-
+        return CompletableFuture.runAsync(() -> Redis.runRedisCommand(jedis -> jedis.del(
+                getKey(player.toString(), target.toString())
+        )));
     }
 
     public static CompletableFuture<Void> updateCache(UUID player, UUID target) {
-        return CompletableFuture.runAsync(() -> {
-            try (var redis = CommonLib.getJedisPool().getResource()) {
-                redis.set(getKey(player.toString(), target.toString()), "true", new SetParams().ex(TimeUnit.DAYS.toSeconds(7)));
-            }
-        });
+        return CompletableFuture.runAsync(() -> Redis.runRedisCommand(jedis -> jedis.set(
+                getKey(player.toString(), target.toString()),
+                "",
+                new SetParams().ex(TimeUnit.DAYS.toSeconds(7))
+        )));
     }
 
     public static String getKey(String player, String target) {

@@ -13,7 +13,7 @@ public class ProfileUpdatePayload extends BasePayload {
     @Transmit UUID player;
 
     public ProfileUpdatePayload() {
-        payloadId = "profileUpdatePayload";
+        payloadId = this.getClass().getSimpleName();
     }
 
     public ProfileUpdatePayload(UUID player) {

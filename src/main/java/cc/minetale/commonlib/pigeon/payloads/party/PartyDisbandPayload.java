@@ -13,7 +13,7 @@ public class PartyDisbandPayload extends BasePayload {
     @Transmit UUID player;
 
     public PartyDisbandPayload() {
-        payloadId = "partyDisbandPayload";
+        payloadId = this.getClass().getSimpleName();
     }
 
     public PartyDisbandPayload(UUID player) {

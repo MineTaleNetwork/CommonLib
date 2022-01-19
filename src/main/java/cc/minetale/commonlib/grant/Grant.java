@@ -1,7 +1,6 @@
 package cc.minetale.commonlib.grant;
 
 import cc.minetale.commonlib.CommonLib;
-import cc.minetale.commonlib.lang.Language;
 import cc.minetale.commonlib.util.Database;
 import cc.minetale.commonlib.util.ProvidableObject;
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -10,6 +9,7 @@ import com.mongodb.client.model.ReplaceOptions;
 import com.mongodb.client.result.DeleteResult;
 import com.mongodb.client.result.UpdateResult;
 import lombok.Getter;
+import lombok.Setter;
 import org.bson.Document;
 
 import java.util.ArrayList;
@@ -18,9 +18,10 @@ import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 
 @Getter
+@Setter
 public class Grant extends ProvidableObject {
 
-    private final Rank rank;
+    private Rank rank;
 
     public static final Grant DEFAULT_GRANT = new Grant("DEFAULT", null, null, 0L, "Default", Integer.MAX_VALUE,  Rank.MEMBER);
 
@@ -29,6 +30,11 @@ public class Grant extends ProvidableObject {
 
         this.rank = rank;
     }
+
+    /**
+     * Default constructor used for Jackson.
+     */
+    public Grant() {}
 
     public boolean isDefault() {
         return rank == Rank.MEMBER;
@@ -61,6 +67,7 @@ public class Grant extends ProvidableObject {
                             grants.add(CommonLib.getMapper().readValue(document.toJson(), Grant.class));
                         } catch (JsonProcessingException e) {
                             e.printStackTrace();
+                            return null;
                         }
                     }
 

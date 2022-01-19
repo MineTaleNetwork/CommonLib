@@ -25,62 +25,49 @@ public class ProfileCache {
                 if (cachedProfile != null) {
                     cachedProfile.setServer(server);
 
-                    try (var redis = CommonLib.getJedisPool().getResource()) {
-                        redis.set(
-                                getKey(uuid.toString()),
-                                CommonLib.getMapper().writeValueAsString(cachedProfile),
-                                SetParams.setParams().ex(TimeUnit.DAYS.toSeconds(2))
-                        );
-                    }
+                    writeCachedProfile(cachedProfile).get();
                 }
-            } catch (InterruptedException | ExecutionException | JsonProcessingException ignored) {}
+            } catch (InterruptedException | ExecutionException e) {
+                e.printStackTrace();
+            }
         });
     }
 
     public static CompletableFuture<Void> updateProfile(Profile profile) {
         return CompletableFuture.runAsync(() -> {
             try {
-                var uuid = profile.getUuid();
-                var cachedProfile = ProfileUtil.getCachedProfile(uuid).get();
+                profile.save().get();
+
+                var cachedProfile = ProfileUtil.getCachedProfile(profile.getUuid()).get();
 
                 if (cachedProfile != null) {
-                    cachedProfile.setProfile(profile);
-                    cachedProfile.setGrants(profile.getGrants());
-                    cachedProfile.setPunishments(profile.getPunishments());
+                    var newProfile = new CachedProfile(profile);
+                    newProfile.setServer(cachedProfile.getServer());
 
-                    try (var redis = CommonLib.getJedisPool().getResource()) {
-                        redis.set(
-                                getKey(uuid.toString()),
-                                CommonLib.getMapper().writeValueAsString(cachedProfile),
-                                SetParams.setParams().ex(TimeUnit.DAYS.toSeconds(2))
-                        );
-                    }
-
-                    profile.save()
-                            .thenRun(() -> PigeonUtil.broadcast(new ProfileUpdatePayload(profile.getUuid())));
+                    writeCachedProfile(cachedProfile).get();
                 }
-            } catch (InterruptedException | ExecutionException | JsonProcessingException ignored) {}
+
+                PigeonUtil.broadcast(new ProfileUpdatePayload(profile.getUuid()));
+            } catch (InterruptedException | ExecutionException e) {
+                e.printStackTrace();
+            }
         });
     }
 
-    public static CompletableFuture<Void> createCachedProfile(Profile profile) {
-        return CompletableFuture.runAsync(() -> {
-            var cachedProfile = new CachedProfile(profile);
+    public static CompletableFuture<Void> writeCachedProfile(CachedProfile cachedProfile) {
+        return CompletableFuture.runAsync(() -> Redis.runRedisCommand(jedis -> {
+            try {
+                return jedis.set(
+                        getKey(cachedProfile.getProfile().getUuid().toString()),
+                        CommonLib.getMapper().writeValueAsString(cachedProfile),
+                        SetParams.setParams().ex(TimeUnit.DAYS.toSeconds(2))
+                );
+            } catch (JsonProcessingException e) {
+                e.printStackTrace();
+            }
 
-            Redis.runRedisCommand(jedis -> {
-                try {
-                    return jedis.set(
-                            getKey(cachedProfile.getProfile().getUuid().toString()),
-                            CommonLib.getMapper().writeValueAsString(cachedProfile),
-                            SetParams.setParams().ex(TimeUnit.DAYS.toSeconds(2))
-                    );
-                } catch (JsonProcessingException e) {
-                    e.printStackTrace();
-                }
-
-                return null;
-            });
-        });
+            return null;
+        }));
     }
 
     public static String getKey(String player) {

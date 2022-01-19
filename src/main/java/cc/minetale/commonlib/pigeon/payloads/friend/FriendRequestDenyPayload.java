@@ -14,7 +14,7 @@ public class FriendRequestDenyPayload extends BasePayload {
     @Transmit UUID target;
 
     public FriendRequestDenyPayload() {
-        payloadId = "friendRequestDenyPayload";
+        payloadId = this.getClass().getSimpleName();
     }
 
     public FriendRequestDenyPayload(UUID initiator, UUID target) {

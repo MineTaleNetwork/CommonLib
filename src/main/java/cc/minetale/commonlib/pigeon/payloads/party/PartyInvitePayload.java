@@ -14,7 +14,7 @@ public class PartyInvitePayload extends BasePayload {
     @Transmit UUID target;
 
     public PartyInvitePayload() {
-        payloadId = "partyInvitePayload";
+        payloadId = this.getClass().getSimpleName();
     }
 
     public PartyInvitePayload(UUID initiator, UUID target) {

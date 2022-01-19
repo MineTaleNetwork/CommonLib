@@ -15,7 +15,7 @@ public class ConversationMessagePayload extends BasePayload {
     @Transmit String message;
 
     public ConversationMessagePayload() {
-        payloadId = "conversationMessagePayload";
+        payloadId = this.getClass().getSimpleName();
     }
 
     public ConversationMessagePayload(UUID initiator, UUID target, String message) {

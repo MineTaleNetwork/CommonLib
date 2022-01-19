@@ -14,7 +14,7 @@ public class GrantRemovePayload extends BasePayload {
     @Transmit String grant;
 
     public GrantRemovePayload() {
-        payloadId = "grantRemovePayload";
+        payloadId = this.getClass().getSimpleName();
     }
 
     public GrantRemovePayload(UUID player, String grant) {

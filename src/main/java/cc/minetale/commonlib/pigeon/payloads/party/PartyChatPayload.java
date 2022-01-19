@@ -14,7 +14,7 @@ public class PartyChatPayload extends BasePayload {
     @Transmit String message;
 
     public PartyChatPayload() {
-        payloadId = "partyChatPayload";
+        payloadId = this.getClass().getSimpleName();
     }
 
     public PartyChatPayload(UUID player, String message) {
