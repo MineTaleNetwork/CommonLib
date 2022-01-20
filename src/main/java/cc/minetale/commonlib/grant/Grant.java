@@ -3,7 +3,6 @@ package cc.minetale.commonlib.grant;
 import cc.minetale.commonlib.CommonLib;
 import cc.minetale.commonlib.util.Database;
 import cc.minetale.commonlib.util.ProvidableObject;
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.mongodb.client.model.Filters;
 import com.mongodb.client.model.ReplaceOptions;
@@ -48,7 +47,7 @@ public class Grant extends ProvidableObject {
 
                     if (document != null) {
                         try {
-                            return CommonLib.getMapper().readValue(document.toJson(), Grant.class);
+                            return CommonLib.getJsonMapper().readValue(document.toJson(), Grant.class);
                         } catch (JsonProcessingException e) {
                             e.printStackTrace();
                         }
@@ -65,7 +64,7 @@ public class Grant extends ProvidableObject {
 
                     for (var document : Database.getGrantsCollection().find(Filters.eq("playerId", uuid.toString()))) {
                         try {
-                            grants.add(CommonLib.getMapper().readValue(document.toJson(), Grant.class));
+                            grants.add(CommonLib.getJsonMapper().readValue(document.toJson(), Grant.class));
                         } catch (JsonProcessingException e) {
                             e.printStackTrace();
                             return null;
@@ -83,7 +82,7 @@ public class Grant extends ProvidableObject {
                         return Database.getGrantsCollection()
                                 .replaceOne(
                                         Filters.eq("_id", getId()),
-                                        Document.parse(CommonLib.getMapper().writeValueAsString(this)),
+                                        Document.parse(CommonLib.getJsonMapper().writeValueAsString(this)),
                                         new ReplaceOptions().upsert(true)
                                 );
                     } catch (JsonProcessingException e) {

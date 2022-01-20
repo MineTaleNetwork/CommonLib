@@ -80,7 +80,7 @@ public class Profile {
                         return Database.getProfilesCollection()
                                 .replaceOne(
                                         Filters.eq(this.uuid.toString()),
-                                        Document.parse(CommonLib.getMapper().writeValueAsString(this)),
+                                        Document.parse(CommonLib.getJsonMapper().writeValueAsString(this)),
                                         new ReplaceOptions().upsert(true)
                                 );
                     } catch (JsonProcessingException e) {
