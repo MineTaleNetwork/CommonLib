@@ -36,15 +36,13 @@ public class ProfileCache {
     public static CompletableFuture<Void> updateProfile(Profile profile) {
         return CompletableFuture.runAsync(() -> {
             try {
-                profile.save().get();
-
                 var cachedProfile = ProfileUtil.getCachedProfile(profile.getUuid()).get();
 
                 if (cachedProfile != null) {
                     var newProfile = new CachedProfile(profile);
                     newProfile.setServer(cachedProfile.getServer());
 
-                    writeCachedProfile(cachedProfile).get();
+                    writeCachedProfile(newProfile).get();
                 }
 
                 PigeonUtil.broadcast(new ProfileUpdatePayload(profile.getUuid()));
@@ -57,12 +55,14 @@ public class ProfileCache {
     public static CompletableFuture<Void> writeCachedProfile(CachedProfile cachedProfile) {
         return CompletableFuture.runAsync(() -> Redis.runRedisCommand(jedis -> {
             try {
+                cachedProfile.getProfile().save().get();
+
                 return jedis.set(
                         getKey(cachedProfile.getProfile().getUuid().toString()),
                         CommonLib.getMapper().writeValueAsString(cachedProfile),
                         SetParams.setParams().ex(TimeUnit.DAYS.toSeconds(2))
                 );
-            } catch (JsonProcessingException e) {
+            } catch (JsonProcessingException | ExecutionException | InterruptedException e) {
                 e.printStackTrace();
             }
 

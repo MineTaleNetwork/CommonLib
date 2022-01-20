@@ -7,6 +7,7 @@ import cc.minetale.commonlib.util.StringUtil;
 import cc.minetale.pigeon.Pigeon;
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.json.JsonMapper;
 import com.fasterxml.jackson.databind.module.SimpleModule;
@@ -30,6 +31,7 @@ public class CommonLib {
 
     public static void init() {
         mapper = new JsonMapper()
+                .disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES)
                 .setSerializationInclusion(JsonInclude.Include.NON_ABSENT)
                 .setDefaultVisibility(JsonAutoDetect.Value.construct(
                         JsonAutoDetect.Visibility.ANY,

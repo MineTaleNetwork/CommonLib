@@ -8,6 +8,8 @@ import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.format.TextColor;
 import net.kyori.adventure.text.format.TextDecoration;
 
+import java.util.regex.Pattern;
+
 public class Message {
 
     public static TextComponent CONSOLE = Component.text("Console", NamedTextColor.DARK_RED);
@@ -69,7 +71,7 @@ public class Message {
 
         for (int i = 0; i < replacements.length; i++) {
             var replacement = replacements[i];
-            var match = config.match("{" + i + "}").once();
+            var match = config.match(Pattern.compile("\\{" + i + "\\}"));
 
             if (replacement instanceof ComponentLike component) {
                 match.replacement(component);
@@ -78,7 +80,7 @@ public class Message {
             }
         }
 
-        return removeItalics(base).replaceText(config.build());
+        return base.decoration(TextDecoration.ITALIC, TextDecoration.State.FALSE).replaceText(config.build());
     }
 
     public static Component coloredPing(int ping) {

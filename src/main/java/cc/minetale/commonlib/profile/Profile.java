@@ -40,7 +40,7 @@ public class Profile {
     private String username;
     private String currentAddress;
     private String discord;
-    private int gold;
+    private long gold;
     private long firstSeen;
     private long lastSeen;
     private long experience;
