@@ -7,7 +7,12 @@ import net.kyori.adventure.text.TextReplacementConfig;
 import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.format.TextColor;
 import net.kyori.adventure.text.format.TextDecoration;
+import net.kyori.adventure.text.minimessage.MiniMessage;
+import net.kyori.adventure.text.minimessage.Template;
 
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.regex.Pattern;
 
 public class Message {
@@ -55,11 +60,31 @@ public class Message {
     }
 
     public static Component removeItalics(Component component) {
-        if(component.decoration(TextDecoration.ITALIC) == TextDecoration.State.NOT_SET) {
-            component = component.decoration(TextDecoration.ITALIC, TextDecoration.State.FALSE);
-        }
+        component.decoration(TextDecoration.ITALIC, false);
+
+        component.children().forEach(child -> {
+            System.out.println("Child: " + ((TextComponent) child).content());
+            removeItalics(child);
+        });
 
         return component;
+    }
+
+    public static Component parse(String input, Object... replacements) {
+        var templates = new ArrayList<Template>();
+
+        for (int i = 0; i < replacements.length; i++) {
+            var key = String.valueOf(i);
+            var replacement = replacements[i];
+
+            if (replacement instanceof Component component) {
+                templates.add(Template.of(key, component));
+            } else {
+                templates.add(Template.of(key, replacement.toString()));
+            }
+        }
+
+        return MiniMessage.get().parse(input, templates);
     }
 
     public static Component format(Component base, Object... replacements) {

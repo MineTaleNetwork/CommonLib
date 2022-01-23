@@ -11,13 +11,13 @@ version 'LATEST'
 repositories {
     mavenLocal()
     mavenCentral()
+    maven { url = 'https://oss.sonatype.org/content/repositories/snapshots/' }
     maven { url = 'https://repo.mattmalec.com/repository/releases' }
 }
 
 dependencies {
 	compileOnly         group: 'org.projectlombok', name: 'lombok', version: '1.18.22'
     annotationProcessor group: 'org.projectlombok', name: 'lombok', version: '1.18.22'
-
 
     implementation group: 'redis.clients',                name: 'jedis',                         version: '4.0.0'
     implementation group: 'net.kyori',                    name: 'adventure-api',                 version: '4.9.2'
@@ -26,6 +26,7 @@ dependencies {
     implementation group: 'com.fasterxml.jackson.core',   name: 'jackson-databind',              version: '2.13.1'
     implementation group: 'com.fasterxml.jackson.module', name: 'jackson-module-parameter-names'
     implementation group: 'de.undercouch',                name: 'bson4jackson',                  version: '2.13.0'
+    implementation "net.kyori:adventure-text-minimessage:4.1.0-SNAPSHOT"
 }
 
 compileJava.options.encoding('UTF-8')

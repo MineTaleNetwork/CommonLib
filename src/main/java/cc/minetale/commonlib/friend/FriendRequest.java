@@ -26,6 +26,8 @@ public record FriendRequest(UUID player, UUID target, long ttl) {
                         ProfileCache.updateProfile(player);
                         ProfileCache.updateProfile(target);
 
+                        player.save();
+                        target.save();
                         return RemoveResponse.SUCCESS;
                     } else {
                         return RemoveResponse.NOT_ADDED;
@@ -164,12 +166,11 @@ public record FriendRequest(UUID player, UUID target, long ttl) {
                             player.getFriends().add(targetUuid);
                             target.getFriends().add(playerUuid);
 
-                            System.out.println(player.getFriends());
-                            System.out.println(target.getFriends());
-
                             ProfileCache.updateProfile(player);
                             ProfileCache.updateProfile(target);
 
+                            player.save();
+                            target.save();
                             return AcceptResponse.SUCCESS;
                         } else {
                             return AcceptResponse.NO_REQUEST;

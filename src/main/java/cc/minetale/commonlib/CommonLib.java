@@ -14,8 +14,6 @@ import com.fasterxml.jackson.module.paramnames.ParameterNamesModule;
 import com.mongodb.MongoClient;
 import com.mongodb.client.MongoDatabase;
 import de.undercouch.bson4jackson.BsonFactory;
-import de.undercouch.bson4jackson.BsonGenerator;
-import de.undercouch.bson4jackson.BsonParser;
 import lombok.Getter;
 import redis.clients.jedis.JedisPool;
 
@@ -60,7 +58,8 @@ public class CommonLib {
                 JsonAutoDetect.Visibility.NONE,
                 JsonAutoDetect.Visibility.NONE,
                 JsonAutoDetect.Visibility.NONE,
-                JsonAutoDetect.Visibility.ANY);
+                JsonAutoDetect.Visibility.ANY
+        );
 
         final var module = new SimpleModule()
                 .addSerializer(Color.class, new ColorSerializers.Serializer())

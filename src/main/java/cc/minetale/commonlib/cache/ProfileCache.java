@@ -17,6 +17,22 @@ import java.util.concurrent.TimeUnit;
 
 public class ProfileCache {
 
+    public static CompletableFuture<Void> updateLastMessaged(UUID uuid, UUID lastMessaged) {
+        return CompletableFuture.runAsync(() -> {
+            try {
+                var cachedProfile = ProfileUtil.getCachedProfile(uuid).get();
+
+                if (cachedProfile != null) {
+                    cachedProfile.setLastMessaged(lastMessaged);
+
+                    updateCache(cachedProfile).get();
+                }
+            } catch (InterruptedException | ExecutionException e) {
+                e.printStackTrace();
+            }
+        });
+    }
+
     public static CompletableFuture<Void> updateStatus(UUID uuid, String server) {
         return CompletableFuture.runAsync(() -> {
             try {
@@ -25,7 +41,7 @@ public class ProfileCache {
                 if (cachedProfile != null) {
                     cachedProfile.setServer(server);
 
-                    writeCachedProfile(cachedProfile).get();
+                    updateCache(cachedProfile).get();
                 }
             } catch (InterruptedException | ExecutionException e) {
                 e.printStackTrace();
@@ -42,7 +58,7 @@ public class ProfileCache {
                     var newProfile = new CachedProfile(profile);
                     newProfile.setServer(cachedProfile.getServer());
 
-                    writeCachedProfile(newProfile).get();
+                    updateCache(newProfile).get();
                 }
 
                 PigeonUtil.broadcast(new ProfileUpdatePayload(profile.getUuid()));
@@ -52,17 +68,15 @@ public class ProfileCache {
         });
     }
 
-    public static CompletableFuture<Void> writeCachedProfile(CachedProfile cachedProfile) {
+    public static CompletableFuture<Void> updateCache(CachedProfile cachedProfile) {
         return CompletableFuture.runAsync(() -> Redis.runRedisCommand(jedis -> {
             try {
-                cachedProfile.getProfile().save().get();
-
                 return jedis.set(
                         getKey(cachedProfile.getProfile().getUuid().toString()),
                         CommonLib.getJsonMapper().writeValueAsString(cachedProfile),
                         SetParams.setParams().ex(TimeUnit.DAYS.toSeconds(2))
                 );
-            } catch (JsonProcessingException | ExecutionException | InterruptedException e) {
+            } catch (JsonProcessingException e) {
                 e.printStackTrace();
             }
 

@@ -45,7 +45,7 @@ public class ProfileUtil {
                                 case NOT_FOUND -> {
                                     var profile = new Profile(uuid, name);
 
-                                    ProfileCache.writeCachedProfile(new CachedProfile(profile));
+                                    ProfileCache.updateCache(new CachedProfile(profile));
                                     UUIDCache.updateCache(uuid, name);
 
                                     return profile;
@@ -72,7 +72,7 @@ public class ProfileUtil {
 
                         var response = fromDatabase(uuid).get();
 
-                        if (response != null && response.response() == Retrieval.Response.RETRIEVED) {
+                        if (response.response() == Retrieval.Response.RETRIEVED) {
                             return new CachedProfile(response.profile());
                         }
                     } catch (InterruptedException | ExecutionException e) {
@@ -176,7 +176,7 @@ public class ProfileUtil {
                         if (response != null && response.response() == Retrieval.Response.RETRIEVED) {
                             var profile = response.profile();
 
-                            ProfileCache.writeCachedProfile(new CachedProfile(profile));
+                            ProfileCache.updateCache(new CachedProfile(profile));
 
                             return profile;
                         }
@@ -220,7 +220,7 @@ public class ProfileUtil {
                             return Retrieval.FAILED;
                         }
 
-                        ProfileCache.writeCachedProfile(new CachedProfile(profile));
+                        ProfileCache.updateCache(new CachedProfile(profile));
                         UUIDCache.updateCache(uuid, profile.getUsername());
 
                         return new Retrieval(Retrieval.Response.RETRIEVED, profile);
