@@ -87,27 +87,6 @@ public class Message {
         return MiniMessage.get().parse(input, templates);
     }
 
-    public static Component format(Component base, Object... replacements) {
-        var config = TextReplacementConfig.builder();
-
-        if(replacements.length == 0) {
-            return removeItalics(base);
-        }
-
-        for (int i = 0; i < replacements.length; i++) {
-            var replacement = replacements[i];
-            var match = config.match(Pattern.compile("\\{" + i + "\\}"));
-
-            if (replacement instanceof ComponentLike component) {
-                match.replacement(component);
-            } else {
-                match.replacement(replacement.toString());
-            }
-        }
-
-        return base.decoration(TextDecoration.ITALIC, TextDecoration.State.FALSE).replaceText(config.build());
-    }
-
     public static Component coloredPing(int ping) {
         if (ping <= 40) {
             return Component.text(ping, NamedTextColor.GREEN);
