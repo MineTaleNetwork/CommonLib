@@ -1,6 +1,7 @@
 package cc.minetale.commonlib.grant;
 
 import cc.minetale.commonlib.CommonLib;
+import cc.minetale.commonlib.util.BsonUtil;
 import cc.minetale.commonlib.util.Database;
 import cc.minetale.commonlib.util.ProvidableObject;
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -78,20 +79,21 @@ public class Grant extends ProvidableObject {
     public CompletableFuture<UpdateResult> save() {
         return new CompletableFuture<UpdateResult>()
                 .completeAsync(() -> {
-                    try {
+                    var document = BsonUtil.writeToBson(this);
+
+                    if (document != null) {
                         return Database.getGrantsCollection()
                                 .replaceOne(
-                                        Filters.eq("_id", getId()),
-                                        Document.parse(CommonLib.getJsonMapper().writeValueAsString(this)),
+                                        Filters.eq(getId()),
+                                        document,
                                         new ReplaceOptions().upsert(true)
                                 );
-                    } catch (JsonProcessingException e) {
-                        e.printStackTrace();
                     }
 
                     return UpdateResult.unacknowledged();
                 });
     }
+
 
     public CompletableFuture<DeleteResult> delete() {
         return new CompletableFuture<DeleteResult>()

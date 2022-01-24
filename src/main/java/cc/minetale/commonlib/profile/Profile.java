@@ -11,16 +11,17 @@ import cc.minetale.commonlib.pigeon.payloads.punishment.PunishmentExpirePayload;
 import cc.minetale.commonlib.pigeon.payloads.punishment.PunishmentRemovePayload;
 import cc.minetale.commonlib.punishment.Punishment;
 import cc.minetale.commonlib.punishment.PunishmentType;
+import cc.minetale.commonlib.util.BsonUtil;
 import cc.minetale.commonlib.util.Database;
 import cc.minetale.commonlib.util.PigeonUtil;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.mongodb.client.model.Filters;
 import com.mongodb.client.model.ReplaceOptions;
 import com.mongodb.client.result.UpdateResult;
-import lombok.*;
+import lombok.EqualsAndHashCode;
+import lombok.Getter;
+import lombok.Setter;
 import net.kyori.adventure.text.Component;
-import org.bson.Document;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
@@ -32,7 +33,7 @@ import java.util.concurrent.ConcurrentSkipListMap;
 
 @Getter
 @Setter
-@EqualsAndHashCode(of = { "uuid" })
+@EqualsAndHashCode(of = {"uuid"})
 public class Profile {
 
     @JsonProperty("_id")
@@ -65,7 +66,8 @@ public class Profile {
     /**
      * Default constructor used for Jackson.
      */
-    public Profile() {}
+    public Profile() {
+    }
 
     /**
      * Update a player's profile in our database
@@ -76,15 +78,15 @@ public class Profile {
     public CompletableFuture<UpdateResult> save() {
         return new CompletableFuture<UpdateResult>()
                 .completeAsync(() -> {
-                    try {
+                    var document = BsonUtil.writeToBson(this);
+
+                    if (document != null) {
                         return Database.getProfilesCollection()
                                 .replaceOne(
                                         Filters.eq(this.uuid.toString()),
-                                        Document.parse(CommonLib.getJsonMapper().writeValueAsString(this)),
+                                        document,
                                         new ReplaceOptions().upsert(true)
                                 );
-                    } catch (JsonProcessingException e) {
-                        e.printStackTrace();
                     }
 
                     return UpdateResult.unacknowledged();
@@ -153,7 +155,7 @@ public class Profile {
                 .thenRun(() -> ProfileCache.updateProfile(this)
                         .thenRun(() -> PigeonUtil.broadcast(new PunishmentAddPayload(this.uuid, punishment.getId()))));
 
-        for(var provider : CommonLib.getProviders()) {
+        for (var provider : CommonLib.getProviders()) {
             provider.addPunishment(punishment);
         }
     }
@@ -161,9 +163,9 @@ public class Profile {
     /**
      * Removes the specified punishment from the profile.
      *
-     * @param punishment The punishment being removed
-     * @param removedBy The uuid of the profile removing the punishment which can be null to represent the console
-     * @param removedAt The time in milliseconds when the punishment was removed
+     * @param punishment    The punishment being removed
+     * @param removedBy     The uuid of the profile removing the punishment which can be null to represent the console
+     * @param removedAt     The time in milliseconds when the punishment was removed
      * @param removedReason The reason why the punishment was removed
      */
     public void removePunishment(Punishment punishment, @Nullable UUID removedBy, long removedAt, String removedReason) {
@@ -175,7 +177,7 @@ public class Profile {
                 .thenRun(() -> ProfileCache.updateProfile(this)
                         .thenRun(() -> PigeonUtil.broadcast(new PunishmentRemovePayload(this.uuid, punishment.getId()))));
 
-        for(var provider : CommonLib.getProviders()) {
+        for (var provider : CommonLib.getProviders()) {
             provider.removePunishment(punishment);
         }
     }
@@ -195,7 +197,7 @@ public class Profile {
                 .thenRun(() -> ProfileCache.updateProfile(this)
                         .thenRun(() -> PigeonUtil.broadcast(new PunishmentExpirePayload(this.uuid, punishment.getId()))));
 
-        for(var provider : CommonLib.getProviders()) {
+        for (var provider : CommonLib.getProviders()) {
             provider.expirePunishment(punishment);
         }
     }
@@ -212,7 +214,9 @@ public class Profile {
 
         var sorter = (Comparator<Grant>) (grant1, grant2) -> {
             var activeCompare = Boolean.compare(grant2.isActive(), grant1.isActive());
-            if(activeCompare != 0) { return activeCompare; }
+            if (activeCompare != 0) {
+                return activeCompare;
+            }
 
             var rank1 = grant1.getRank();
             var rank2 = grant2.getRank();
@@ -230,8 +234,8 @@ public class Profile {
      * The profiles next grant is also activated.
      */
     public void checkGrants() {
-        for(var grant : this.grants) {
-            if(!grant.isRemoved() && grant.hasExpired()) {
+        for (var grant : this.grants) {
+            if (!grant.isRemoved() && grant.hasExpired()) {
                 expireGrant(grant);
             }
         }
@@ -245,15 +249,15 @@ public class Profile {
     public void activateNextGrant() {
         var activeGrants = new ConcurrentSkipListMap<Integer, Grant>();
 
-        for(var grant : this.grants) {
-            if(grant.isActive()) {
+        for (var grant : this.grants) {
+            if (grant.isActive()) {
                 activeGrants.put(grant.getRank().ordinal(), grant);
             }
         }
 
         var grantEntry = activeGrants.firstEntry();
 
-        if(grantEntry != null) {
+        if (grantEntry != null) {
             this.grant = grantEntry.getValue();
         } else {
             this.grant = Grant.DEFAULT_GRANT;
@@ -275,7 +279,7 @@ public class Profile {
                 .thenRun(() -> ProfileCache.updateProfile(this)
                         .thenRun(() -> PigeonUtil.broadcast(new GrantAddPayload(this.uuid, grant.getId()))));
 
-        for(var provider : CommonLib.getProviders()) {
+        for (var provider : CommonLib.getProviders()) {
             provider.addGrant(grant);
         }
     }
@@ -283,9 +287,9 @@ public class Profile {
     /**
      * Removes the specified grant from the profile
      *
-     * @param grant The grant being removed
-     * @param removedBy The uuid of the profile removing the grant which can be null to represent the console
-     * @param removedAt The time in milliseconds when the grant was removed
+     * @param grant         The grant being removed
+     * @param removedBy     The uuid of the profile removing the grant which can be null to represent the console
+     * @param removedAt     The time in milliseconds when the grant was removed
      * @param removedReason The reason why the grant was removed
      */
     public void removeGrant(Grant grant, @Nullable UUID removedBy, long removedAt, String removedReason) {
@@ -300,7 +304,7 @@ public class Profile {
                 .thenRun(() -> ProfileCache.updateProfile(this)
                         .thenRun(() -> PigeonUtil.broadcast(new GrantRemovePayload(this.uuid, grant.getId()))));
 
-        for(var provider : CommonLib.getProviders()) {
+        for (var provider : CommonLib.getProviders()) {
             provider.removeGrant(grant);
         }
     }
@@ -323,7 +327,7 @@ public class Profile {
                 .thenRun(() -> ProfileCache.updateProfile(this)
                         .thenRun(() -> PigeonUtil.broadcast(new GrantExpirePayload(this.uuid, grant.getId()))));
 
-        for(var provider : CommonLib.getProviders()) {
+        for (var provider : CommonLib.getProviders()) {
             provider.expireGrant(grant);
         }
     }
@@ -362,7 +366,8 @@ public class Profile {
         return this.grant.getRank().getPrefix();
     }
 
-    @Getter @Setter
+    @Getter
+    @Setter
     public static class Options {
 
         private boolean receivingPartyRequests = true;
@@ -373,7 +378,8 @@ public class Profile {
 
     }
 
-    @Getter @Setter
+    @Getter
+    @Setter
     public static class Staff {
 
         private String twoFactorKey = "";

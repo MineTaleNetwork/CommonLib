@@ -74,7 +74,7 @@ public class ProfileCache {
                 return jedis.set(
                         getKey(cachedProfile.getProfile().getUuid().toString()),
                         CommonLib.getJsonMapper().writeValueAsString(cachedProfile),
-                        SetParams.setParams().ex(TimeUnit.DAYS.toSeconds(2))
+                        SetParams.setParams().ex(TimeUnit.HOURS.toSeconds(12))
                 );
             } catch (JsonProcessingException e) {
                 e.printStackTrace();

@@ -1,10 +1,7 @@
 package cc.minetale.commonlib.punishment;
 
 import cc.minetale.commonlib.CommonLib;
-import cc.minetale.commonlib.util.Database;
-import cc.minetale.commonlib.util.Message;
-import cc.minetale.commonlib.util.ProvidableObject;
-import cc.minetale.commonlib.util.TimeUtil;
+import cc.minetale.commonlib.util.*;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.mongodb.client.model.Filters;
 import com.mongodb.client.model.ReplaceOptions;
@@ -116,15 +113,15 @@ public class Punishment extends ProvidableObject {
     public CompletableFuture<UpdateResult> save() {
         return new CompletableFuture<UpdateResult>()
                 .completeAsync(() -> {
-                    try {
+                    var document = BsonUtil.writeToBson(this);
+
+                    if (document != null) {
                         return Database.getPunishmentsCollection()
                                 .replaceOne(
-                                        Filters.eq("_id", getId()),
-                                        Document.parse(CommonLib.getJsonMapper().writeValueAsString(this)),
+                                        Filters.eq(getId()),
+                                        document,
                                         new ReplaceOptions().upsert(true)
                                 );
-                    } catch (JsonProcessingException e) {
-                        e.printStackTrace();
                     }
 
                     return UpdateResult.unacknowledged();
@@ -135,7 +132,7 @@ public class Punishment extends ProvidableObject {
         return new CompletableFuture<DeleteResult>()
                 .completeAsync(() -> Database.getPunishmentsCollection()
                         .deleteOne(
-                                Filters.eq("_id", getId())
+                                Filters.eq(getId())
                         ));
     }
 
