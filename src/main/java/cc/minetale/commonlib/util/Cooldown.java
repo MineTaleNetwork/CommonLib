@@ -15,7 +15,6 @@ public class Cooldown {
 
     public Cooldown(Duration duration) {
         this.duration = duration;
-        this.lastUpdate = 0L;
     }
 
     public void refresh() {

@@ -1,6 +1,4 @@
-package cc.minetale.commonlib.util;
-
-import cc.minetale.commonlib.profile.Profile;
+package cc.minetale.commonlib.profile;
 
 public record Retrieval(Response response, Profile profile) {
 
@@ -10,7 +8,7 @@ public record Retrieval(Response response, Profile profile) {
     public enum Response {
         RETRIEVED,
         NOT_FOUND,
-        FAILURE;
+        FAILURE
     }
 
 }

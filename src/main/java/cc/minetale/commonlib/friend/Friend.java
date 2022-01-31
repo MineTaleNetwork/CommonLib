@@ -1,14 +1,13 @@
 package cc.minetale.commonlib.friend;
 
-import cc.minetale.commonlib.cache.FriendCache;
 import cc.minetale.commonlib.cache.ProfileCache;
 import cc.minetale.commonlib.profile.Profile;
+import cc.minetale.commonlib.util.Cache;
 
-import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 
-public record FriendRequest(UUID player, UUID target, long ttl) {
+public class Friend {
 
     public static CompletableFuture<RemoveResponse> removeFriend(Profile player, Profile target) {
         var playerUuid = player.getUuid();
@@ -23,11 +22,14 @@ public record FriendRequest(UUID player, UUID target, long ttl) {
                         playerFriends.remove(targetUuid);
                         targetFriends.remove(playerUuid);
 
-                        ProfileCache.updateProfile(player);
-                        ProfileCache.updateProfile(target);
+                        var cache = Cache.getProfileCache();
+
+                        cache.updateProfile(player);
+                        cache.updateProfile(target);
 
                         player.save();
                         target.save();
+
                         return RemoveResponse.SUCCESS;
                     } else {
                         return RemoveResponse.NOT_ADDED;
@@ -42,10 +44,11 @@ public record FriendRequest(UUID player, UUID target, long ttl) {
         return new CompletableFuture<CancelResponse>()
                 .completeAsync(() -> {
                     try {
-                        var hasRequest = FriendCache.hasRequest(targetUuid, playerUuid).get();
+                        var cache = Cache.getFriendRequestCache();
+                        var hasRequest = cache.has(targetUuid, playerUuid).get();
 
                         if(hasRequest) {
-                            FriendCache.removeCache(targetUuid, playerUuid).get();
+                            cache.remove(targetUuid, playerUuid).get();
 
                             return CancelResponse.SUCCESS;
                         } else {
@@ -66,10 +69,11 @@ public record FriendRequest(UUID player, UUID target, long ttl) {
         return new CompletableFuture<CancelResponse>()
                 .completeAsync(() -> {
                     try {
-                        var hasRequest = FriendCache.hasRequest(playerUuid, targetUuid).get();
+                        var cache = Cache.getFriendRequestCache();
+                        var hasRequest = cache.has(playerUuid, targetUuid).get();
 
                         if(hasRequest) {
-                            FriendCache.removeCache(playerUuid, targetUuid).get();
+                            cache.remove(playerUuid, targetUuid).get();
 
                             return CancelResponse.SUCCESS;
                         } else {
@@ -90,7 +94,8 @@ public record FriendRequest(UUID player, UUID target, long ttl) {
         return new CompletableFuture<AddResponse>()
                 .completeAsync(() -> {
                     try {
-                        var outgoing = FriendCache.getOutgoingRequests(player.getUuid()).get();
+                        var cache = Cache.getFriendRequestCache();
+                        var outgoing = cache.getOutgoing(player.getUuid()).get();
 
                         if (target.getFriends().contains(playerUuid) || player.getFriends().contains(targetUuid)) {
                             return AddResponse.ALREADY_FRIENDS;
@@ -104,8 +109,8 @@ public record FriendRequest(UUID player, UUID target, long ttl) {
                             return AddResponse.MAXIMUM_REQUESTS;
                         }
 
-                        if (!FriendCache.hasRequest(playerUuid, targetUuid).get()) {
-                            if (FriendCache.hasRequest(targetUuid, playerUuid).get()) {
+                        if (!cache.has(playerUuid, targetUuid).get()) {
+                            if (cache.has(targetUuid, playerUuid).get()) {
                                 return AddResponse.PENDING_REQUEST;
                             }
 
@@ -121,7 +126,7 @@ public record FriendRequest(UUID player, UUID target, long ttl) {
                                 return AddResponse.PLAYER_IGNORED;
                             }
 
-                            FriendCache.updateCache(playerUuid, targetUuid);
+                            cache.update("", playerUuid, targetUuid);
 
                             return AddResponse.SUCCESS;
                         } else {
@@ -142,10 +147,11 @@ public record FriendRequest(UUID player, UUID target, long ttl) {
         return new CompletableFuture<AcceptResponse>()
                 .completeAsync(() -> {
                     try {
-                        var request = FriendCache.hasRequest(targetUuid, playerUuid).get();
+                        var cache = Cache.getFriendRequestCache();
+                        var request = cache.has(targetUuid, playerUuid).get();
 
                         if (request) {
-                            FriendCache.removeCache(targetUuid, playerUuid);
+                            cache.remove(targetUuid, playerUuid);
 
                             if (player.getFriends().size() >= 100) {
                                 return AcceptResponse.PLAYER_MAXIMUM_FRIENDS;
@@ -166,11 +172,14 @@ public record FriendRequest(UUID player, UUID target, long ttl) {
                             player.getFriends().add(targetUuid);
                             target.getFriends().add(playerUuid);
 
-                            ProfileCache.updateProfile(player);
-                            ProfileCache.updateProfile(target);
+                            var profileCache = Cache.getProfileCache();
+
+                            profileCache.updateProfile(player);
+                            profileCache.updateProfile(target);
 
                             player.save();
                             target.save();
+
                             return AcceptResponse.SUCCESS;
                         } else {
                             return AcceptResponse.NO_REQUEST;

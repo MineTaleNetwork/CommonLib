@@ -6,6 +6,7 @@ import cc.minetale.commonlib.cache.UUIDCache;
 import cc.minetale.commonlib.grant.Grant;
 import cc.minetale.commonlib.profile.CachedProfile;
 import cc.minetale.commonlib.profile.Profile;
+import cc.minetale.commonlib.profile.Retrieval;
 import cc.minetale.commonlib.punishment.Punishment;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.mongodb.client.model.Filters;
@@ -45,8 +46,8 @@ public class ProfileUtil {
                                 case NOT_FOUND -> {
                                     var profile = new Profile(uuid, name);
 
-                                    ProfileCache.updateCache(new CachedProfile(profile));
-                                    UUIDCache.updateCache(uuid, name);
+                                    Cache.getProfileCache().update(JsonUtil.writeToJson(new CachedProfile(profile)), profile.getUuid());
+                                    UUIDCache.update(uuid, name);
 
                                     return profile;
                                 }
@@ -90,7 +91,7 @@ public class ProfileUtil {
 
                     var jsonProfiles = Redis.runRedisCommand(jedis -> jedis.mget(
                             players.stream()
-                                    .map(uuid -> ProfileCache.getKey(uuid.toString()))
+                                    .map(uuid -> Cache.getProfileCache().getKey(uuid.toString()))
                                     .toArray(String[]::new)
                     ));
 
@@ -176,7 +177,7 @@ public class ProfileUtil {
                         if (response != null && response.response() == Retrieval.Response.RETRIEVED) {
                             var profile = response.profile();
 
-                            ProfileCache.updateCache(new CachedProfile(profile));
+                            Cache.getProfileCache().update(JsonUtil.writeToJson(new CachedProfile(profile)), profile.getUuid());
 
                             return profile;
                         }
@@ -220,12 +221,12 @@ public class ProfileUtil {
                             return Retrieval.FAILED;
                         }
 
-                        ProfileCache.updateCache(new CachedProfile(profile));
-                        UUIDCache.updateCache(uuid, profile.getUsername());
+                        Cache.getProfileCache().update(JsonUtil.writeToJson(new CachedProfile(profile)), profile.getUuid());
+                        UUIDCache.update(uuid, profile.getUsername());
 
                         return new Retrieval(Retrieval.Response.RETRIEVED, profile);
                     } catch (JsonProcessingException e) {
-                        e.printStackTrace();
+                            e.printStackTrace();
                     }
 
                     return Retrieval.FAILED;
@@ -250,12 +251,13 @@ public class ProfileUtil {
     public static CompletableFuture<CachedProfile> fromCache(UUID uuid) {
         return new CompletableFuture<CachedProfile>()
                 .completeAsync(() -> {
-                    String profile;
-
                     try {
-                        return ((profile = Redis.runRedisCommand(jedis -> jedis.get(ProfileCache.getKey(uuid.toString())))) != null) ?
-                                CommonLib.getJsonMapper().readValue(profile, CachedProfile.class) : null;
-                    } catch (JsonProcessingException e) {
+                        String profile = Cache.getProfileCache().get(uuid).get();
+
+                        if(profile != null) {
+                            return JsonUtil.readFromJson(profile, CachedProfile.class);
+                        }
+                    } catch (InterruptedException | ExecutionException e) {
                         e.printStackTrace();
                     }
 

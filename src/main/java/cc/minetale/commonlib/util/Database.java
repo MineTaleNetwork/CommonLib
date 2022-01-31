@@ -3,8 +3,10 @@ package cc.minetale.commonlib.util;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoDatabase;
 import lombok.Getter;
+import lombok.experimental.UtilityClass;
 import org.bson.Document;
 
+@UtilityClass
 public class Database {
 
     @Getter private static MongoCollection<Document> rankCollection;

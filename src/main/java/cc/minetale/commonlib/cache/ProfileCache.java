@@ -1,31 +1,32 @@
 package cc.minetale.commonlib.cache;
 
-import cc.minetale.commonlib.CommonLib;
+import cc.minetale.commonlib.cache.type.BaseCache;
 import cc.minetale.commonlib.pigeon.payloads.profile.ProfileUpdatePayload;
-import cc.minetale.commonlib.profile.CachedProfile;
 import cc.minetale.commonlib.profile.Profile;
+import cc.minetale.commonlib.util.JsonUtil;
 import cc.minetale.commonlib.util.PigeonUtil;
 import cc.minetale.commonlib.util.ProfileUtil;
-import cc.minetale.commonlib.util.Redis;
-import com.fasterxml.jackson.core.JsonProcessingException;
-import redis.clients.jedis.params.SetParams;
 
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 
-public class ProfileCache {
+public class ProfileCache extends BaseCache {
 
-    public static CompletableFuture<Void> updateLastMessaged(UUID uuid, UUID lastMessaged) {
+    public ProfileCache() {
+        super("profile-cache", TimeUnit.HOURS.toMillis(12L));
+    }
+
+    public CompletableFuture<Void> updateParty(UUID player, UUID party) {
         return CompletableFuture.runAsync(() -> {
             try {
-                var cachedProfile = ProfileUtil.getCachedProfile(uuid).get();
+                var cachedProfile = ProfileUtil.getCachedProfile(player).get();
 
                 if (cachedProfile != null) {
-                    cachedProfile.setLastMessaged(lastMessaged);
+                    cachedProfile.setParty(party);
 
-                    updateCache(cachedProfile).get();
+                    update(JsonUtil.writeToJson(cachedProfile)).get();
                 }
             } catch (InterruptedException | ExecutionException e) {
                 e.printStackTrace();
@@ -33,7 +34,23 @@ public class ProfileCache {
         });
     }
 
-    public static CompletableFuture<Void> updateStatus(UUID uuid, String server) {
+    public CompletableFuture<Void> updateLastMessaged(UUID player, UUID lastMessaged) {
+        return CompletableFuture.runAsync(() -> {
+            try {
+                var cachedProfile = ProfileUtil.getCachedProfile(player).get();
+
+                if (cachedProfile != null) {
+                    cachedProfile.setLastMessaged(lastMessaged);
+
+                    update(JsonUtil.writeToJson(cachedProfile)).get();
+                }
+            } catch (InterruptedException | ExecutionException e) {
+                e.printStackTrace();
+            }
+        });
+    }
+
+    public CompletableFuture<Void> updateStatus(UUID uuid, String server) {
         return CompletableFuture.runAsync(() -> {
             try {
                 var cachedProfile = ProfileUtil.getCachedProfile(uuid).get();
@@ -41,7 +58,7 @@ public class ProfileCache {
                 if (cachedProfile != null) {
                     cachedProfile.setServer(server);
 
-                    updateCache(cachedProfile).get();
+                    update(JsonUtil.writeToJson(cachedProfile)).get();
                 }
             } catch (InterruptedException | ExecutionException e) {
                 e.printStackTrace();
@@ -49,43 +66,24 @@ public class ProfileCache {
         });
     }
 
-    public static CompletableFuture<Void> updateProfile(Profile profile) {
+    public CompletableFuture<Void> updateProfile(Profile profile) {
         return CompletableFuture.runAsync(() -> {
             try {
                 var cachedProfile = ProfileUtil.getCachedProfile(profile.getUuid()).get();
 
                 if (cachedProfile != null) {
-                    var newProfile = new CachedProfile(profile);
-                    newProfile.setServer(cachedProfile.getServer());
+                    cachedProfile.setProfile(profile);
+                    cachedProfile.setGrants(profile.getGrants());
+                    cachedProfile.setPunishments(profile.getPunishments());
 
-                    updateCache(newProfile).get();
+                    update(JsonUtil.writeToJson(cachedProfile)).get();
+
+                    PigeonUtil.broadcast(new ProfileUpdatePayload(profile.getUuid()));
                 }
-
-                PigeonUtil.broadcast(new ProfileUpdatePayload(profile.getUuid()));
             } catch (InterruptedException | ExecutionException e) {
                 e.printStackTrace();
             }
         });
-    }
-
-    public static CompletableFuture<Void> updateCache(CachedProfile cachedProfile) {
-        return CompletableFuture.runAsync(() -> Redis.runRedisCommand(jedis -> {
-            try {
-                return jedis.set(
-                        getKey(cachedProfile.getProfile().getUuid().toString()),
-                        CommonLib.getJsonMapper().writeValueAsString(cachedProfile),
-                        SetParams.setParams().ex(TimeUnit.HOURS.toSeconds(12))
-                );
-            } catch (JsonProcessingException e) {
-                e.printStackTrace();
-            }
-
-            return null;
-        }));
-    }
-
-    public static String getKey(String player) {
-        return "minetale:profile-cache:" + player;
     }
 
 }

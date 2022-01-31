@@ -9,25 +9,23 @@ public class UUIDCache {
 
     public static CompletableFuture<String> getName(UUID uuid) {
         return new CompletableFuture<String>()
-                .completeAsync(() -> Redis.runRedisCommand(jedis -> jedis.hget(
-                        getUuidKey(),
-                        uuid.toString()
-                )));
+                .completeAsync(() -> Redis.runRedisCommand(jedis -> jedis.hget(getUuidKey(), uuid.toString())));
     }
 
     public static CompletableFuture<UUID> getUuid(String name) {
         return new CompletableFuture<UUID>()
                 .completeAsync(() -> {
-                    String uuid;
+                    String uuid = Redis.runRedisCommand(jedis -> jedis.hget(getNameKey(), name.toUpperCase()));
 
-                    return ((uuid = Redis.runRedisCommand(jedis -> jedis.hget(
-                            getNameKey(),
-                            name.toUpperCase()
-                    ))) != null) ? UUID.fromString(uuid) : null;
+                    if(uuid != null) {
+                        return UUID.fromString(uuid);
+                    }
+
+                    return null;
                 });
     }
 
-    public static CompletableFuture<Void> updateCache(UUID uuid, String name) {
+    public static CompletableFuture<Void> update(UUID uuid, String name) {
         return CompletableFuture.runAsync(() -> Redis.runRedisCommand(jedis -> {
             var oldName = jedis.hget(
                     getUuidKey(),

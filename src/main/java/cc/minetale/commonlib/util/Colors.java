@@ -1,10 +1,12 @@
 package cc.minetale.commonlib.util;
 
+import lombok.experimental.UtilityClass;
 import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.format.TextColor;
 
 import java.awt.*;
 
+@UtilityClass
 public class Colors {
 
     public static TextColor DARK_RED       = TextColor.color(192, 57, 43);

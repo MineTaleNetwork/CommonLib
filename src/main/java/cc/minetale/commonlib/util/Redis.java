@@ -1,8 +1,10 @@
 package cc.minetale.commonlib.util;
 
 import cc.minetale.commonlib.CommonLib;
+import lombok.experimental.UtilityClass;
 import redis.clients.jedis.Jedis;
 
+@UtilityClass
 public class Redis {
 
     public static <T> T runRedisCommand(RedisCommand<T> redisCommand) {

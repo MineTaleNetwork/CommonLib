@@ -1,11 +1,14 @@
 package cc.minetale.commonlib.util;
 
+import lombok.experimental.UtilityClass;
+
 import java.sql.Timestamp;
 import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.TimeZone;
 
+@UtilityClass
 public final class TimeUtil {
 
     public static String millisToTimer(long millis) {

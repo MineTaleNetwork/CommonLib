@@ -16,8 +16,8 @@ public class CachedProfile {
 
     private Profile profile;
     private List<Grant> grants;
-    private String server;
     private List<Punishment> punishments;
+    private String server;
     private UUID lastMessaged;
     private UUID party;
 

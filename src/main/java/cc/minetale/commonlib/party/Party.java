@@ -1,9 +1,8 @@
 package cc.minetale.commonlib.party;
 
-import cc.minetale.commonlib.CommonLib;
-import cc.minetale.commonlib.cache.PartyCache;
+import cc.minetale.commonlib.util.Cache;
+import cc.minetale.commonlib.util.JsonUtil;
 import cc.minetale.commonlib.util.Redis;
-import com.fasterxml.jackson.core.JsonProcessingException;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -12,6 +11,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutionException;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -37,12 +37,13 @@ public class Party {
     public static CompletableFuture<Party> getParty(UUID partyUuid) {
         return new CompletableFuture<Party>()
                 .completeAsync(() -> {
-                    String party;
-
                     try {
-                        return ((party = Redis.runRedisCommand(jedis -> jedis.get(PartyCache.getPartyKey(partyUuid.toString())))) != null) ?
-                                CommonLib.getJsonMapper().readValue(party, Party.class) : null;
-                    } catch (JsonProcessingException e) {
+                        String party = Cache.getPartyCache().get(partyUuid).get();
+
+                        if(party != null) {
+                            return JsonUtil.readFromJson(party, Party.class);
+                        }
+                    } catch (InterruptedException | ExecutionException e) {
                         e.printStackTrace();
                     }
 
@@ -53,13 +54,25 @@ public class Party {
     public CompletableFuture<Void> disband() {
         // TODO -> Send disband messages
 
-        return CompletableFuture.runAsync(() -> Redis.runRedisCommand(jedis -> jedis.del(
-                PartyCache.getPartyKey(partyId.toString())
-        )));
+        var requestCache = Cache.getPartyRequestCache();
+
+        try {
+            var requests = requestCache.getOutgoing(partyId).get();
+
+            Redis.runRedisCommand(jedis -> jedis.del(requests.stream()
+                    .map(request -> requestCache.getKey(request.initiator(), request.target()))
+                    .toList()
+                    .toArray(new String[0])
+            ));
+        } catch (InterruptedException | ExecutionException e) {
+            e.printStackTrace();
+        }
+
+        return Cache.getPartyCache().remove(partyId);
     }
 
     public List<UUID> getAllMembers() {
-        return Stream.of(partyMods, partyMembers, List.of(leader))
+        return Stream.of(Collections.singletonList(leader), partyMods, partyMembers)
                 .flatMap(Collection::stream)
                 .collect(Collectors.toList());
     }

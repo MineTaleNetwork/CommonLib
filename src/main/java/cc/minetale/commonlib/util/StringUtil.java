@@ -1,9 +1,12 @@
 package cc.minetale.commonlib.util;
 
 
+import lombok.experimental.UtilityClass;
+
 import java.security.SecureRandom;
 import java.util.regex.Pattern;
 
+@UtilityClass
 public class StringUtil {
 
     private static final String AB = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ";

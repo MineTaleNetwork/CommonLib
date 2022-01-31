@@ -1,7 +1,6 @@
 package cc.minetale.commonlib.profile;
 
 import cc.minetale.commonlib.CommonLib;
-import cc.minetale.commonlib.cache.ProfileCache;
 import cc.minetale.commonlib.grant.Grant;
 import cc.minetale.commonlib.pigeon.payloads.grant.GrantAddPayload;
 import cc.minetale.commonlib.pigeon.payloads.grant.GrantExpirePayload;
@@ -12,6 +11,7 @@ import cc.minetale.commonlib.pigeon.payloads.punishment.PunishmentRemovePayload;
 import cc.minetale.commonlib.punishment.Punishment;
 import cc.minetale.commonlib.punishment.PunishmentType;
 import cc.minetale.commonlib.util.BsonUtil;
+import cc.minetale.commonlib.util.Cache;
 import cc.minetale.commonlib.util.Database;
 import cc.minetale.commonlib.util.PigeonUtil;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -33,8 +33,8 @@ import java.util.concurrent.ConcurrentSkipListMap;
 
 @Getter
 @Setter
-@EqualsAndHashCode(of = {"uuid"})
-public class Profile {
+@EqualsAndHashCode(of = {"uuid"}, callSuper = false)
+public class Profile extends AbstractProfile {
 
     @JsonProperty("_id")
     private UUID uuid;
@@ -152,7 +152,7 @@ public class Profile {
         this.punishments.add(punishment);
 
         punishment.save()
-                .thenRun(() -> ProfileCache.updateProfile(this)
+                .thenRun(() -> Cache.getProfileCache().updateProfile(this)
                         .thenRun(() -> PigeonUtil.broadcast(new PunishmentAddPayload(this.uuid, punishment.getId()))));
 
         for (var provider : CommonLib.getProviders()) {
@@ -174,7 +174,7 @@ public class Profile {
         punishment.setRemovedReason(removedReason);
 
         punishment.save()
-                .thenRun(() -> ProfileCache.updateProfile(this)
+                .thenRun(() -> Cache.getProfileCache().updateProfile(this)
                         .thenRun(() -> PigeonUtil.broadcast(new PunishmentRemovePayload(this.uuid, punishment.getId()))));
 
         for (var provider : CommonLib.getProviders()) {
@@ -194,7 +194,7 @@ public class Profile {
         punishment.setRemovedReason("Punishment Expired");
 
         punishment.save()
-                .thenRun(() -> ProfileCache.updateProfile(this)
+                .thenRun(() -> Cache.getProfileCache().updateProfile(this)
                         .thenRun(() -> PigeonUtil.broadcast(new PunishmentExpirePayload(this.uuid, punishment.getId()))));
 
         for (var provider : CommonLib.getProviders()) {
@@ -276,7 +276,7 @@ public class Profile {
         this.grants.add(grant);
 
         grant.save()
-                .thenRun(() -> ProfileCache.updateProfile(this)
+                .thenRun(() -> Cache.getProfileCache().updateProfile(this)
                         .thenRun(() -> PigeonUtil.broadcast(new GrantAddPayload(this.uuid, grant.getId()))));
 
         for (var provider : CommonLib.getProviders()) {
@@ -301,7 +301,7 @@ public class Profile {
         grant.setRemovedReason(removedReason);
 
         grant.save()
-                .thenRun(() -> ProfileCache.updateProfile(this)
+                .thenRun(() -> Cache.getProfileCache().updateProfile(this)
                         .thenRun(() -> PigeonUtil.broadcast(new GrantRemovePayload(this.uuid, grant.getId()))));
 
         for (var provider : CommonLib.getProviders()) {
@@ -324,7 +324,7 @@ public class Profile {
         grant.setRemovedReason("Grant Expired");
 
         grant.save()
-                .thenRun(() -> ProfileCache.updateProfile(this)
+                .thenRun(() -> Cache.getProfileCache().updateProfile(this)
                         .thenRun(() -> PigeonUtil.broadcast(new GrantExpirePayload(this.uuid, grant.getId()))));
 
         for (var provider : CommonLib.getProviders()) {
@@ -338,6 +338,7 @@ public class Profile {
      *
      * @return The decorated component
      */
+    @Override
     public Component getChatFormat() {
         return Component.text().append(
                 this.getColoredPrefix(),
@@ -352,6 +353,7 @@ public class Profile {
      *
      * @return The decorated component
      */
+    @Override
     public Component getColoredName() {
         return Component.text(this.username, this.grant.getRank().getColor());
     }
@@ -362,6 +364,7 @@ public class Profile {
      *
      * @return The decorated component
      */
+    @Override
     public Component getColoredPrefix() {
         return this.grant.getRank().getPrefix();
     }
