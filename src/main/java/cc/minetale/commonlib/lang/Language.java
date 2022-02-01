@@ -8,6 +8,7 @@ public class Language {
 
     public static class General {
         public static String CHAT_CLEARED = notification("Chat") + "<gray>Chat has been cleared by <0>.";
+        public static String CHAT_FORMAT = "<0><1><2> <dark_gray><b>»</b></dark_gray> <3>";
     }
 
     public static class Punishment {
@@ -37,6 +38,24 @@ public class Language {
         public static String TARGET_TOGGLED = notification("Conversation") + "<red>That players is not receiving new friends at this moment.";
         public static String TO_MSG = "<gray>(To <0>) <1>";
         public static String FROM_MSG = "<gray>(From <0>) <1>";
+    }
+
+    public static class Party {
+        public static class Invite {
+            public static String SUCCESS_PLAYER = notification("Party") + "<0> <green>has been invited to the party!";
+            public static String SUCCESS_TARGET = notification("Party") + "<0> <green>has invited you to their party!";
+        }
+
+        public static String PARTY_DISBANDED = notification("Party") + "<red>The party has been disbanded.";
+        public static String PARTY_CHAT_FORMAT = notification("Party") + General.CHAT_FORMAT;
+
+        public static String PARTY_JOIN = notification("Party") + "<0> <green>has joined the party!";
+        public static String PARTY_LEAVE = notification("Party") + "<0> <red>has left the party.";
+        public static String PARTY_KICK = notification("Party") + "<0> <red>has been kicked from the party.";
+        public static String PARTY_SUMMON = notification("Party") + "<gray>You have been summoned to <0>.";
+        public static String PARTY_PROMOTE = notification("Party") + "<0> <green>has been promoted to <1>!";
+        public static String PARTY_DEMOTE = notification("Party") + "<0> <red>has been demoted to <1>.";
+
     }
 
     public static class Friend {

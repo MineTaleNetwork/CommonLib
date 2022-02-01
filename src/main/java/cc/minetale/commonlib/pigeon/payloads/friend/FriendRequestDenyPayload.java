@@ -1,5 +1,7 @@
 package cc.minetale.commonlib.pigeon.payloads.friend;
 
+import cc.minetale.commonlib.profile.MiniProfile;
+import cc.minetale.commonlib.profile.Profile;
 import cc.minetale.pigeon.annotations.Payload;
 import cc.minetale.pigeon.annotations.Transmit;
 import cc.minetale.pigeon.payloads.bases.BasePayload;
@@ -10,16 +12,16 @@ import java.util.UUID;
 @Getter @Payload
 public class FriendRequestDenyPayload extends BasePayload {
 
-    @Transmit UUID initiator;
+    @Transmit MiniProfile initiator;
     @Transmit UUID target;
 
     public FriendRequestDenyPayload() {
         payloadId = this.getClass().getSimpleName();
     }
 
-    public FriendRequestDenyPayload(UUID initiator, UUID target) {
+    public FriendRequestDenyPayload(Profile initiator, UUID target) {
         this();
-        this.initiator = initiator;
+        this.initiator = MiniProfile.of(initiator);
         this.target = target;
     }
 

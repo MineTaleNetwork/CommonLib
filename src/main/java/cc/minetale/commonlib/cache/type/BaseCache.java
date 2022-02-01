@@ -8,7 +8,7 @@ import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 
 @Getter
-public abstract class BaseCache {
+public class BaseCache {
 
     private final String cacheName;
     private final Long ttl;

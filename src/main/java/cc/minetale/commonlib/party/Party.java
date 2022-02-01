@@ -1,28 +1,24 @@
 package cc.minetale.commonlib.party;
 
+import cc.minetale.commonlib.friend.AddResponse;
+import cc.minetale.commonlib.profile.Profile;
 import cc.minetale.commonlib.util.Cache;
 import cc.minetale.commonlib.util.JsonUtil;
 import cc.minetale.commonlib.util.Redis;
 import lombok.Getter;
 import lombok.Setter;
 
-import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
+import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 @Getter
 @Setter
 public class Party {
 
-    private UUID partyId;
-    private UUID leader;
-    private List<UUID> partyMods;
-    private List<UUID> partyMembers;
+    private UUID partyUuid;
+    private Set<PartyMember> members;
 
     /**
      * Default constructor used for Jackson.
@@ -30,8 +26,8 @@ public class Party {
     public Party() {
     }
 
-    public Party(UUID partyId) {
-        this.partyId = partyId;
+    public Party(UUID partyUuid) {
+        this.partyUuid = partyUuid;
     }
 
     public static CompletableFuture<Party> getParty(UUID partyUuid) {
@@ -57,7 +53,8 @@ public class Party {
         var requestCache = Cache.getPartyRequestCache();
 
         try {
-            var requests = requestCache.getOutgoing(partyId).get();
+            // TODO -> THREAD BLOCKING
+            var requests = requestCache.getOutgoing(partyUuid).get();
 
             Redis.runRedisCommand(jedis -> jedis.del(requests.stream()
                     .map(request -> requestCache.getKey(request.initiator(), request.target()))
@@ -68,13 +65,58 @@ public class Party {
             e.printStackTrace();
         }
 
-        return Cache.getPartyCache().remove(partyId);
+        return Cache.getPartyCache().remove(partyUuid);
     }
 
-    public List<UUID> getAllMembers() {
-        return Stream.of(Collections.singletonList(leader), partyMods, partyMembers)
-                .flatMap(Collection::stream)
-                .collect(Collectors.toList());
+    public CompletableFuture<InviteResponse> invitePlayer(Profile player, Profile target) {
+        var playerUuid = player.getUuid();
+        var targetUuid = target.getUuid();
+
+        return new CompletableFuture<InviteResponse>()
+                .completeAsync(() -> {
+                    try {
+                        var cache = Cache.getPartyRequestCache();
+                        var outgoing = cache.getOutgoing(player.getUuid()).get();
+
+                        for(var member : members) {
+                            if(member.player().equals(targetUuid)) {
+                                return InviteResponse.ALREADY_IN_PARTY;
+                            }
+                        }
+
+                        if (targetUuid.equals(playerUuid)) {
+                            return InviteResponse.TARGET_IS_PLAYER;
+                        }
+
+                        if (outgoing.size() >= 100) {
+                            return InviteResponse.MAXIMUM_REQUESTS;
+                        }
+
+                        if (!cache.has(partyUuid, targetUuid).get()) {
+                            if (!target.getOptionsProfile().isReceivingPartyRequests()) {
+                                return InviteResponse.REQUESTS_TOGGLED;
+                            }
+
+                            if (player.isIgnoring(target)) {
+                                return InviteResponse.TARGET_IGNORED;
+                            }
+
+                            if (target.isIgnoring(player)) {
+                                return InviteResponse.PLAYER_IGNORED;
+                            }
+
+                            cache.update("", partyUuid, targetUuid);
+
+                            return InviteResponse.SUCCESS;
+                        } else {
+                            return InviteResponse.REQUEST_EXIST;
+                        }
+                    } catch (InterruptedException | ExecutionException e) {
+                        e.printStackTrace();
+                    }
+
+                    return InviteResponse.ERROR;
+                });
     }
 
 }

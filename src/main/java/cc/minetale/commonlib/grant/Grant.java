@@ -3,6 +3,7 @@ package cc.minetale.commonlib.grant;
 import cc.minetale.commonlib.CommonLib;
 import cc.minetale.commonlib.util.BsonUtil;
 import cc.minetale.commonlib.util.Database;
+import cc.minetale.commonlib.util.JsonUtil;
 import cc.minetale.commonlib.util.ProvidableObject;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.mongodb.client.model.Filters;
@@ -47,11 +48,7 @@ public class Grant extends ProvidableObject {
                     var document = Database.getGrantsCollection().find(Filters.eq("_id", id)).first();
 
                     if (document != null) {
-                        try {
-                            return CommonLib.getJsonMapper().readValue(document.toJson(), Grant.class);
-                        } catch (JsonProcessingException e) {
-                            e.printStackTrace();
-                        }
+                        return JsonUtil.readFromJson(document.toJson(), Grant.class);
                     }
 
                     return null;
@@ -64,12 +61,7 @@ public class Grant extends ProvidableObject {
                     var grants = new ArrayList<Grant>();
 
                     for (var document : Database.getGrantsCollection().find(Filters.eq("playerId", uuid.toString()))) {
-                        try {
-                            grants.add(CommonLib.getJsonMapper().readValue(document.toJson(), Grant.class));
-                        } catch (JsonProcessingException e) {
-                            e.printStackTrace();
-                            return null;
-                        }
+                        grants.add(JsonUtil.readFromJson(document.toJson(), Grant.class));
                     }
 
                     return grants;

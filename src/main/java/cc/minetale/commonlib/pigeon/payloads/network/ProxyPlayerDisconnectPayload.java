@@ -1,5 +1,7 @@
 package cc.minetale.commonlib.pigeon.payloads.network;
 
+import cc.minetale.commonlib.profile.MiniProfile;
+import cc.minetale.commonlib.profile.Profile;
 import cc.minetale.pigeon.annotations.Payload;
 import cc.minetale.pigeon.annotations.Transmit;
 import cc.minetale.pigeon.payloads.bases.BasePayload;
@@ -10,16 +12,16 @@ import java.util.UUID;
 @Getter @Payload
 public class ProxyPlayerDisconnectPayload extends BasePayload {
 
-    @Transmit UUID player;
+    @Transmit MiniProfile player;
     @Transmit String server;
 
     public ProxyPlayerDisconnectPayload() {
         payloadId = this.getClass().getSimpleName();
     }
 
-    public ProxyPlayerDisconnectPayload(UUID player, String server) {
+    public ProxyPlayerDisconnectPayload(Profile player, String server) {
         this();
-        this.player = player;
+        this.player = MiniProfile.of(player);
         this.server = server;
     }
 

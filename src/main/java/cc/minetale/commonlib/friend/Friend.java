@@ -1,6 +1,5 @@
 package cc.minetale.commonlib.friend;
 
-import cc.minetale.commonlib.cache.ProfileCache;
 import cc.minetale.commonlib.profile.Profile;
 import cc.minetale.commonlib.util.Cache;
 

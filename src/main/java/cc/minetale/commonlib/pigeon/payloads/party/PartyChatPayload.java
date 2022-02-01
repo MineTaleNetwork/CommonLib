@@ -22,7 +22,7 @@ public class PartyChatPayload extends BasePayload {
     public PartyChatPayload(Party party, Profile profile, String message) {
         this();
         this.party = party;
-        this.profile = MiniProfile.of(profile);;
+        this.profile = MiniProfile.of(profile);
         this.message = message;
     }
 

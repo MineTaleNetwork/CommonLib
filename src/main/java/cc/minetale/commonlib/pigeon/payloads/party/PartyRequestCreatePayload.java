@@ -1,5 +1,6 @@
-package cc.minetale.commonlib.pigeon.payloads.friend;
+package cc.minetale.commonlib.pigeon.payloads.party;
 
+import cc.minetale.commonlib.party.Party;
 import cc.minetale.commonlib.profile.MiniProfile;
 import cc.minetale.commonlib.profile.Profile;
 import cc.minetale.pigeon.annotations.Payload;
@@ -10,22 +11,23 @@ import lombok.Getter;
 import java.util.UUID;
 
 @Getter @Payload
-public class FriendRequestAcceptPayload extends BasePayload {
+public class PartyRequestCreatePayload extends BasePayload {
 
+    @Transmit Party party;
     @Transmit MiniProfile initiator;
-    @Transmit UUID target;
+    @Transmit MiniProfile target;
 
-    public FriendRequestAcceptPayload() {
+    public PartyRequestCreatePayload() {
         payloadId = this.getClass().getSimpleName();
     }
 
-    public FriendRequestAcceptPayload(Profile initiator, UUID target) {
+    public PartyRequestCreatePayload(Party party, Profile initiator, Profile target) {
         this();
+        this.party = party;
         this.initiator = MiniProfile.of(initiator);
-        this.target = target;
+        this.target = MiniProfile.of(target);
     }
 
     @Override
     public void receive() {}
-
 }

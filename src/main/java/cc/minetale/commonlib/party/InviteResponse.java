@@ -1,11 +1,10 @@
-package cc.minetale.commonlib.friend;
+package cc.minetale.commonlib.party;
 
-public enum AddResponse {
+public enum InviteResponse {
     SUCCESS,
     ERROR,
-    PENDING_REQUEST,
     REQUEST_EXIST,
-    ALREADY_FRIENDS,
+    ALREADY_IN_PARTY,
     TARGET_IS_PLAYER,
     REQUESTS_TOGGLED,
     MAXIMUM_REQUESTS,

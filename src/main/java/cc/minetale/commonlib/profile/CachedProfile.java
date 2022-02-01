@@ -24,17 +24,17 @@ public class CachedProfile {
     public CachedProfile(Profile profile) {
         this.profile = profile;
 
-        this.grants = profile.getGrants();
-        this.punishments = profile.getPunishments();
+        grants = profile.getGrants();
+        punishments = profile.getPunishments();
     }
 
     public CachedProfile() {}
 
     public Profile getProfile() {
-        this.profile.setGrants(this.grants);
-        this.profile.setPunishments(this.punishments);
+        profile.setGrants(grants);
+        profile.setPunishments(punishments);
 
-        return this.profile;
+        return profile;
     }
 
 }

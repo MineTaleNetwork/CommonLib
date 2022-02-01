@@ -104,10 +104,10 @@ public class ProfileUtil {
                             if (profile == null) {
                                 uuidQueue.add(players.get(i));
                             } else {
-                                try {
-                                    profiles.add(CommonLib.getJsonMapper().readValue(profile, CachedProfile.class));
-                                } catch (JsonProcessingException e) {
-                                    e.printStackTrace();
+                                var cachedProfile = JsonUtil.readFromJson(profile, CachedProfile.class);
+
+                                if(cachedProfile != null) {
+                                    profiles.add(cachedProfile);
                                 }
                             }
                         }
@@ -196,14 +196,16 @@ public class ProfileUtil {
                         return Retrieval.NOT_FOUND;
                     }
 
-                    try {
-                        var profile = CommonLib.getJsonMapper().readValue(document.toJson(), Profile.class);
+                    var profile = JsonUtil.readFromJson(document.toJson(), Profile.class);
+
+                    if(profile != null) {
+
                         var uuid = profile.getUuid();
 
                         try {
                             var grants = Grant.getGrants(uuid).get();
 
-                            if(grants != null) {
+                            if (grants != null) {
                                 profile.setGrants(grants);
                             } else {
                                 return Retrieval.FAILED;
@@ -211,7 +213,7 @@ public class ProfileUtil {
 
                             var punishments = Punishment.getPunishments(uuid).get();
 
-                            if(punishments != null) {
+                            if (punishments != null) {
                                 profile.setPunishments(punishments);
                             } else {
                                 return Retrieval.FAILED;
@@ -225,8 +227,6 @@ public class ProfileUtil {
                         UUIDCache.update(uuid, profile.getUsername());
 
                         return new Retrieval(Retrieval.Response.RETRIEVED, profile);
-                    } catch (JsonProcessingException e) {
-                            e.printStackTrace();
                     }
 
                     return Retrieval.FAILED;
