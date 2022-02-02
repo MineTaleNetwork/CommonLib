@@ -18,6 +18,7 @@ import java.util.concurrent.ExecutionException;
 public class Party {
 
     private UUID partyUuid;
+    private Settings settings;
     private Set<PartyMember> members;
 
     /**
@@ -92,31 +93,42 @@ public class Party {
                             return InviteResponse.MAXIMUM_REQUESTS;
                         }
 
-                        if (!cache.has(partyUuid, targetUuid).get()) {
-                            if (!target.getOptionsProfile().isReceivingPartyRequests()) {
-                                return InviteResponse.REQUESTS_TOGGLED;
-                            }
-
-                            if (player.isIgnoring(target)) {
-                                return InviteResponse.TARGET_IGNORED;
-                            }
-
-                            if (target.isIgnoring(player)) {
-                                return InviteResponse.PLAYER_IGNORED;
-                            }
-
-                            cache.update("", partyUuid, targetUuid);
-
-                            return InviteResponse.SUCCESS;
-                        } else {
+                        if (cache.has(partyUuid, targetUuid).get()) {
                             return InviteResponse.REQUEST_EXIST;
                         }
+
+                        if (!target.getOptionsProfile().isReceivingPartyRequests()) {
+                            return InviteResponse.REQUESTS_TOGGLED;
+                        }
+
+                        if (player.isIgnoring(target)) {
+                            return InviteResponse.TARGET_IGNORED;
+                        }
+
+                        if (target.isIgnoring(player)) {
+                            return InviteResponse.PLAYER_IGNORED;
+                        }
+
+                        cache.update("", partyUuid, targetUuid);
+
+                        return InviteResponse.SUCCESS;
                     } catch (InterruptedException | ExecutionException e) {
                         e.printStackTrace();
                     }
 
                     return InviteResponse.ERROR;
                 });
+    }
+
+    @Getter
+    @Setter
+    public static class Settings {
+
+        private boolean partyMuted = false;
+        private boolean inviteOnly = true;
+        private boolean privateGames = false;
+        private int maximumMembers = 24;
+
     }
 
 }
