@@ -1,21 +1,33 @@
 package cc.minetale.commonlib.cache;
 
-import cc.minetale.commonlib.cache.type.BaseCache;
 import cc.minetale.commonlib.pigeon.payloads.profile.ProfileUpdatePayload;
+import cc.minetale.commonlib.profile.CachedProfile;
 import cc.minetale.commonlib.profile.Profile;
 import cc.minetale.commonlib.util.JsonUtil;
 import cc.minetale.commonlib.util.PigeonUtil;
 import cc.minetale.commonlib.util.ProfileUtil;
+import cc.minetale.commonlib.util.Redis;
 
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
-import java.util.concurrent.TimeUnit;
 
-public class ProfileCache extends BaseCache {
+public class ProfileCache {
 
-    public ProfileCache() {
-        super("profile-cache", TimeUnit.HOURS.toMillis(12L));
+    // TODO -> Maybe pipeline?
+    public static CompletableFuture<Void> pushCache(CachedProfile profile) {
+        var uuid = profile.getProfile().getUuid().toString();
+
+        return CompletableFuture.runAsync(() -> {
+            Redis.runRedisCommand(jedis ->
+                jedis.hset(
+                        "minetale:profile-cache",
+                        uuid,
+                        JsonUtil.writeToJson(profile)
+                ));
+
+            Redis.expireMember("minetale:profile-cache", uuid, 12 * 60 * 60);
+        });
     }
 
     public CompletableFuture<Void> updateParty(UUID player, UUID party) {
@@ -26,7 +38,7 @@ public class ProfileCache extends BaseCache {
                 if (cachedProfile != null) {
                     cachedProfile.setParty(party);
 
-                    update(JsonUtil.writeToJson(cachedProfile)).get();
+                    pushCache(cachedProfile).get();
                 }
             } catch (InterruptedException | ExecutionException e) {
                 e.printStackTrace();
@@ -42,7 +54,7 @@ public class ProfileCache extends BaseCache {
                 if (cachedProfile != null) {
                     cachedProfile.setLastMessaged(lastMessaged);
 
-                    update(JsonUtil.writeToJson(cachedProfile)).get();
+                    pushCache(cachedProfile).get();
                 }
             } catch (InterruptedException | ExecutionException e) {
                 e.printStackTrace();
@@ -58,7 +70,7 @@ public class ProfileCache extends BaseCache {
                 if (cachedProfile != null) {
                     cachedProfile.setServer(server);
 
-                    update(JsonUtil.writeToJson(cachedProfile)).get();
+                    pushCache(cachedProfile).get();
                 }
             } catch (InterruptedException | ExecutionException e) {
                 e.printStackTrace();
@@ -76,7 +88,7 @@ public class ProfileCache extends BaseCache {
                     cachedProfile.setGrants(profile.getGrants());
                     cachedProfile.setPunishments(profile.getPunishments());
 
-                    update(JsonUtil.writeToJson(cachedProfile)).get();
+                    pushCache(cachedProfile).get();
 
                     PigeonUtil.broadcast(new ProfileUpdatePayload(profile.getUuid()));
                 }
