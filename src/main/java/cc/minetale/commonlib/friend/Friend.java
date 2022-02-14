@@ -17,22 +17,22 @@ public class Friend {
                     var targetFriends = target.getFriends();
                     var playerFriends = player.getFriends();
 
-                    if (!targetFriends.contains(playerUuid) || !playerFriends.contains(targetUuid)) {
+                    if(targetFriends.contains(playerUuid) || playerFriends.contains(targetUuid)) {
+                        playerFriends.remove(targetUuid);
+                        targetFriends.remove(playerUuid);
+
+                        var cache = Cache.getProfileCache();
+
+                        cache.updateProfile(player);
+                        cache.updateProfile(target);
+
+                        player.save();
+                        target.save();
+
+                        return RemoveResponse.SUCCESS;
+                    } else {
                         return RemoveResponse.NOT_ADDED;
                     }
-
-                    playerFriends.remove(targetUuid);
-                    targetFriends.remove(playerUuid);
-
-                    var cache = Cache.getProfileCache();
-
-                    cache.updateProfile(player);
-                    cache.updateProfile(target);
-
-                    player.save();
-                    target.save();
-
-                    return RemoveResponse.SUCCESS;
                 });
     }
 
@@ -44,20 +44,26 @@ public class Friend {
                 .completeAsync(() -> {
                     try {
                         var cache = Cache.getFriendRequestCache();
+                        var hasRequest = cache.has(targetUuid, playerUuid).get();
 
-                        if (cache.has(targetUuid, playerUuid).get()) {
+                        if(hasRequest) {
+                            cache.remove(targetUuid, playerUuid).get();
+
+                            return CancelResponse.SUCCESS;
+                        } else {
                             return CancelResponse.NO_REQUEST;
                         }
-
-                        cache.remove(targetUuid, playerUuid).get();
-
-                        return CancelResponse.SUCCESS;
                     } catch (InterruptedException | ExecutionException e) {
                         e.printStackTrace();
                     }
 
                     return CancelResponse.ERROR;
                 });
+    }
+
+    public enum RemoveResponse {
+        SUCCESS,
+        NOT_ADDED
     }
 
     public static CompletableFuture<CancelResponse> cancelRequest(Profile player, Profile target) {
@@ -68,20 +74,27 @@ public class Friend {
                 .completeAsync(() -> {
                     try {
                         var cache = Cache.getFriendRequestCache();
+                        var hasRequest = cache.has(playerUuid, targetUuid).get();
 
-                        if (cache.has(playerUuid, targetUuid).get()) {
+                        if(hasRequest) {
+                            cache.remove(playerUuid, targetUuid).get();
+
+                            return CancelResponse.SUCCESS;
+                        } else {
                             return CancelResponse.NO_REQUEST;
                         }
-
-                        cache.remove(playerUuid, targetUuid).get();
-
-                        return CancelResponse.SUCCESS;
                     } catch (InterruptedException | ExecutionException e) {
                         e.printStackTrace();
                     }
 
                     return CancelResponse.ERROR;
                 });
+    }
+
+    public enum CancelResponse {
+        SUCCESS,
+        ERROR,
+        NO_REQUEST
     }
 
     public static CompletableFuture<AddResponse> addRequest(Profile player, Profile target) {
@@ -92,6 +105,7 @@ public class Friend {
                 .completeAsync(() -> {
                     try {
                         var cache = Cache.getFriendRequestCache();
+                        var outgoing = cache.getOutgoing(player.getUuid()).get();
 
                         if (target.getFriends().contains(playerUuid) || player.getFriends().contains(targetUuid)) {
                             return AddResponse.ALREADY_FRIENDS;
@@ -99,6 +113,10 @@ public class Friend {
 
                         if (targetUuid.equals(playerUuid)) {
                             return AddResponse.TARGET_IS_PLAYER;
+                        }
+
+                        if (outgoing.size() >= 100) {
+                            return AddResponse.MAX_OUTGOING;
                         }
 
                         if (cache.has(playerUuid, targetUuid).get()) {
@@ -121,18 +139,6 @@ public class Friend {
                             return AddResponse.PLAYER_IGNORED;
                         }
 
-                        var outgoing = cache.getOutgoing(playerUuid).get();
-
-                        if (outgoing.size() >= 100) {
-                            return AddResponse.MAX_OUTGOING;
-                        }
-
-                        var incoming = cache.getIncoming(playerUuid).get();
-
-                        if (incoming.size() >= 100) {
-                            return AddResponse.MAX_INCOMING;
-                        }
-
                         cache.update("", playerUuid, targetUuid);
 
                         return AddResponse.SUCCESS;
@@ -142,6 +148,19 @@ public class Friend {
 
                     return AddResponse.ERROR;
                 });
+    }
+
+    public enum AddResponse {
+        ALREADY_FRIENDS,
+        TARGET_IS_PLAYER,
+        MAX_OUTGOING,
+        REQUEST_EXIST,
+        PENDING_REQUEST,
+        REQUESTS_TOGGLED,
+        TARGET_IGNORED,
+        PLAYER_IGNORED,
+        SUCCESS,
+        ERROR
     }
 
     public static CompletableFuture<AcceptResponse> acceptRequest(Profile player, Profile target) {
@@ -193,6 +212,16 @@ public class Friend {
 
                     return AcceptResponse.ERROR;
                 });
+    }
+
+    public enum AcceptResponse {
+        NO_REQUEST,
+        PLAYER_MAX_FRIENDS,
+        TARGET_MAX_FRIENDS,
+        TARGET_IGNORED,
+        PLAYER_IGNORED,
+        SUCCESS,
+        ERROR
     }
 
 }

@@ -1,6 +1,5 @@
 package cc.minetale.commonlib.party;
 
-import cc.minetale.commonlib.friend.AddResponse;
 import cc.minetale.commonlib.profile.Profile;
 import cc.minetale.commonlib.util.Cache;
 import cc.minetale.commonlib.util.JsonUtil;
@@ -125,6 +124,18 @@ public class Party {
 
                     return InviteResponse.ERROR;
                 });
+    }
+
+    public enum InviteResponse {
+        SUCCESS,
+        ERROR,
+        REQUEST_EXIST,
+        ALREADY_IN_PARTY,
+        TARGET_IS_PLAYER,
+        REQUESTS_TOGGLED,
+        MAXIMUM_REQUESTS,
+        PLAYER_IGNORED,
+        TARGET_IGNORED
     }
 
     @Getter

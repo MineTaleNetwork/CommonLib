@@ -10,13 +10,13 @@ import lombok.experimental.UtilityClass;
 @UtilityClass
 public class Cache {
 
-    @Getter private static FriendRequestCache friendRequestCache;
+//    @Getter private static FriendRequestCache friendRequestCache;
     @Getter private static PartyRequestCache partyRequestCache;
     @Getter private static PartyCache partyCache;
     @Getter private static ProfileCache profileCache;
 
     public static void init() {
-        friendRequestCache = new FriendRequestCache();
+//        friendRequestCache = new FriendRequestCache();
         partyRequestCache = new PartyRequestCache();
         partyCache = new PartyCache();
         profileCache = new ProfileCache();
