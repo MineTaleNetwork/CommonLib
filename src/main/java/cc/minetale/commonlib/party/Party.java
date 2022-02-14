@@ -77,7 +77,6 @@ public class Party {
                 .completeAsync(() -> {
                     try {
                         var cache = Cache.getPartyRequestCache();
-                        var outgoing = cache.getOutgoing(player.getUuid()).get();
 
                         for(var member : members) {
                             if(member.player().equals(targetUuid)) {
@@ -87,10 +86,6 @@ public class Party {
 
                         if (targetUuid.equals(playerUuid)) {
                             return InviteResponse.TARGET_IS_PLAYER;
-                        }
-
-                        if (outgoing.size() >= 100) {
-                            return InviteResponse.MAXIMUM_REQUESTS;
                         }
 
                         if (cache.has(partyUuid, targetUuid).get()) {
@@ -107,6 +102,18 @@ public class Party {
 
                         if (target.isIgnoring(player)) {
                             return InviteResponse.PLAYER_IGNORED;
+                        }
+
+                        var outgoing = cache.getOutgoing(playerUuid).get();
+
+                        if (outgoing.size() >= 100) {
+                            return InviteResponse.MAX_OUTGOING;
+                        }
+
+                        var incoming = cache.getIncoming(playerUuid).get();
+
+                        if (incoming.size() >= 100) {
+                            return InviteResponse.MAX_INCOMING;
                         }
 
                         cache.update("", partyUuid, targetUuid);
