@@ -3,6 +3,7 @@ package cc.minetale.commonlib.cache;
 import cc.minetale.commonlib.util.Redis;
 import cc.minetale.commonlib.util.Request;
 import lombok.Getter;
+import org.jetbrains.annotations.Blocking;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -19,59 +20,112 @@ public record RequestCache(String key, int ttl) {
         friendRequest = new RequestCache("friend-request", 7 * 24 * 60 * 60);
     }
 
-    public CompletableFuture<Set<Request>> getOutgoingRequests(UUID player) {
-        return new CompletableFuture<Set<Request>>().completeAsync(() -> {
-            var rawRequests = Redis.runRedisCommand(jedis -> jedis.smembers(getOutgoingKey(player)));
-            var requests = new HashSet<Request>();
+    @Blocking
+    public Set<UUID> getRawOutgoing(UUID player) {
+        var rawRequests = Redis.runRedisCommand(jedis -> jedis.smembers(getOutgoingKey(player)));
+        var requests = new HashSet<UUID>();
 
-            if (rawRequests != null && !rawRequests.isEmpty()) {
-                for (var request : rawRequests) {
-                    var split = request.split(":");
+        if (rawRequests != null && !rawRequests.isEmpty()) {
+            for (var request : rawRequests) {
+                requests.add(UUID.fromString(request.split(":")[0]));
+            }
+        }
 
-                    requests.add(new Request(
-                            player,
-                            UUID.fromString(split[0]),
-                            (Long.parseLong(split[1]) * 1000L) - System.currentTimeMillis()
-                    ));
+        return requests;
+    }
+
+    @Blocking
+    public Set<UUID> getRawIncoming(UUID player) {
+        var rawRequests = Redis.runRedisCommand(jedis -> jedis.smembers(getIncomingKey(player)));
+        var requests = new HashSet<UUID>();
+
+        if (rawRequests != null && !rawRequests.isEmpty()) {
+            for (var request : rawRequests) {
+                requests.add(UUID.fromString(request.split(":")[0]));
+            }
+        }
+
+        return requests;
+    }
+
+    @Blocking
+    public Set<Request> getOutgoing(UUID player) {
+        var rawRequests = Redis.runRedisCommand(jedis -> jedis.smembers(getOutgoingKey(player)));
+        var requests = new HashSet<Request>();
+
+        if (rawRequests != null && !rawRequests.isEmpty()) {
+            for (var request : rawRequests) {
+                var split = request.split(":");
+
+                requests.add(new Request(
+                        player,
+                        UUID.fromString(split[0]),
+                        Long.parseLong(split[1]) - System.currentTimeMillis()
+                ));
+            }
+        }
+
+        return requests;
+    }
+
+    @Blocking
+    public Set<Request> getIncoming(UUID player) {
+        var rawRequests = Redis.runRedisCommand(jedis -> jedis.smembers(getIncomingKey(player)));
+        var requests = new HashSet<Request>();
+
+        if (rawRequests != null && !rawRequests.isEmpty()) {
+            for (var request : rawRequests) {
+                var split = request.split(":");
+
+                requests.add(new Request(
+                        UUID.fromString(split[0]),
+                        player,
+                        Long.parseLong(split[1]) - System.currentTimeMillis()
+                ));
+            }
+        }
+
+        return requests;
+    }
+
+    // TODO -> Make sure this works
+    public CompletableFuture<Void> removeCache(UUID player, UUID target) {
+        return CompletableFuture.runAsync(() -> Redis.runRedisCommand(jedis -> {
+            var pipeline = jedis.pipelined();
+
+            var outgoing = jedis.smembers(getOutgoingKey(player));
+
+            for(var member : outgoing) {
+                if(member.contains(target.toString())) {
+                    pipeline.srem(getOutgoingKey(player), member);
                 }
             }
 
-            return requests;
-        });
-    }
+            var incoming = jedis.smembers(getIncomingKey(target));
 
-    public CompletableFuture<Set<Request>> getIncomingRequests(UUID player) {
-        return new CompletableFuture<Set<Request>>().completeAsync(() -> {
-            var rawRequests = Redis.runRedisCommand(jedis -> jedis.smembers(getIncomingKey(player)));
-            var requests = new HashSet<Request>();
-
-            if (rawRequests != null && !rawRequests.isEmpty()) {
-                for (var request : rawRequests) {
-                    var split = request.split(":");
-
-                    requests.add(new Request(
-                            UUID.fromString(split[0]),
-                            player,
-                            (Long.parseLong(split[1]) * 1000L) - System.currentTimeMillis()
-                    ));
+            for(var member : incoming) {
+                if(member.contains(player.toString())) {
+                    pipeline.srem(getIncomingKey(target), member);
                 }
             }
 
-            return requests;
-        });
+            pipeline.sync();
+
+            return null;
+        }));
     }
 
-    public CompletableFuture<Void> pushCache(UUID inviter, UUID target) {
+    public CompletableFuture<Void> pushCache(UUID player, UUID target) {
         return CompletableFuture.runAsync(() -> {
             var cur = System.currentTimeMillis();
 
             var outgoing = target + ":" + (cur + ttl * 1000L);
-            var incoming = inviter + ":" + (cur + ttl * 1000L);
+            var incoming = player + ":" + (cur + ttl * 1000L);
 
             Redis.runRedisCommand(jedis -> {
                 var pipeline = jedis.pipelined();
 
-                pipeline.sadd(getOutgoingKey(inviter), outgoing);
+                pipeline.sadd(getOutgoingKey(player), outgoing);
                 pipeline.sadd(getIncomingKey(target), incoming);
 
                 pipeline.sync();
@@ -82,7 +136,7 @@ public record RequestCache(String key, int ttl) {
             Redis.runRedisCommand(jedis -> {
                 var pipeline = jedis.pipelined();
 
-                pipeline.sendCommand(Redis.CustomCommand.EXPIREMEMBER, getOutgoingKey(inviter), outgoing, String.valueOf(ttl));
+                pipeline.sendCommand(Redis.CustomCommand.EXPIREMEMBER, getOutgoingKey(player), outgoing, String.valueOf(ttl));
                 pipeline.sendCommand(Redis.CustomCommand.EXPIREMEMBER, getIncomingKey(target), incoming, String.valueOf(ttl));
 
                 pipeline.sync();

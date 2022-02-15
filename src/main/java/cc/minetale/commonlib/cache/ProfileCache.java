@@ -82,19 +82,31 @@ public class ProfileCache {
         });
     }
 
+    public static CompletableFuture<Void> pushCache(Profile profile) {
+        return pushCache(new CachedProfile(profile));
+    }
+
     public static CompletableFuture<Void> pushCache(CachedProfile profile) {
         var uuid = profile.getProfile().getUuid().toString();
+        var json = JsonUtil.writeToJson(profile);
+
+        if(json == null) {
+            return CompletableFuture.completedFuture(null);
+        }
 
         return CompletableFuture.runAsync(() -> {
-            Redis.runRedisCommand(jedis ->
-                    jedis.hset(
-                            getKey(),
-                            uuid,
-                            JsonUtil.writeToJson(profile)
-                    ));
+            Redis.runRedisCommand(jedis -> jedis.hset(
+                    getKey(),
+                    uuid, json
+            ));
 
             Redis.expireMember(getKey(), uuid, 12 * 60 * 60);
         });
+    }
+
+    public static CompletableFuture<CachedProfile> getCache(UUID uuid) {
+        return new CompletableFuture<CachedProfile>()
+                .completeAsync(() -> JsonUtil.readFromJson(Redis.runRedisCommand(jedis -> jedis.hget(getKey(), uuid.toString())), CachedProfile.class));
     }
 
     public static String getKey() {

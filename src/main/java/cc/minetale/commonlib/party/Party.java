@@ -29,101 +29,101 @@ public class Party {
         this.partyUuid = partyUuid;
     }
 
-    public static CompletableFuture<Party> getParty(UUID partyUuid) {
-        return new CompletableFuture<Party>()
-                .completeAsync(() -> {
-                    try {
-                        String party = Cache.getPartyCache().get(partyUuid).get();
+//    public static CompletableFuture<Party> getParty(UUID partyUuid) {
+//        return new CompletableFuture<Party>()
+//                .completeAsync(() -> {
+//                    try {
+//                        String party = Cache.getPartyCache().get(partyUuid).get();
+//
+//                        if(party != null) {
+//                            return JsonUtil.readFromJson(party, Party.class);
+//                        }
+//                    } catch (InterruptedException | ExecutionException e) {
+//                        e.printStackTrace();
+//                    }
+//
+//                    return null;
+//                });
+//    }
 
-                        if(party != null) {
-                            return JsonUtil.readFromJson(party, Party.class);
-                        }
-                    } catch (InterruptedException | ExecutionException e) {
-                        e.printStackTrace();
-                    }
+//    public CompletableFuture<Void> disband() {
+//        // TODO -> Send disband messages
+//
+//        var requestCache = Cache.getPartyRequestCache();
+//
+//        try {
+//            // TODO -> THREAD BLOCKING
+//            var requests = requestCache.getOutgoing(partyUuid).get();
+//
+//            Redis.runRedisCommand(jedis -> jedis.del(requests.stream()
+//                    .map(request -> requestCache.getKey(request.initiator(), request.target()))
+//                    .toList()
+//                    .toArray(new String[0])
+//            ));
+//        } catch (InterruptedException | ExecutionException e) {
+//            e.printStackTrace();
+//        }
+//
+//        return Cache.getPartyCache().remove(partyUuid);
+//    }
 
-                    return null;
-                });
-    }
-
-    public CompletableFuture<Void> disband() {
-        // TODO -> Send disband messages
-
-        var requestCache = Cache.getPartyRequestCache();
-
-        try {
-            // TODO -> THREAD BLOCKING
-            var requests = requestCache.getOutgoing(partyUuid).get();
-
-            Redis.runRedisCommand(jedis -> jedis.del(requests.stream()
-                    .map(request -> requestCache.getKey(request.initiator(), request.target()))
-                    .toList()
-                    .toArray(new String[0])
-            ));
-        } catch (InterruptedException | ExecutionException e) {
-            e.printStackTrace();
-        }
-
-        return Cache.getPartyCache().remove(partyUuid);
-    }
-
-    public CompletableFuture<InviteResponse> invitePlayer(Profile player, Profile target) {
-        var playerUuid = player.getUuid();
-        var targetUuid = target.getUuid();
-
-        return new CompletableFuture<InviteResponse>()
-                .completeAsync(() -> {
-                    try {
-                        var cache = Cache.getPartyRequestCache();
-
-                        for(var member : members) {
-                            if(member.player().equals(targetUuid)) {
-                                return InviteResponse.ALREADY_IN_PARTY;
-                            }
-                        }
-
-                        if (targetUuid.equals(playerUuid)) {
-                            return InviteResponse.TARGET_IS_PLAYER;
-                        }
-
-                        if (cache.has(partyUuid, targetUuid).get()) {
-                            return InviteResponse.REQUEST_EXIST;
-                        }
-
-                        if (!target.getOptionsProfile().isReceivingPartyRequests()) {
-                            return InviteResponse.REQUESTS_TOGGLED;
-                        }
-
-                        if (player.isIgnoring(target)) {
-                            return InviteResponse.TARGET_IGNORED;
-                        }
-
-                        if (target.isIgnoring(player)) {
-                            return InviteResponse.PLAYER_IGNORED;
-                        }
-
-                        var outgoing = cache.getOutgoing(playerUuid).get();
-
-                        if (outgoing.size() >= 100) {
-                            return InviteResponse.MAX_OUTGOING;
-                        }
-
-                        var incoming = cache.getIncoming(playerUuid).get();
-
-                        if (incoming.size() >= 100) {
-                            return InviteResponse.MAX_INCOMING;
-                        }
-
-                        cache.update("", partyUuid, targetUuid);
-
-                        return InviteResponse.SUCCESS;
-                    } catch (InterruptedException | ExecutionException e) {
-                        e.printStackTrace();
-                    }
-
-                    return InviteResponse.ERROR;
-                });
-    }
+//    public CompletableFuture<InviteResponse> invitePlayer(Profile player, Profile target) {
+//        var playerUuid = player.getUuid();
+//        var targetUuid = target.getUuid();
+//
+//        return new CompletableFuture<InviteResponse>()
+//                .completeAsync(() -> {
+//                    try {
+//                        var cache = Cache.getPartyRequestCache();
+//
+//                        for(var member : members) {
+//                            if(member.player().equals(targetUuid)) {
+//                                return InviteResponse.ALREADY_IN_PARTY;
+//                            }
+//                        }
+//
+//                        if (targetUuid.equals(playerUuid)) {
+//                            return InviteResponse.TARGET_IS_PLAYER;
+//                        }
+//
+//                        if (cache.has(partyUuid, targetUuid).get()) {
+//                            return InviteResponse.REQUEST_EXIST;
+//                        }
+//
+//                        if (!target.getOptionsProfile().isReceivingPartyRequests()) {
+//                            return InviteResponse.REQUESTS_TOGGLED;
+//                        }
+//
+//                        if (player.isIgnoring(target)) {
+//                            return InviteResponse.TARGET_IGNORED;
+//                        }
+//
+//                        if (target.isIgnoring(player)) {
+//                            return InviteResponse.PLAYER_IGNORED;
+//                        }
+//
+//                        var outgoing = cache.getOutgoing(playerUuid).get();
+//
+//                        if (outgoing.size() >= 100) {
+//                            return InviteResponse.MAX_OUTGOING;
+//                        }
+//
+//                        var incoming = cache.getIncoming(playerUuid).get();
+//
+//                        if (incoming.size() >= 100) {
+//                            return InviteResponse.MAX_INCOMING;
+//                        }
+//
+//                        cache.update("", partyUuid, targetUuid);
+//
+//                        return InviteResponse.SUCCESS;
+//                    } catch (InterruptedException | ExecutionException e) {
+//                        e.printStackTrace();
+//                    }
+//
+//                    return InviteResponse.ERROR;
+//                });
+//    }
 
     public enum InviteResponse {
         SUCCESS,

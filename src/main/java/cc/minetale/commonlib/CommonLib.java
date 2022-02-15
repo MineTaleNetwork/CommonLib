@@ -45,8 +45,6 @@ public class CommonLib {
         pigeon.setupDefaultUpdater();
         pigeon.acceptDelivery();
 
-        Cache.init();
-
         Database.init(mongoDatabase);
     }
 

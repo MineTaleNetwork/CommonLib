@@ -1,6 +1,5 @@
 package cc.minetale.commonlib.util;
 
-import cc.minetale.commonlib.CommonLib;
 import cc.minetale.commonlib.cache.ProfileCache;
 import cc.minetale.commonlib.cache.UUIDCache;
 import cc.minetale.commonlib.grant.Grant;
@@ -8,7 +7,6 @@ import cc.minetale.commonlib.profile.CachedProfile;
 import cc.minetale.commonlib.profile.Profile;
 import cc.minetale.commonlib.profile.Retrieval;
 import cc.minetale.commonlib.punishment.Punishment;
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.mongodb.client.model.Filters;
 import org.bson.Document;
 
@@ -38,6 +36,8 @@ public class ProfileUtil {
                     try {
                         var response = fromDatabase(uuid).get();
 
+                        UUIDCache.pushCache(uuid, name);
+
                         if(response != null) {
                             switch (response.response()) {
                                 case RETRIEVED -> {
@@ -46,8 +46,7 @@ public class ProfileUtil {
                                 case NOT_FOUND -> {
                                     var profile = new Profile(uuid, name);
 
-                                    Cache.getProfileCache().update(JsonUtil.writeToJson(new CachedProfile(profile)), profile.getUuid());
-                                    UUIDCache.update(uuid, name);
+                                    ProfileCache.pushCache(profile);
 
                                     return profile;
                                 }
@@ -89,9 +88,9 @@ public class ProfileUtil {
                 .completeAsync(() -> {
                     var profiles = new ArrayList<CachedProfile>();
 
-                    var jsonProfiles = Redis.runRedisCommand(jedis -> jedis.mget(
+                    var jsonProfiles = Redis.runRedisCommand(jedis -> jedis.hmget(ProfileCache.getKey(),
                             players.stream()
-                                    .map(uuid -> Cache.getProfileCache().getKey(uuid.toString()))
+                                    .map(UUID::toString)
                                     .toArray(String[]::new)
                     ));
 
@@ -177,7 +176,7 @@ public class ProfileUtil {
                         if (response != null && response.response() == Retrieval.Response.RETRIEVED) {
                             var profile = response.profile();
 
-                            Cache.getProfileCache().update(JsonUtil.writeToJson(new CachedProfile(profile)), profile.getUuid());
+                            ProfileCache.pushCache(profile);
 
                             return profile;
                         }
@@ -223,8 +222,7 @@ public class ProfileUtil {
                             return Retrieval.FAILED;
                         }
 
-                        Cache.getProfileCache().update(JsonUtil.writeToJson(new CachedProfile(profile)), profile.getUuid());
-                        UUIDCache.update(uuid, profile.getUsername());
+                        ProfileCache.pushCache(profile);
 
                         return new Retrieval(Retrieval.Response.RETRIEVED, profile);
                     }
@@ -252,11 +250,7 @@ public class ProfileUtil {
         return new CompletableFuture<CachedProfile>()
                 .completeAsync(() -> {
                     try {
-                        String profile = Cache.getProfileCache().get(uuid).get();
-
-                        if(profile != null) {
-                            return JsonUtil.readFromJson(profile, CachedProfile.class);
-                        }
+                        return ProfileCache.getCache(uuid).get();
                     } catch (InterruptedException | ExecutionException e) {
                         e.printStackTrace();
                     }

@@ -1,6 +1,7 @@
 package cc.minetale.commonlib.profile;
 
 import cc.minetale.commonlib.CommonLib;
+import cc.minetale.commonlib.cache.ProfileCache;
 import cc.minetale.commonlib.grant.Grant;
 import cc.minetale.commonlib.pigeon.payloads.grant.GrantAddPayload;
 import cc.minetale.commonlib.pigeon.payloads.grant.GrantExpirePayload;
@@ -109,7 +110,16 @@ public class Profile extends AbstractProfile {
      * @return Whether profile is friends
      */
     public boolean isFriends(Profile profile) {
-        return this.friends.contains(profile.getUuid());
+        return friends.contains(profile.getUuid());
+    }
+
+    /**
+     * Removes a specific friend.
+     *
+     * @param profile The profile
+     */
+    public void removeFriend(Profile profile) {
+        friends.remove(profile.getUuid());
     }
 
     /**
@@ -161,7 +171,7 @@ public class Profile extends AbstractProfile {
         this.punishments.add(punishment);
 
         punishment.save()
-                .thenRun(() -> Cache.getProfileCache().updateProfile(this)
+                .thenRun(() -> ProfileCache.updateProfile(this)
                         .thenRun(() -> PigeonUtil.broadcast(new PunishmentAddPayload(this.uuid, punishment.getId()))));
 
         for (var provider : CommonLib.getProviders()) {
@@ -183,7 +193,7 @@ public class Profile extends AbstractProfile {
         punishment.setRemovedReason(removedReason);
 
         punishment.save()
-                .thenRun(() -> Cache.getProfileCache().updateProfile(this)
+                .thenRun(() -> ProfileCache.updateProfile(this)
                         .thenRun(() -> PigeonUtil.broadcast(new PunishmentRemovePayload(this.uuid, punishment.getId()))));
 
         for (var provider : CommonLib.getProviders()) {
@@ -203,7 +213,7 @@ public class Profile extends AbstractProfile {
         punishment.setRemovedReason("Punishment Expired");
 
         punishment.save()
-                .thenRun(() -> Cache.getProfileCache().updateProfile(this)
+                .thenRun(() -> ProfileCache.updateProfile(this)
                         .thenRun(() -> PigeonUtil.broadcast(new PunishmentExpirePayload(this.uuid, punishment.getId()))));
 
         for (var provider : CommonLib.getProviders()) {
@@ -285,7 +295,7 @@ public class Profile extends AbstractProfile {
         this.grants.add(grant);
 
         grant.save()
-                .thenRun(() -> Cache.getProfileCache().updateProfile(this)
+                .thenRun(() -> ProfileCache.updateProfile(this)
                         .thenRun(() -> PigeonUtil.broadcast(new GrantAddPayload(this.uuid, grant.getId()))));
 
         for (var provider : CommonLib.getProviders()) {
@@ -310,7 +320,7 @@ public class Profile extends AbstractProfile {
         grant.setRemovedReason(removedReason);
 
         grant.save()
-                .thenRun(() -> Cache.getProfileCache().updateProfile(this)
+                .thenRun(() -> ProfileCache.updateProfile(this)
                         .thenRun(() -> PigeonUtil.broadcast(new GrantRemovePayload(this.uuid, grant.getId()))));
 
         for (var provider : CommonLib.getProviders()) {
@@ -333,7 +343,7 @@ public class Profile extends AbstractProfile {
         grant.setRemovedReason("Grant Expired");
 
         grant.save()
-                .thenRun(() -> Cache.getProfileCache().updateProfile(this)
+                .thenRun(() -> ProfileCache.updateProfile(this)
                         .thenRun(() -> PigeonUtil.broadcast(new GrantExpirePayload(this.uuid, grant.getId()))));
 
         for (var provider : CommonLib.getProviders()) {
