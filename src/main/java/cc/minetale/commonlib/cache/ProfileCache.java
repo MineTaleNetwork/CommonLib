@@ -14,23 +14,7 @@ import java.util.concurrent.ExecutionException;
 
 public class ProfileCache {
 
-    // TODO -> Maybe pipeline?
-    public static CompletableFuture<Void> pushCache(CachedProfile profile) {
-        var uuid = profile.getProfile().getUuid().toString();
-
-        return CompletableFuture.runAsync(() -> {
-            Redis.runRedisCommand(jedis ->
-                jedis.hset(
-                        "minetale:profile-cache",
-                        uuid,
-                        JsonUtil.writeToJson(profile)
-                ));
-
-            Redis.expireMember("minetale:profile-cache", uuid, 12 * 60 * 60);
-        });
-    }
-
-    public CompletableFuture<Void> updateParty(UUID player, UUID party) {
+    public static CompletableFuture<Void> updateParty(UUID player, UUID party) {
         return CompletableFuture.runAsync(() -> {
             try {
                 var cachedProfile = ProfileUtil.getCachedProfile(player).get();
@@ -46,7 +30,7 @@ public class ProfileCache {
         });
     }
 
-    public CompletableFuture<Void> updateLastMessaged(UUID player, UUID lastMessaged) {
+    public static CompletableFuture<Void> updateLastMessaged(UUID player, UUID lastMessaged) {
         return CompletableFuture.runAsync(() -> {
             try {
                 var cachedProfile = ProfileUtil.getCachedProfile(player).get();
@@ -62,7 +46,7 @@ public class ProfileCache {
         });
     }
 
-    public CompletableFuture<Void> updateStatus(UUID uuid, String server) {
+    public static CompletableFuture<Void> updateStatus(UUID uuid, String server) {
         return CompletableFuture.runAsync(() -> {
             try {
                 var cachedProfile = ProfileUtil.getCachedProfile(uuid).get();
@@ -78,7 +62,7 @@ public class ProfileCache {
         });
     }
 
-    public CompletableFuture<Void> updateProfile(Profile profile) {
+    public static CompletableFuture<Void> updateProfile(Profile profile) {
         return CompletableFuture.runAsync(() -> {
             try {
                 var cachedProfile = ProfileUtil.getCachedProfile(profile.getUuid()).get();
@@ -96,6 +80,25 @@ public class ProfileCache {
                 e.printStackTrace();
             }
         });
+    }
+
+    public static CompletableFuture<Void> pushCache(CachedProfile profile) {
+        var uuid = profile.getProfile().getUuid().toString();
+
+        return CompletableFuture.runAsync(() -> {
+            Redis.runRedisCommand(jedis ->
+                    jedis.hset(
+                            getKey(),
+                            uuid,
+                            JsonUtil.writeToJson(profile)
+                    ));
+
+            Redis.expireMember(getKey(), uuid, 12 * 60 * 60);
+        });
+    }
+
+    public static String getKey() {
+        return "minetale:profile-cache";
     }
 
 }

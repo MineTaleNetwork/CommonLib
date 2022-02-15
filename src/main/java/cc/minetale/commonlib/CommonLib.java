@@ -2,7 +2,6 @@ package cc.minetale.commonlib;
 
 import cc.minetale.commonlib.api.LibProvider;
 import cc.minetale.commonlib.pigeon.serializers.ColorSerializers;
-import cc.minetale.commonlib.util.Cache;
 import cc.minetale.commonlib.util.Database;
 import cc.minetale.commonlib.util.StringUtil;
 import cc.minetale.pigeon.Pigeon;

@@ -11,7 +11,6 @@ import cc.minetale.commonlib.pigeon.payloads.punishment.PunishmentRemovePayload;
 import cc.minetale.commonlib.punishment.Punishment;
 import cc.minetale.commonlib.punishment.PunishmentType;
 import cc.minetale.commonlib.util.BsonUtil;
-import cc.minetale.commonlib.util.Cache;
 import cc.minetale.commonlib.util.Database;
 import cc.minetale.commonlib.util.PigeonUtil;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -101,6 +100,16 @@ public class Profile extends AbstractProfile {
      */
     public boolean isIgnoring(Profile profile) {
         return this.ignored.contains(profile.getUuid());
+    }
+
+    /**
+     * Check if the specified profile is friends.
+     *
+     * @param profile The profile
+     * @return Whether profile is friends
+     */
+    public boolean isFriends(Profile profile) {
+        return this.friends.contains(profile.getUuid());
     }
 
     /**

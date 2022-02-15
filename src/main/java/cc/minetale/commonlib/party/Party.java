@@ -1,7 +1,6 @@
 package cc.minetale.commonlib.party;
 
 import cc.minetale.commonlib.profile.Profile;
-import cc.minetale.commonlib.util.Cache;
 import cc.minetale.commonlib.util.JsonUtil;
 import cc.minetale.commonlib.util.Redis;
 import lombok.Getter;

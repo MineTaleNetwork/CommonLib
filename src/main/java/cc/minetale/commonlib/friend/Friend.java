@@ -1,8 +1,11 @@
 package cc.minetale.commonlib.friend;
 
+import cc.minetale.commonlib.cache.ProfileCache;
+import cc.minetale.commonlib.cache.RequestCache;
 import cc.minetale.commonlib.profile.Profile;
-import cc.minetale.commonlib.util.Cache;
+import cc.minetale.commonlib.util.Redis;
 
+import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 
@@ -17,89 +20,47 @@ public class Friend {
                     var targetFriends = target.getFriends();
                     var playerFriends = player.getFriends();
 
-                    if(targetFriends.contains(playerUuid) || playerFriends.contains(targetUuid)) {
-                        playerFriends.remove(targetUuid);
-                        targetFriends.remove(playerUuid);
-
-                        var cache = Cache.getProfileCache();
-
-                        cache.updateProfile(player);
-                        cache.updateProfile(target);
-
-                        player.save();
-                        target.save();
-
-                        return RemoveResponse.SUCCESS;
-                    } else {
+                    if (!player.isFriends(target) || !target.isFriends(player)) {
                         return RemoveResponse.NOT_ADDED;
                     }
+
+                    playerFriends.remove(targetUuid);
+                    targetFriends.remove(playerUuid);
+
+                    ProfileCache.updateProfile(player);
+                    ProfileCache.updateProfile(target);
+
+                    player.save();
+                    target.save();
+
+                    return RemoveResponse.SUCCESS;
                 });
     }
 
-    public static CompletableFuture<CancelResponse> denyRequest(Profile player, Profile target) {
-        var playerUuid = player.getUuid();
-        var targetUuid = target.getUuid();
+    public static CompletableFuture<CancelResponse> removeRequest(UUID player, UUID target) {
+        var cache = RequestCache.getFriendRequest();
 
         return new CompletableFuture<CancelResponse>()
-                .completeAsync(() -> {
-                    try {
-                        var cache = Cache.getFriendRequestCache();
-                        var hasRequest = cache.has(targetUuid, playerUuid).get();
+                .completeAsync(() -> Redis.runRedisCommand(jedis -> {
+                    var incomingRequests = jedis.smembers(cache.getIncomingKey(player));
 
-                        if(hasRequest) {
-                            cache.remove(targetUuid, playerUuid).get();
-
-                            return CancelResponse.SUCCESS;
-                        } else {
-                            return CancelResponse.NO_REQUEST;
-                        }
-                    } catch (InterruptedException | ExecutionException e) {
-                        e.printStackTrace();
+                    if (!incomingRequests.contains(target.toString())) {
+                        return CancelResponse.NO_REQUEST;
                     }
 
-                    return CancelResponse.ERROR;
-                });
+                    var pipeline = jedis.pipelined();
+
+                    pipeline.srem(cache.getIncomingKey(player), target.toString());
+                    pipeline.srem(cache.getOutgoingKey(target), player.toString());
+
+                    pipeline.sync();
+
+                    return CancelResponse.SUCCESS;
+                }));
     }
 
-    public enum RemoveResponse {
-        SUCCESS,
-        NOT_ADDED
-    }
-
-    public static CompletableFuture<CancelResponse> cancelRequest(Profile player, Profile target) {
-        var playerUuid = player.getUuid();
-        var targetUuid = target.getUuid();
-
-        return new CompletableFuture<CancelResponse>()
-                .completeAsync(() -> {
-                    try {
-                        var cache = Cache.getFriendRequestCache();
-                        var hasRequest = cache.has(playerUuid, targetUuid).get();
-
-                        if(hasRequest) {
-                            cache.remove(playerUuid, targetUuid).get();
-
-                            return CancelResponse.SUCCESS;
-                        } else {
-                            return CancelResponse.NO_REQUEST;
-                        }
-                    } catch (InterruptedException | ExecutionException e) {
-                        e.printStackTrace();
-                    }
-
-                    return CancelResponse.ERROR;
-                });
-    }
-
-    public enum CancelResponse {
-        SUCCESS,
-        ERROR,
-        NO_REQUEST
-    }
-
-    public static CompletableFuture<AddResponse> addRequest(Profile player, Profile target) {
-        var playerUuid = player.getUuid();
-        var targetUuid = target.getUuid();
+    public static CompletableFuture<AddResponse> addRequest(UUID player, UUID target) {
+        var cache = RequestCache.getFriendRequest();
 
         return new CompletableFuture<AddResponse>()
                 .completeAsync(() -> {
@@ -118,6 +79,7 @@ public class Friend {
                         if (outgoing.size() >= 100) {
                             return AddResponse.MAX_OUTGOING;
                         }
+
 
                         if (cache.has(playerUuid, targetUuid).get()) {
                             return AddResponse.REQUEST_EXIST;
@@ -148,19 +110,6 @@ public class Friend {
 
                     return AddResponse.ERROR;
                 });
-    }
-
-    public enum AddResponse {
-        ALREADY_FRIENDS,
-        TARGET_IS_PLAYER,
-        MAX_OUTGOING,
-        REQUEST_EXIST,
-        PENDING_REQUEST,
-        REQUESTS_TOGGLED,
-        TARGET_IGNORED,
-        PLAYER_IGNORED,
-        SUCCESS,
-        ERROR
     }
 
     public static CompletableFuture<AcceptResponse> acceptRequest(Profile player, Profile target) {
@@ -212,6 +161,29 @@ public class Friend {
 
                     return AcceptResponse.ERROR;
                 });
+    }
+
+    public enum RemoveResponse {
+        SUCCESS,
+        NOT_ADDED
+    }
+
+    public enum CancelResponse {
+        SUCCESS,
+        NO_REQUEST
+    }
+
+    public enum AddResponse {
+        ALREADY_FRIENDS,
+        TARGET_IS_PLAYER,
+        MAX_OUTGOING,
+        REQUEST_EXIST,
+        PENDING_REQUEST,
+        REQUESTS_TOGGLED,
+        TARGET_IGNORED,
+        PLAYER_IGNORED,
+        SUCCESS,
+        ERROR
     }
 
     public enum AcceptResponse {
