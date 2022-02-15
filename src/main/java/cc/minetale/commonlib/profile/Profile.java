@@ -13,6 +13,7 @@ import cc.minetale.commonlib.punishment.Punishment;
 import cc.minetale.commonlib.punishment.PunishmentType;
 import cc.minetale.commonlib.util.BsonUtil;
 import cc.minetale.commonlib.util.Database;
+import cc.minetale.commonlib.util.AsyncUtil;
 import cc.minetale.commonlib.util.PigeonUtil;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.mongodb.client.model.Filters;
@@ -170,9 +171,11 @@ public class Profile extends AbstractProfile {
     public void issuePunishment(Punishment punishment) {
         this.punishments.add(punishment);
 
-        punishment.save()
-                .thenRun(() -> ProfileCache.updateProfile(this)
-                        .thenRun(() -> PigeonUtil.broadcast(new PunishmentAddPayload(this.uuid, punishment.getId()))));
+        AsyncUtil.runInOrder(
+                punishment.save(),
+                ProfileCache.updateProfile(this),
+                CompletableFuture.runAsync(() -> PigeonUtil.broadcast(new PunishmentAddPayload(this.uuid, punishment.getId())))
+        );
 
         for (var provider : CommonLib.getProviders()) {
             provider.addPunishment(punishment);
@@ -192,9 +195,11 @@ public class Profile extends AbstractProfile {
         punishment.setRemovedAt(removedAt);
         punishment.setRemovedReason(removedReason);
 
-        punishment.save()
-                .thenRun(() -> ProfileCache.updateProfile(this)
-                        .thenRun(() -> PigeonUtil.broadcast(new PunishmentRemovePayload(this.uuid, punishment.getId()))));
+        AsyncUtil.runInOrder(
+                punishment.save(),
+                ProfileCache.updateProfile(this),
+                CompletableFuture.runAsync(() -> PigeonUtil.broadcast(new PunishmentRemovePayload(this.uuid, punishment.getId())))
+        );
 
         for (var provider : CommonLib.getProviders()) {
             provider.removePunishment(punishment);
@@ -212,9 +217,11 @@ public class Profile extends AbstractProfile {
         punishment.setRemovedAt(punishment.getAddedAt() + punishment.getDuration());
         punishment.setRemovedReason("Punishment Expired");
 
-        punishment.save()
-                .thenRun(() -> ProfileCache.updateProfile(this)
-                        .thenRun(() -> PigeonUtil.broadcast(new PunishmentExpirePayload(this.uuid, punishment.getId()))));
+        AsyncUtil.runInOrder(
+                punishment.save(),
+                ProfileCache.updateProfile(this),
+                CompletableFuture.runAsync(() -> PigeonUtil.broadcast(new PunishmentExpirePayload(this.uuid, punishment.getId())))
+        );
 
         for (var provider : CommonLib.getProviders()) {
             provider.expirePunishment(punishment);
@@ -233,6 +240,7 @@ public class Profile extends AbstractProfile {
 
         var sorter = (Comparator<Grant>) (grant1, grant2) -> {
             var activeCompare = Boolean.compare(grant2.isActive(), grant1.isActive());
+
             if (activeCompare != 0) {
                 return activeCompare;
             }
@@ -289,14 +297,15 @@ public class Profile extends AbstractProfile {
      * @param grant The grant being issued
      */
     public void issueGrant(Grant grant) {
-        if (grant.isDefault())
-            return;
+        if (grant.isDefault()) { return; }
 
         this.grants.add(grant);
 
-        grant.save()
-                .thenRun(() -> ProfileCache.updateProfile(this)
-                        .thenRun(() -> PigeonUtil.broadcast(new GrantAddPayload(this.uuid, grant.getId()))));
+        AsyncUtil.runInOrder(
+                grant.save(),
+                ProfileCache.updateProfile(this),
+                CompletableFuture.runAsync(() -> PigeonUtil.broadcast(new GrantAddPayload(this.uuid, grant.getId())))
+        );
 
         for (var provider : CommonLib.getProviders()) {
             provider.addGrant(grant);
@@ -312,16 +321,17 @@ public class Profile extends AbstractProfile {
      * @param removedReason The reason why the grant was removed
      */
     public void removeGrant(Grant grant, @Nullable UUID removedBy, long removedAt, String removedReason) {
-        if (grant.isDefault())
-            return;
+        if (grant.isDefault()) { return; }
 
         grant.setRemovedById(removedBy);
         grant.setRemovedAt(removedAt);
         grant.setRemovedReason(removedReason);
 
-        grant.save()
-                .thenRun(() -> ProfileCache.updateProfile(this)
-                        .thenRun(() -> PigeonUtil.broadcast(new GrantRemovePayload(this.uuid, grant.getId()))));
+        AsyncUtil.runInOrder(
+                grant.save(),
+                ProfileCache.updateProfile(this),
+                CompletableFuture.runAsync(() -> PigeonUtil.broadcast(new GrantRemovePayload(this.uuid, grant.getId())))
+        );
 
         for (var provider : CommonLib.getProviders()) {
             provider.removeGrant(grant);
@@ -335,16 +345,17 @@ public class Profile extends AbstractProfile {
      * @param grant The grant being removed
      */
     public void expireGrant(Grant grant) {
-        if (grant.isDefault())
-            return;
+        if (grant.isDefault()) { return; }
 
         grant.setRemovedById(null);
         grant.setRemovedAt(grant.getAddedAt() + grant.getDuration());
         grant.setRemovedReason("Grant Expired");
 
-        grant.save()
-                .thenRun(() -> ProfileCache.updateProfile(this)
-                        .thenRun(() -> PigeonUtil.broadcast(new GrantExpirePayload(this.uuid, grant.getId()))));
+        AsyncUtil.runInOrder(
+                grant.save(),
+                ProfileCache.updateProfile(this),
+                CompletableFuture.runAsync(() -> PigeonUtil.broadcast(new GrantExpirePayload(this.uuid, grant.getId())))
+        );
 
         for (var provider : CommonLib.getProviders()) {
             provider.expireGrant(grant);
@@ -391,23 +402,19 @@ public class Profile extends AbstractProfile {
     @Getter
     @Setter
     public static class Options {
-
         private boolean receivingPartyRequests = true;
         private boolean receivingFriendRequests = true;
         private boolean receivingPublicChat = true;
         private boolean receivingConversations = true;
         private boolean receivingMessageSounds = true;
-
     }
 
     @Getter
     @Setter
     public static class Staff {
-
         private String twoFactorKey = "";
         private boolean receivingStaffMessages = true;
         private boolean locked;
-
     }
 
 }

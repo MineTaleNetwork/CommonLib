@@ -5,7 +5,7 @@ import cc.minetale.commonlib.cache.UUIDCache;
 import cc.minetale.commonlib.grant.Grant;
 import cc.minetale.commonlib.profile.CachedProfile;
 import cc.minetale.commonlib.profile.Profile;
-import cc.minetale.commonlib.profile.Retrieval;
+import cc.minetale.commonlib.profile.ProfileRetrieval;
 import cc.minetale.commonlib.punishment.Punishment;
 import com.mongodb.client.model.Filters;
 import org.bson.Document;
@@ -72,7 +72,7 @@ public class ProfileUtil {
 
                         var response = fromDatabase(uuid).get();
 
-                        if (response.response() == Retrieval.Response.RETRIEVED) {
+                        if (response.response() == ProfileRetrieval.Response.RETRIEVED) {
                             return new CachedProfile(response.profile());
                         }
                     } catch (InterruptedException | ExecutionException e) {
@@ -124,7 +124,7 @@ public class ProfileUtil {
                             try {
                                 var response = fromDocument(document).get();
 
-                                if (response != null && response.response() == Retrieval.Response.RETRIEVED) {
+                                if (response != null && response.response() == ProfileRetrieval.Response.RETRIEVED) {
                                     profiles.add(new CachedProfile(response.profile()));
                                 }
                             } catch (ExecutionException | InterruptedException e) {
@@ -149,7 +149,7 @@ public class ProfileUtil {
 
                         var response = fromDatabase(uuid).get();
 
-                        if (response != null && response.response() == Retrieval.Response.RETRIEVED) {
+                        if (response != null && response.response() == ProfileRetrieval.Response.RETRIEVED) {
                             return response.profile();
                         }
                     } catch (InterruptedException | ExecutionException e) {
@@ -173,7 +173,7 @@ public class ProfileUtil {
 
                         var response = fromDatabase(uuid).get();
 
-                        if (response != null && response.response() == Retrieval.Response.RETRIEVED) {
+                        if (response != null && response.response() == ProfileRetrieval.Response.RETRIEVED) {
                             var profile = response.profile();
 
                             ProfileCache.pushCache(profile);
@@ -188,11 +188,11 @@ public class ProfileUtil {
                 });
     }
 
-    public static CompletableFuture<Retrieval> fromDocument(Document document) {
-        return new CompletableFuture<Retrieval>()
+    public static CompletableFuture<ProfileRetrieval> fromDocument(Document document) {
+        return new CompletableFuture<ProfileRetrieval>()
                 .completeAsync(() -> {
                     if (document == null) {
-                        return Retrieval.NOT_FOUND;
+                        return ProfileRetrieval.NOT_FOUND;
                     }
 
                     var profile = JsonUtil.readFromJson(document.toJson(), Profile.class);
@@ -207,7 +207,7 @@ public class ProfileUtil {
                             if (grants != null) {
                                 profile.setGrants(grants);
                             } else {
-                                return Retrieval.FAILED;
+                                return ProfileRetrieval.FAILED;
                             }
 
                             var punishments = Punishment.getPunishments(uuid).get();
@@ -215,24 +215,24 @@ public class ProfileUtil {
                             if (punishments != null) {
                                 profile.setPunishments(punishments);
                             } else {
-                                return Retrieval.FAILED;
+                                return ProfileRetrieval.FAILED;
                             }
                         } catch (InterruptedException | ExecutionException e) {
                             e.printStackTrace();
-                            return Retrieval.FAILED;
+                            return ProfileRetrieval.FAILED;
                         }
 
                         ProfileCache.pushCache(profile);
 
-                        return new Retrieval(Retrieval.Response.RETRIEVED, profile);
+                        return new ProfileRetrieval(ProfileRetrieval.Response.RETRIEVED, profile);
                     }
 
-                    return Retrieval.FAILED;
+                    return ProfileRetrieval.FAILED;
                 });
     }
 
-    public static CompletableFuture<Retrieval> fromDatabase(UUID uuid) {
-        return new CompletableFuture<Retrieval>()
+    public static CompletableFuture<ProfileRetrieval> fromDatabase(UUID uuid) {
+        return new CompletableFuture<ProfileRetrieval>()
                 .completeAsync(() -> {
                     var document = Database.getProfilesCollection().find(Filters.eq("_id", uuid.toString())).first();
 
@@ -242,7 +242,7 @@ public class ProfileUtil {
                         e.printStackTrace();
                     }
 
-                    return Retrieval.FAILED;
+                    return ProfileRetrieval.FAILED;
                 });
     }
 

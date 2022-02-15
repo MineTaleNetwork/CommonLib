@@ -1,8 +1,6 @@
 package cc.minetale.commonlib.punishment;
 
-import cc.minetale.commonlib.CommonLib;
 import cc.minetale.commonlib.util.*;
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.mongodb.client.model.Filters;
 import com.mongodb.client.model.ReplaceOptions;
 import com.mongodb.client.result.DeleteResult;
@@ -12,7 +10,6 @@ import lombok.Setter;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.format.TextDecoration;
-import org.bson.Document;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.*;
