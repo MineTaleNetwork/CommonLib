@@ -8,12 +8,16 @@ import java.util.Arrays;
 
 @Getter
 @Setter
-@RequiredArgsConstructor
 public class Pagination<T> {
 
     private final int itemsPerPage;
-    private final T[] items;
+    private T[] items;
     private int currentPage;
+
+    public Pagination(int itemsPerPage, T[] items) {
+        this.itemsPerPage = itemsPerPage;
+        this.items = items;
+    }
 
     public T[] getPageItems() {
         return Arrays.copyOfRange(this.items,

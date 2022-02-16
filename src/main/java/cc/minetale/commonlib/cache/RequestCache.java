@@ -88,20 +88,18 @@ public record RequestCache(String key, int ttl) {
         return requests;
     }
 
-    // TODO -> Make sure this works
     public CompletableFuture<Void> removeCache(UUID player, UUID target) {
         return CompletableFuture.runAsync(() -> Redis.runRedisCommand(jedis -> {
             var pipeline = jedis.pipelined();
 
             var outgoing = jedis.smembers(getOutgoingKey(player));
+            var incoming = jedis.smembers(getIncomingKey(target));
 
             for(var member : outgoing) {
                 if(member.contains(target.toString())) {
                     pipeline.srem(getOutgoingKey(player), member);
                 }
             }
-
-            var incoming = jedis.smembers(getIncomingKey(target));
 
             for(var member : incoming) {
                 if(member.contains(player.toString())) {
