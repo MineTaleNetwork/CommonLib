@@ -78,7 +78,7 @@ public class Punishment extends ProvidableObject {
                     var document = Database.getPunishmentsCollection().find(Filters.eq("_id", id)).first();
 
                     if (document != null) {
-                        return JsonUtil.readFromJson(document.toJson(), Punishment.class);
+                        return BsonUtil.readFromBson(document, Punishment.class);
                     }
 
                     return null;
@@ -91,7 +91,7 @@ public class Punishment extends ProvidableObject {
                     var punishments = new ArrayList<Punishment>();
 
                     for (var document : Database.getPunishmentsCollection().find(Filters.eq("playerId", uuid.toString()))) {
-                        punishments.add(JsonUtil.readFromJson(document.toJson(), Punishment.class));
+                        punishments.add(BsonUtil.readFromBson(document, Punishment.class));
                     }
 
                     return punishments;

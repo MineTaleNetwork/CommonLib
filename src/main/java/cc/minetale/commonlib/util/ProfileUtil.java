@@ -197,7 +197,7 @@ public class ProfileUtil {
                         return ProfileRetrieval.NOT_FOUND;
                     }
 
-                    var profile = JsonUtil.readFromJson(document.toJson(), Profile.class);
+                    var profile = BsonUtil.readFromBson(document, Profile.class);
 
                     if(profile != null) {
 

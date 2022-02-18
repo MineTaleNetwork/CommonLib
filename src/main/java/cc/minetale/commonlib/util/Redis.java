@@ -2,9 +2,7 @@ package cc.minetale.commonlib.util;
 
 import cc.minetale.commonlib.CommonLib;
 import lombok.experimental.UtilityClass;
-import redis.clients.jedis.CommandArguments;
 import redis.clients.jedis.Jedis;
-import redis.clients.jedis.commands.JedisCommands;
 import redis.clients.jedis.commands.ProtocolCommand;
 import redis.clients.jedis.util.SafeEncoder;
 
@@ -25,17 +23,12 @@ public class Redis {
         return (Long) runRedisCommand(jedis -> jedis.sendCommand(CustomCommand.EXPIREMEMBER, key, member, String.valueOf(ttl)));
     }
 
-    public static Long ttlMember(String key, String member) {
-        return (Long) runRedisCommand(jedis -> jedis.sendCommand(CustomCommand.TTL, key, member));
-    }
-
     public interface RedisCommand<T> {
         T execute(Jedis paramJedis);
     }
 
     public enum CustomCommand implements ProtocolCommand {
-        EXPIREMEMBER("EXPIREMEMBER"),
-        TTL("TTL");
+        EXPIREMEMBER("EXPIREMEMBER");
 
         private final byte[] raw;
 

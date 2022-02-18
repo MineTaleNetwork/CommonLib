@@ -45,7 +45,7 @@ public class Grant extends ProvidableObject {
                     var document = Database.getGrantsCollection().find(Filters.eq("_id", id)).first();
 
                     if (document != null) {
-                        return JsonUtil.readFromJson(document.toJson(), Grant.class);
+                        return BsonUtil.readFromBson(document, Grant.class);
                     }
 
                     return null;
@@ -58,7 +58,7 @@ public class Grant extends ProvidableObject {
                     var grants = new ArrayList<Grant>();
 
                     for (var document : Database.getGrantsCollection().find(Filters.eq("playerId", uuid.toString()))) {
-                        grants.add(JsonUtil.readFromJson(document.toJson(), Grant.class));
+                        grants.add(BsonUtil.readFromBson(document, Grant.class));
                     }
 
                     return grants;
