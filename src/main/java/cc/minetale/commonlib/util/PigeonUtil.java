@@ -5,7 +5,9 @@ import cc.minetale.pigeon.PostalUnit;
 import cc.minetale.pigeon.payloads.bases.BasePayload;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
+import lombok.experimental.UtilityClass;
 
+@UtilityClass
 public class PigeonUtil {
 
     public static void sendTo(BasePayload payload, PostalUnit target) {

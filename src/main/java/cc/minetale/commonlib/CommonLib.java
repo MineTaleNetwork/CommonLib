@@ -2,8 +2,8 @@ package cc.minetale.commonlib;
 
 import cc.minetale.commonlib.api.LibProvider;
 import cc.minetale.commonlib.pigeon.serializers.ColorSerializers;
+import cc.minetale.commonlib.util.Config;
 import cc.minetale.commonlib.util.Database;
-import cc.minetale.commonlib.util.StringUtil;
 import cc.minetale.pigeon.Pigeon;
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.JsonInclude;
@@ -86,10 +86,10 @@ public class CommonLib {
         var pigeon = new Pigeon();
 
         pigeon.initialize(
-                System.getProperty("pigeonHost", "127.0.0.1"),
-                Integer.getInteger("pigeonPort", 5672),
-                System.getProperty("pigeonNetwork", "minetale"),
-                System.getProperty("pigeonUnit", StringUtil.generateId()),
+                Config.PIGEON_HOST,
+                Config.PIGEON_PORT,
+                Config.PIGEON_NETWORK,
+                Config.PIGEON_UNIT,
                 CommonLib.getJsonMapper()
         );
 
@@ -97,12 +97,12 @@ public class CommonLib {
     }
 
     private static void loadMongo() {
-        mongoClient = new MongoClient(System.getProperty("mongoHost", "127.0.0.1"), Integer.getInteger("mongoPort", 27017));
-        mongoDatabase = mongoClient.getDatabase(System.getProperty("mongoDatabase", "MineTale"));
+        mongoClient = new MongoClient(Config.MONGO_HOST, Config.MONGO_PORT);
+        mongoDatabase = mongoClient.getDatabase(Config.MONGO_DATABASE);
     }
 
     private static void loadRedis() {
-        jedisPool = new JedisPool(System.getProperty("redisHost", "127.0.0.1"), Integer.getInteger("redisPort", 6379));
+        jedisPool = new JedisPool(Config.REDIS_HOST, Config.REDIS_PORT);
     }
 
 }

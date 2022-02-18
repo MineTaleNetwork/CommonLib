@@ -34,9 +34,9 @@ public class Punishment extends ProvidableObject {
 
     public String getContext() {
         if (isPermanent()) {
-            return (this.isRemoved() ? type.getUndoContext() : "permanently " + type.getContext());
+            return (isRemoved() ? type.getUndoContext() : "permanently " + type.getContext());
         } else {
-            return (this.isRemoved() ? type.getUndoContext() : "temporarily " + type.getContext());
+            return (isRemoved() ? type.getUndoContext() : "temporarily " + type.getContext());
         }
     }
 

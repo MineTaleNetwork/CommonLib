@@ -42,15 +42,15 @@ public class Colors {
         );
     }
 
-    public static Color hexToColor(String colorStr) {
-        return new Color(
+    public static TextColor hexToColor(String colorStr) {
+        return TextColor.color(
                 Integer.valueOf(colorStr.substring(0, 2), 16),
                 Integer.valueOf(colorStr.substring(2, 4), 16),
                 Integer.valueOf(colorStr.substring(4, 6), 16)
         );
     }
 
-    public static TextColor bleach(NamedTextColor color, double amount) {
+    public static TextColor bleach(TextColor color, double amount) {
         return TextColor.color(
                 (int) ((color.red() * (1 - amount) / 255 + amount) * 255),
                 (int) ((color.green() * (1 - amount) / 255 + amount) * 255),

@@ -8,6 +8,7 @@ import cc.minetale.commonlib.profile.Profile;
 import cc.minetale.commonlib.profile.ProfileRetrieval;
 import cc.minetale.commonlib.punishment.Punishment;
 import com.mongodb.client.model.Filters;
+import lombok.experimental.UtilityClass;
 import org.bson.Document;
 
 import java.util.ArrayList;
@@ -16,6 +17,7 @@ import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 
+@UtilityClass
 public class ProfileUtil {
 
     /**

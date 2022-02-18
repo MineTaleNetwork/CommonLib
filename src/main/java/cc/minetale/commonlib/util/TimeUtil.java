@@ -21,8 +21,10 @@ public final class TimeUtil {
         }
     }
 
+    private static final DecimalFormat millisToSecondsDF = new DecimalFormat("#0.00");
+
     public static String millisToSeconds(long millis) {
-        return new DecimalFormat("#0.0").format(millis / 1000.0F);
+        return millisToSecondsDF.format(millis / 1000.0F);
     }
 
     public static String dateToString(Date date, boolean time) {
