@@ -21,8 +21,8 @@ public class Redis {
         return null;
     }
 
-    public static Integer expireMember(String key, String member, int ttl) {
-        return (Integer) runRedisCommand(jedis -> jedis.sendCommand(CustomCommand.EXPIREMEMBER, key, member, String.valueOf(ttl)));
+    public static Long expireMember(String key, String member, int ttl) {
+        return (Long) runRedisCommand(jedis -> jedis.sendCommand(CustomCommand.EXPIREMEMBER, key, member, String.valueOf(ttl)));
     }
 
     public interface RedisCommand<T> {

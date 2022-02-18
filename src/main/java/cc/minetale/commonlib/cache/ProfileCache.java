@@ -106,7 +106,12 @@ public class ProfileCache {
 
     public static CompletableFuture<CachedProfile> getCache(UUID uuid) {
         return new CompletableFuture<CachedProfile>()
-                .completeAsync(() -> JsonUtil.readFromJson(Redis.runRedisCommand(jedis -> jedis.hget(getKey(), uuid.toString())), CachedProfile.class));
+                .completeAsync(() -> {
+                    String json = Redis.runRedisCommand(jedis -> jedis.hget(getKey(), uuid.toString()));
+                    if(json == null) { return null; }
+
+                    return JsonUtil.readFromJson(json, CachedProfile.class);
+                });
     }
 
     public static String getKey() {
