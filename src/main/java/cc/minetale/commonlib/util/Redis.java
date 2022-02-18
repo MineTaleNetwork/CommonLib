@@ -21,8 +21,12 @@ public class Redis {
         return null;
     }
 
-    public static Integer expireMember(String key, String member, int ttl) {
-        return (Integer) runRedisCommand(jedis -> jedis.sendCommand(CustomCommand.EXPIREMEMBER, key, member, String.valueOf(ttl)));
+    public static Long expireMember(String key, String member, int ttl) {
+        return (Long) runRedisCommand(jedis -> jedis.sendCommand(CustomCommand.EXPIREMEMBER, key, member, String.valueOf(ttl)));
+    }
+
+    public static Long ttlMember(String key, String member) {
+        return (Long) runRedisCommand(jedis -> jedis.sendCommand(CustomCommand.TTL, key, member));
     }
 
     public interface RedisCommand<T> {
@@ -30,7 +34,8 @@ public class Redis {
     }
 
     public enum CustomCommand implements ProtocolCommand {
-        EXPIREMEMBER("EXPIREMEMBER");
+        EXPIREMEMBER("EXPIREMEMBER"),
+        TTL("TTL");
 
         private final byte[] raw;
 

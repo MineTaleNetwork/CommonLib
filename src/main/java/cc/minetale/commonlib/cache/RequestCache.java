@@ -17,7 +17,7 @@ public record RequestCache(String key, int ttl) {
 
     static {
         partyRequest = new RequestCache("party-request", 30 * 60);
-        friendRequest = new RequestCache("friend-request", 7 * 24 * 60 * 60);
+        friendRequest = new RequestCache("friend-request", 24 * 60 * 60);
     }
 
     @Blocking
@@ -125,15 +125,6 @@ public record RequestCache(String key, int ttl) {
 
                 pipeline.sadd(getOutgoingKey(player), outgoing);
                 pipeline.sadd(getIncomingKey(target), incoming);
-
-                pipeline.sync();
-
-                return null;
-            });
-
-            Redis.runRedisCommand(jedis -> {
-                var pipeline = jedis.pipelined();
-
                 pipeline.sendCommand(Redis.CustomCommand.EXPIREMEMBER, getOutgoingKey(player), outgoing, String.valueOf(ttl));
                 pipeline.sendCommand(Redis.CustomCommand.EXPIREMEMBER, getIncomingKey(target), incoming, String.valueOf(ttl));
 

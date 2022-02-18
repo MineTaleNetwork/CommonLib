@@ -97,7 +97,8 @@ public class ProfileCache {
         return CompletableFuture.runAsync(() -> {
             Redis.runRedisCommand(jedis -> jedis.hset(
                     getKey(),
-                    uuid, json
+                    uuid,
+                    json
             ));
 
             Redis.expireMember(getKey(), uuid, 12 * 60 * 60);

@@ -6,9 +6,17 @@ public class Language {
         return "<gold><bold>" + prefix + " <dark_gray>» <reset>";
     }
 
+    public static class Staff {
+        private static final String PREFIX = "<dark_gray>[<blue>➤</blue>]</dark_gray> ";
+        public static String STAFF_JOIN = PREFIX + "<0> <gray>has joined <blue><1>";
+        public static String STAFF_SWITCH = PREFIX + "<0> <gray>has switched from <blue><1></blue> to <blue><2>";
+        public static String STAFF_LEAVE = PREFIX + "<0> <gray>has left <blue><1>";
+        public static String CHAT_FORMAT = PREFIX + General.CHAT_FORMAT;
+    }
+
     public static class General {
         public static String CHAT_CLEARED = notification("Chat") + "<gray>Chat has been cleared by <0>.";
-        public static String CHAT_FORMAT = "<0><1><2> <dark_gray><b>»</b></dark_gray> <3>";
+        public static String CHAT_FORMAT = "<0> <dark_gray><b>»</b></dark_gray> <1>";
     }
 
     public static class Punishment {
