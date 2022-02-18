@@ -1,6 +1,5 @@
 package cc.minetale.commonlib.pigeon.payloads.network;
 
-import cc.minetale.commonlib.profile.MiniProfile;
 import cc.minetale.commonlib.profile.Profile;
 import cc.minetale.pigeon.annotations.Payload;
 import cc.minetale.pigeon.annotations.Transmit;
@@ -10,7 +9,7 @@ import lombok.Getter;
 @Getter @Payload
 public class ProxyPlayerSwitchPayload extends BasePayload {
 
-    @Transmit MiniProfile player;
+    @Transmit Profile profile;
     @Transmit String serverFrom;
     @Transmit String serverTo;
 
@@ -18,9 +17,9 @@ public class ProxyPlayerSwitchPayload extends BasePayload {
         payloadId = this.getClass().getSimpleName();
     }
 
-    public ProxyPlayerSwitchPayload(Profile player, String serverFrom, String serverTo) {
+    public ProxyPlayerSwitchPayload(Profile profile, String serverFrom, String serverTo) {
         this();
-        this.player = MiniProfile.of(player);
+        this.profile = profile;
         this.serverFrom = serverFrom;
         this.serverTo = serverTo;
     }

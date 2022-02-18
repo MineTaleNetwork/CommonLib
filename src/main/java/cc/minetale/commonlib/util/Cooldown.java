@@ -2,7 +2,6 @@ package cc.minetale.commonlib.util;
 
 import lombok.Getter;
 
-import java.text.DecimalFormat;
 import java.time.Duration;
 
 @Getter
@@ -11,14 +10,12 @@ public class Cooldown {
     private final Duration duration;
     private long lastUpdate;
 
-    public static final DecimalFormat format = new DecimalFormat("0.00");
-
     public Cooldown(Duration duration) {
         this.duration = duration;
     }
 
     public void refresh() {
-        this.lastUpdate = System.currentTimeMillis();
+        lastUpdate = System.currentTimeMillis();
     }
 
     public boolean isReady() {
@@ -26,11 +23,11 @@ public class Cooldown {
     }
 
     public String getSecondsRemaining() {
-        return format.format(getMillisRemaining() / 1000.0);
+        return TimeUtil.millisToSeconds(getMillisRemaining());
     }
 
     public long getMillisRemaining() {
-        return (this.lastUpdate + this.duration.toMillis()) - System.currentTimeMillis();
+        return (lastUpdate + duration.toMillis()) - System.currentTimeMillis();
     }
 
     public boolean hasCooldown() {
