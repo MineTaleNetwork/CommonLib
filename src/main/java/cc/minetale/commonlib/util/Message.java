@@ -7,9 +7,6 @@ import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.format.TextColor;
 import net.kyori.adventure.text.format.TextDecoration;
 import net.kyori.adventure.text.minimessage.MiniMessage;
-import net.kyori.adventure.text.minimessage.Template;
-
-import java.util.ArrayList;
 
 @UtilityClass
 public class Message {
@@ -68,20 +65,20 @@ public class Message {
     }
 
     public static Component parse(String input, Object... replacements) {
-        var templates = new ArrayList<Template>();
+        var mini = MiniMessage.miniMessage();
 
         for (int i = 0; i < replacements.length; i++) {
-            var key = String.valueOf(i);
+            var key = "<" + i + ">";
             var replacement = replacements[i];
 
             if (replacement instanceof Component component) {
-                templates.add(Template.of(key, component));
+                input = input.replace(key, mini.serialize(component));
             } else {
-                templates.add(Template.of(key, replacement.toString()));
+                input = input.replace(key, replacement.toString());
             }
         }
 
-        return MiniMessage.get().parse(input, templates);
+        return mini.deserialize(input);
     }
 
     public static Component coloredPing(int ping) {
