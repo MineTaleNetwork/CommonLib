@@ -115,6 +115,15 @@ public class Profile extends AbstractProfile {
     }
 
     /**
+     * Check if the profile is a staff member.
+     *
+     * @return Whether the profile is staff
+     */
+    public boolean isStaff() {
+        return grant.getRank().isStaff();
+    }
+
+    /**
      * Removes a specific friend.
      *
      * @param profile The profile
@@ -174,7 +183,7 @@ public class Profile extends AbstractProfile {
         AsyncUtil.runInOrder(
                 punishment.save(),
                 ProfileCache.updateProfile(this),
-                CompletableFuture.runAsync(() -> PigeonUtil.broadcast(new PunishmentAddPayload(this.uuid, punishment.getId())))
+                CompletableFuture.runAsync(() -> PigeonUtil.broadcast(new PunishmentAddPayload(this.uuid, punishment)))
         );
 
         for (var provider : CommonLib.getProviders()) {
@@ -198,7 +207,7 @@ public class Profile extends AbstractProfile {
         AsyncUtil.runInOrder(
                 punishment.save(),
                 ProfileCache.updateProfile(this),
-                CompletableFuture.runAsync(() -> PigeonUtil.broadcast(new PunishmentRemovePayload(this.uuid, punishment.getId())))
+                CompletableFuture.runAsync(() -> PigeonUtil.broadcast(new PunishmentRemovePayload(this.uuid, punishment)))
         );
 
         for (var provider : CommonLib.getProviders()) {
@@ -220,7 +229,7 @@ public class Profile extends AbstractProfile {
         AsyncUtil.runInOrder(
                 punishment.save(),
                 ProfileCache.updateProfile(this),
-                CompletableFuture.runAsync(() -> PigeonUtil.broadcast(new PunishmentExpirePayload(this.uuid, punishment.getId())))
+                CompletableFuture.runAsync(() -> PigeonUtil.broadcast(new PunishmentExpirePayload(this.uuid, punishment)))
         );
 
         for (var provider : CommonLib.getProviders()) {

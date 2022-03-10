@@ -23,7 +23,7 @@ dependencies {
     implementation("org.mongodb:mongodb-driver:3.12.10")
     implementation("redis.clients:jedis:4.1.0")
     implementation("net.kyori:adventure-api:4.9.3")
-    implementation("net.kyori:adventure-text-minimessage:4.1.0-SNAPSHOT")
+    implementation("net.kyori:adventure-text-minimessage:4.10.0")
     implementation("com.fasterxml.jackson.core:jackson-databind:2.13.1")
     implementation("com.fasterxml.jackson.module:jackson-module-parameter-names:2.13.1")
     implementation("de.undercouch:bson4jackson:2.13.0")
