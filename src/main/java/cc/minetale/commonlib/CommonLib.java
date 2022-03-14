@@ -42,7 +42,6 @@ public class CommonLib {
         pigeon.getPayloadsRegistry()
                 .registerPayloadsInPackage("cc.minetale.commonlib.pigeon.payloads");
 
-        pigeon.setupDefaultUpdater();
         pigeon.acceptDelivery();
 
         Database.init(mongoDatabase);

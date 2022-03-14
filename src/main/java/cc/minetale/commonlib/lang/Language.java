@@ -19,13 +19,6 @@ public class Language {
         public static String CHAT_FORMAT = "<0> <dark_gray><b>»</b></dark_gray> <1>";
     }
 
-    public static class Staff {
-        public static String STAFF_JOIN = "";
-        public static String STAFF_SWITCH = "";
-        public static String STAFF_LEAVE = "";
-        public static String STAFF_CHAT = "";
-    }
-
     public static class Punishment {
         public static String ANNOUNCEMENT = notification("Punishment") + "<gray><0> has been <1> by <2>";
         public static String SUCCESS = notification("Punishment") + "<green>You have successfully punished <0>";

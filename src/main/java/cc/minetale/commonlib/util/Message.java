@@ -1,5 +1,6 @@
 package cc.minetale.commonlib.util;
 
+import cc.minetale.commonlib.CommonLib;
 import lombok.experimental.UtilityClass;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.TextComponent;
